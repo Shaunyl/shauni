@@ -1,0 +1,22 @@
+addcs -user=system -password=dfh5irj9 -host=h3mih230.ced.h3g.it -port=1522 -sid=emrep
+
+Example:
+
+  url=jdbc\:oracle\:thin\:system/dfh5irj9@h3mih230.ced.h3g.it\:1522\:emrep
+
+FIX-001:
+ ShauniException is an implementation fo an Exception, not a Runtime Exception.. find out the difference and the better way to cope with that
+FIX-002:
+ If I pass an option without the dash at the beginning, the programs does not raise an exception.
+  The option form are:
+        entry=value  -> FIXED with a regex check
+        entry        -> FIXED with a JCommander check
+
+STEP-001:
+ Test DefaultCOmmandLinePresentationControl class with a JUnit Test
+
+STEP-002:
+ Retry for N seconds before closing the connection...
+
+STEP-003:
+ Some warnings or advices can be printed just by one thread only.
