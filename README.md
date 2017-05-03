@@ -1,7 +1,7 @@
 # Shauni
 Command line based tool to perform automated actions on different oracle databases on multiple servers simultaneously
 
-Current version: **1.0.1.73a**  
+Current version is **1.0.1.74a**  
 
 **Changelog**  
  Introduced Chain of Responsability pattern to cope with te filename building through wilcards  
