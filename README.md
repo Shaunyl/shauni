@@ -23,6 +23,11 @@ Export tables or datasets from databases to files.<br/>
 &nbsp;&nbsp;&nbsp;-directory&nbsp;&nbsp;&nbsp;(directory where data are exported)<br/>
 &nbsp;&nbsp;&nbsp;-filename&nbsp;&nbsp;&nbsp;(ilenames of the objects being exported)<br/>
 
+Only for CSVs filenames<br/>
+&nbsp;&nbsp;&nbsp;-start&nbsp;&nbsp;&nbsp;(line of the table at which starting to export)<br/>
+&nbsp;&nbsp;&nbsp;-end&nbsp;&nbsp;&nbsp;(last line of the table to be exported)<br/>
+&nbsp;&nbsp;&nbsp;-delimiter&nbsp;&nbsp;&nbsp;(CSV delimiter. Defaults to a comma)<br/>
+
 **Notes:**<br/>
 &nbsp;&nbsp;Queries and tables parameters are mutually exclusive<br/>
 &nbsp;&nbsp;Parallel must be >= 1. If parallel > #objects, then it will be adjusted<br/>
