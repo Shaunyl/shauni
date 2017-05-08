@@ -1,4 +1,4 @@
-Shauni - DEV 1.0.1.79a - Built at 2017-05-08 16:10
+Shauni - 1.0.1.79a - Built at 2017-05-08 16:10
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
@@ -10,10 +10,10 @@ Session thread-2 started at 16:30:33.913
 
   Note: parallelism enabled (requested: 3, adjusted: 2)
 
-Worker 0 connected to XE@CHIARA at 16:30:34.107
-Worker 0 connected to XE@CHIARA at 16:30:34.148
-Worker 1 connected to XE@CHIARA at 16:30:34.150
-Worker 1 connected to XE@CHIARA at 16:30:34.155
+Worker 0 connected to XE@shaunil.it at 16:30:34.107
+Worker 0 connected to XE@shaunil.it at 16:30:34.148
+Worker 1 connected to XE@shaunil.it at 16:30:34.150
+Worker 1 connected to XE@shaunil.it at 16:30:34.155
  . . (worker 1) exporting SYS.DBA_REGISTRY..                      
  . . (worker 0) exporting SYS.DBA_SOURCE..                        
  . . (worker 1) exporting SYS.DBA_REGISTRY..                      
