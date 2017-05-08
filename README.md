@@ -29,8 +29,10 @@ Only for CSVs filenames<br/>
 &nbsp;&nbsp;&nbsp;-delimiter&nbsp;&nbsp;&nbsp;(CSV delimiter. Defaults to a comma)<br/>
 
 **Notes:**<br/>
-&nbsp;&nbsp;Queries and tables parameters are mutually exclusive<br/>
-&nbsp;&nbsp;Parallel must be >= 1. If parallel > #objects, then it will be adjusted<br/>
+&nbsp;&nbsp;queries and tables parameters are mutually exclusive<br/>
+&nbsp;&nbsp;parallel must be >= 1. If parallel > #objects, then it will be adjusted<br/>
+&nbsp;&nbsp;cluster should be greater than 0 but lesser or equals to the number of configured connections<br/>
+&nbsp;&nbsp;format can be tab (i.e. tabular) or csv<br/>
 &nbsp;&nbsp;Filename wildcards supported are:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;%u: progress id to identify the object currently being exported<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;%t: the name of table being exported (only with Table Mode)<br/>
