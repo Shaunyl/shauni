@@ -13,5 +13,5 @@ public class Context {
     private final int workerId, objectId;
     
     @Getter
-    private final String timestamp, tableName;
+    private final String timestamp, tableName, threadName;
 }

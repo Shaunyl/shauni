@@ -10,6 +10,7 @@ import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.log.LogLevel;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.DateFormat;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,95 +52,55 @@ public abstract class DatabaseCommandControl extends Command {
 
     protected boolean firstThread = false;
 
+    protected String state = "completed";
+
     @Override
     public Long call() throws Exception {
         currentThreadName = Thread.currentThread().getName();
 
         String currentDate = GeneralUtil.getCurrentDate(DateFormat.TIMEONLY.toString());
-        log.info("Task {} started at {}\n", currentThreadName, currentDate);
+        log.info("Session {} started at {}\n", currentThreadName, currentDate);
         long et = this.execute();
         currentDate = GeneralUtil.getCurrentDate(DateFormat.TIMEONLY.toString());
-        log.info("\nTask {} {} at {} with {} warning(s)\nElapsed time: {} s", currentThreadName, state, currentDate, errorCount, et / 1e3);
+        log.info("\nSession {} {} at {} with {} warning(s)\nElapsed time: {} s", currentThreadName, state, currentDate, errorCount, et / 1e3);
         return et;
     }
 
     @Override
     public void setup() throws ShauniException {
-//        this.firstThread = "thread-1".equals(currentThreadName);
 //        commandLinePresentation.printIf(firstThread, LogLevel.INFO, "== Setting up");
     }
-
-//    private void loadConnection() throws ShauniException {
-//        List<String> urls = new ArrayList<>();
-//        //FIXME:
-//        String multidb = "-multi=y";
-//        if ("-multi=y".equals(multidb)) {
-//            // Decrypt..
-//            this.skey = sk.getKey();
-//            // check if file is already there
-//            File f = new File(DatabaseConfiguration.MULTIDB_CONN_ENCRYPTED);
-//            boolean isMultiDb = f.exists();
-//            if (isMultiDb) {
-//                try {
-//                    CipherInputStream cis = sk.decrypt(f, skey);
-//                    BufferedReader bread = new BufferedReader(new InputStreamReader(cis, "UTF-8"));
-//
-//                    String line;
-//                    while ((line = bread.readLine()) != null) {
-//                        String[] e = line.split("=");
-//                        String ey = e[1];
-//                        urls.add(ey);
-//                    }
-//                    bread.close();
-//                    cis.close();
-//                } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-//                    errorCount += 1;
-//                    throw new ShauniException(1007, e.getMessage());
-//                }
-//            } else {
-//                throw new ShauniException(1014, "No connections available.\nTip: use addcs command to add a new connection string");
-//            }
-////            urls.addAll(this.fileManager.readAll(MULTIDB_CONN));
-//        } else {
-//            urls.add(this.fileManager.read(SINGLEDB_CONN, PROP_KEY));
-//        }
-//        for (String u : urls) {
-//            Map<String, String> map = GeneralUtil.parseConnectionString(u);
-//            String user = map.get("user").toUpperCase();
-//            String password = map.get("password");
-//
-//            String sid = map.get("sid").toUpperCase();
-//            String host = map.get("host").toUpperCase();
-//            DbConnection dbc = new DbConnection(u, user, password, sid, host);
-//            dbcs.add(dbc);
-//
-////            this.databasePoolManager.configure("", user, password, 2);
-//        }
-//    }
-    protected String state = "completed";
 
     @Override
     public long execute() {
         this.firstThread = "thread-1".equals(currentThreadName);
         long endTime = 0;
         try {
-            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "setup() -> start");
-            this.validate();
-            this.setup();
-            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "setup() -> end\n");
+//            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "setup() -> start");
+            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "Validating..");
+            Check check = this.validate();
+            if (!check.isValid()) {
+                throw new ShauniException(check.getCode(), check.getMessage());
+            }
 
+            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "\nSetting up..");
+            this.setup();
+//            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "setup() -> end\n");
+            databasePoolManager = new JDBCPoolManager();
             for (int i = 0; i < dbcs.size(); i++) {
-                databasePoolManager = new JDBCPoolManager();
+//                databasePoolManager = new JDBCPoolManager();
                 DbConnection _dbc = dbcs.get(i);
                 databasePoolManager.configure(_dbc.getUrl(), _dbc.getUser(), _dbc.getPasswd(), _dbc.getHost(), _dbc.getSid());
 
-                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> start");
+//                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> start");
                 long startTime = System.currentTimeMillis();
                 this.run();
-                endTime = System.currentTimeMillis() - startTime;
+                long finishTime = System.currentTimeMillis() - startTime;;
+                endTime += finishTime;
+                log.info("Task #{} finished. Elapsed Time: {} ms", i, finishTime / 1e3);
 
                 this.takedown();
-                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> end");
+//                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> end");
             }
         } catch (ShauniException sh) {
             log.error(sh.getMessage());
@@ -147,25 +108,14 @@ public abstract class DatabaseCommandControl extends Command {
         }
         return endTime;
     }
-
-    public long execute(JDBCPoolManager pool) {
-        // Mock pool
-        // Already configured...
-        long endTime = 0;
-        try {
-            this.validate();
-            this.setup();
-            databasePoolManager = pool;
-
-            long startTime = System.currentTimeMillis();
-            this.run();
-            endTime = System.currentTimeMillis() - startTime;
-            this.takedown();
-        } catch (ShauniException sh) {
-            log.error(sh.getMessage());
-            state = "aborted";
+    
+    public Connection getConnection(int workerId) throws ShauniException {
+        Connection connection = databasePoolManager.getConnection(); // this need to be here because every thread needs to create a different connection.
+        if (connection == null) {
+            log.error("> Worker {} could not connect to {}@{}", workerId, databasePoolManager.getSid(), databasePoolManager.getHost());
+//            throw new ShauniException("> Worker " + workerId + " could not connect to " + databasePoolManager.getSid() + "@" + databasePoolManager.getHost());
         }
-        return endTime;
+        return connection;
     }
 
     @Override

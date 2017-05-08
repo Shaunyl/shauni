@@ -70,7 +70,7 @@ public class DefaultCSAdder extends ConfigCommandControl {
 
     public DefaultCSAdder() {
         super();
-        isCluster = true;
+        isCluster = false;
     }
 
     @Override

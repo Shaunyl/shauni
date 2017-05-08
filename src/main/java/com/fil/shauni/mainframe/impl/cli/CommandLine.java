@@ -18,11 +18,12 @@ public class CommandLine implements CommandLinePresentation {
     
     @Override
     public void print(LogLevel level, String msg, Object... parameters) {
+        String message = String.format(msg, parameters);
         switch (level) {
-            case INFO: log.info(msg, parameters); break;
-            case DEBUG: log.debug(msg, parameters); break;
-            case ERROR: log.error(msg, parameters); break;
-            default: log.warn(msg, parameters);
+            case INFO: log.info(message); break;
+            case DEBUG: log.debug(message); break;
+            case ERROR: log.error(message); break;
+            default: log.warn(message);
         }
     }
     

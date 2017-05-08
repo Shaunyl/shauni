@@ -68,9 +68,10 @@ public abstract class Command implements Callable<Long> {
     
     /**
      * Validate the syntax and the options of the command
+     * @return True if command is corrextly validated. Otherwise False
      * @throws com.fil.shauni.exception.ShauniException 
      */
-    public void validate() throws ShauniException {}
+    public Check validate() throws ShauniException { return new Check(); };
     
     /**
      * Execute the command

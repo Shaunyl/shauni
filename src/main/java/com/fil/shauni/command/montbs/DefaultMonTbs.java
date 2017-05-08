@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.validators.PositiveInteger;
+import com.fil.shauni.command.Check;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.StatementManager;
 import com.fil.shauni.command.support.CharBooleanValidator;
@@ -23,13 +24,13 @@ import java.sql.Statement;
 import java.util.List;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 
 /**
  *
  * @author Shaunyl
  */
-@Log4j @NoArgsConstructor
+@Log4j2 @NoArgsConstructor
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
 //    @Parameter(required = true, arity = 1)
@@ -69,10 +70,19 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     }
 
     @Override
-    public void validate() throws ShauniException {
+    public Check validate() throws ShauniException {
         if ((warning | critical) < 1 || (warning | critical) > 99) {
-            throw new ShauniException(1020, "Warning: Threshold parameters must be between 1 to 99.");
+            return new Check(false, 1120, "Threshold parameters must be between 1 to 99.");
+//            throw new ShauniException(1020, "Warning: Threshold parameters must be between 1 to 99.");
+        } else  {
+            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check threshold between [1,99] -> OK"); // FIXME
         }
+        if (warning >= critical) {
+            return new Check(false, 1121, "Critical threshold must be greater than warning one.");
+        } else {
+            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check warning < critical -> OK");
+        }
+        return new Check();
     }
 
     @Override
@@ -92,11 +102,20 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         }
 
         this.query = Query.getTablespacesAllocation(inexclude, "'UNDO'", warning, commentTBS, commentUNDO);
+        
+        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "> query to execute:\n" + this.query.replaceAll("(?m)^", "  ") + "\n");   
     }
     
     @Override
     public void run() throws ShauniException {
-        Connection connection = databasePoolManager.getConnection();
+        super.run();
+//        Connection connection = databasePoolManager.getConnection();
+//        if (connection == null) {
+//            log.error("> Worker {} could not connect to {}@{}", 1, databasePoolManager.getSid(), databasePoolManager.getHost());
+//            return;
+//        }
+        Connection connection = super.getConnection(1);
+
         Statement statement = statementManager.createStatement(connection, 20);
         ResultSet rs = null;
         try {

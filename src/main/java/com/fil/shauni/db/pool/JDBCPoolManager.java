@@ -63,7 +63,6 @@ public class JDBCPoolManager implements DatabasePoolManager {
             }
             properties.put("connectionProperties", connectionProperties.toString());
 
-            ds = null;
             ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(properties);
 
         } catch (Exception e) {
@@ -86,6 +85,7 @@ public class JDBCPoolManager implements DatabasePoolManager {
         try {
             if (ds == null) {
                 log.error("Data Source is null.");
+                return null;
             }
             conn = ds.getConnection();
             conn.setAutoCommit(false); //FIXME: hardcoded.

@@ -52,6 +52,7 @@ public class Main {
             cliControl.executeCommand(args);
         } catch (Exception e) {
             log.error(e.getMessage());
+            e.printStackTrace();
             cliControl.printFooter();
 //            throw new ShauniException(e.getCode(), e.getMessage());
         }

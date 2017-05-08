@@ -6,13 +6,10 @@ import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.Main;
 import com.fil.shauni.command.support.WorkSplitter;
-import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.export.support.DWildcardReplacer;
-import com.fil.shauni.command.export.support.TWildcardReplacer;
-import com.fil.shauni.command.export.support.UWildcardReplacer;
-import com.fil.shauni.command.export.support.WWildcardReplacer;
+import com.fil.shauni.command.Check;
+import com.fil.shauni.command.export.support.*;
 import com.fil.shauni.command.support.Context;
 import com.fil.shauni.command.support.SemicolonParameterSplitter;
 import com.fil.shauni.command.support.StatementManager;
@@ -31,9 +28,6 @@ import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import com.fil.shauni.command.export.support.WildcardReplacer;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
 
 /**
  *
@@ -86,13 +80,13 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
 
     private static final int FETCH_SIZE = 100;
 
-//    private boolean firstThread = false;
     public DefaultExporter(String name) {
         this(name, new HashSet<WildcardReplacer>() {
             {
                 add(Main.beanFactory.getBean(WWildcardReplacer.class));
                 add(Main.beanFactory.getBean(UWildcardReplacer.class));
                 add(Main.beanFactory.getBean(DWildcardReplacer.class));
+                add(Main.beanFactory.getBean(NWildcardReplacer.class));
             }
         });
     }
@@ -104,7 +98,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
     }
 
     @Override
-    public void validate() throws ShauniException {
+    public Check validate() throws ShauniException {
         this.objects = validator.validate(tables, queries);
         if (tables != null) {
             this.exportMode = new TableExportMode();
@@ -119,6 +113,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
         if (parallel < 1) {
             throw new ShauniException(1001, "Parallel degree must be greater than zero [" + currentThreadName + "]");
         }
+        return new Check();
     }
 
     @Override
@@ -128,10 +123,8 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
         this.batchSize = objects.size();
         this.adjustedParallel = batchSize <= parallel ? batchSize : parallel;
         if (adjustedParallel > 1) {
-            commandLinePresentation.printIf(firstThread, LogLevel.INFO, "{} parallelism enabled (requested: {}, adjusted: {})\n", LOG_NOTE, parallel, adjustedParallel);
+            commandLinePresentation.printIf(firstThread, LogLevel.INFO, "%s parallelism enabled (requested: %d, adjusted: %d)\n", LOG_NOTE, parallel, adjustedParallel);
         }
-
-//        commandLinePresentation.printIf(firstThread, LogLevel.INFO, "");
     }
 
     @Override
@@ -143,7 +136,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
     public void run() throws ShauniException {
         Map<Integer, String[]> workersJobs = workSplitter.splitWork(adjustedParallel, objects);
         for (int w = 0; w < this.adjustedParallel; w++) {
-            this.submit(w, workersJobs.get(w));
+            this.runMultiple(w, workersJobs.get(w));
         }
 
         for (int w = 0; w < this.adjustedParallel; w++) {
@@ -156,7 +149,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
         }
     }
 
-    private void submit(final int worker, final Object[] set) {
+    private void runMultiple(final int worker, final Object[] set) {
         log.debug("worker " + worker + " has been submitted");
         FutureTask<Void> future = new FutureTask<>(new Callable<Void>() {
             @Override
@@ -176,13 +169,13 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
     @Override
     public void export(final int workerId, final Object[] set) throws ShauniException {
         log.debug("worker {} is preparing for the export", workerId);
-        Connection connection = databasePoolManager.getConnection();
+        
+        Connection connection = super.getConnection(workerId);
         if (connection == null) {
-            log.error("> Worker {} could not connect to {}@{}", workerId, databasePoolManager.getSid(), databasePoolManager.getHost());
             return;
         }
-
-        log.debug("Connection established to {}@{} at {}", databasePoolManager.getSid(), databasePoolManager.getHost(), GeneralUtil.getCurrentDate(DateFormat.TIMEONLY));
+        
+        log.info("Worker {} connected to {}@{} at {}", workerId, databasePoolManager.getSid(), databasePoolManager.getHost(), GeneralUtil.getCurrentDate(DateFormat.TIMEONLY));
 
         Statement statement = statementManager.createStatement(connection, FETCH_SIZE);
         for (int objectId = 0; objectId < set.length; objectId++) {
@@ -211,17 +204,17 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
             Filename fn = new DefaultFilename(path, name);
 
             String timestamp = GeneralUtil.getCurrentDate(DateFormat.CLEAN_DATETIME); // FIXME: Should be modifiable from client..
-            Context ctx = new Context(workerId, objectId, timestamp, obj);
+            Context ctx = new Context(workerId, objectId, timestamp, obj, currentThreadName);
 
             for (WildcardReplacer replacer : replacers) {
                 fn = replacer.replace(fn, ctx);
             }
 
             log.debug("Path will be: {}", fn.getPath());
-            commandLinePresentation.print(LogLevel.DEBUG, " . . (worker %d) exporting %-40s", workerId, exportMode.getShortName(obj) + "..");
+            commandLinePresentation.print(LogLevel.INFO, " . . (worker %d) exporting %-40s", workerId, exportMode.getShortName(obj) + "..");
             int rows = 0;
             try {
-                rows = write(null, fn);
+                rows = write(rs, fn);
             } catch (IOException ex) {
                 throw new ShauniException(1005, "Error while writing data to the file " + filename + "\n -> " + ex.getMessage());
             } catch (SQLException ex) {
@@ -236,7 +229,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
     @Override
     public void takedown() {
         super.takedown();
-        ThreadPoolManager.shutdownPool();
+//        ThreadPoolManager.shutdownPool();
         futures.clear();
     }
 }
