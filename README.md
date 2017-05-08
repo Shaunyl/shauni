@@ -6,7 +6,7 @@ Library Used: JCommander, Spring, JDBC
 Current version is **1.0.1 Alpha**  
 
 ## **Changelog**  
- Introduced Chain of Responsability pattern to cope with the filename building through wilcards  
+ Introduced Chain of Responsability pattern to cope with the filename building through wildcards  
  Introduced a way to run jobs simultaneously on different servers/instances  
  Added parallism to the Export Command
  Connection strings are now encrypted in the configuration file multidb.cry [not yet supported]  
