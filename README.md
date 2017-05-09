@@ -13,7 +13,6 @@ Current version is **1.0.1 Alpha**
  Up bounded the parameter **cluster**.<br/>
  
 ## **Issues & Improvements**<br/>
-Upper bound cluster parameter<br/>
 Add a property to choose if to use a crypted configuration file or a not<br/>
 Add the commands **viewcs** and **removecs** to copy easily with crypted configuration files<br/>
 Add the possibility to use a specific configuration file (not only multidb.cfg or multidb.cry)<br/>
