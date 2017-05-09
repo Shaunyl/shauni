@@ -108,7 +108,7 @@ public abstract class DatabaseCommandControl extends Command {
         }
         return endTime;
     }
-    
+
     public Connection getConnection(int workerId) throws ShauniException {
         Connection connection = databasePoolManager.getConnection(); // this need to be here because every thread needs to create a different connection.
         if (connection == null) {
@@ -126,7 +126,15 @@ public abstract class DatabaseCommandControl extends Command {
 
     public void setConnections(final String[] urls) {
         for (String u : urls) {
+            if ("".equals(u)) {
+                log.info("Connection string not set (missing the '=' sign?). It will be skipped.");
+                continue;
+            }
             Map<String, String> map = GeneralUtil.parseConnectionString(u);
+            if (map == null) {
+                log.info("Connection string is not valid. It will be skipped.");
+                continue;
+            }
             String user = map.get("user").toUpperCase();
             String password = map.get("password");
 

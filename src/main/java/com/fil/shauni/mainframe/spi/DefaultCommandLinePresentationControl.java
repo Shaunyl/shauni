@@ -140,8 +140,10 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 work = new DefaultWorkSplitter().splitWork(cluster, urls);
                 isDbCommand = true;
                 int urlsSize = urls.size();
-                if (cluster > urlsSize) {
-                    cluster = urlsSize;
+                int cores = Runtime.getRuntime().availableProcessors();
+                int maxCluster = Math.min(urlsSize, cores);
+                if (cluster > maxCluster) {
+                    cluster = maxCluster;
                 }
                 
             }
