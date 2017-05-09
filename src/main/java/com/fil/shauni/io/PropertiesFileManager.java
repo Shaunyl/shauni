@@ -2,6 +2,7 @@ package com.fil.shauni.io;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -64,7 +65,9 @@ public class PropertiesFileManager implements FileManager {
         Properties prop = new Properties();
 
         try {
-            prop.load(new FileInputStream(filename));
+            try (InputStream is = new FileInputStream(filename)) {
+                prop.load(is);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }

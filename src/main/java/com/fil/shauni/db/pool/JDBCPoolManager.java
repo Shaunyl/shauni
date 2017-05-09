@@ -1,11 +1,17 @@
 package com.fil.shauni.db.pool;
 
+import com.fil.shauni.Configuration;
+import com.fil.shauni.log.LogLevel;
+import com.fil.shauni.mainframe.ui.CommandLinePresentation;
+import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import javax.inject.Inject;
 import lombok.extern.log4j.Log4j2;
+import oracle.jdbc.OracleConnection;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 
@@ -18,9 +24,9 @@ import org.apache.commons.dbcp.BasicDataSourceFactory;
 public class JDBCPoolManager implements DatabasePoolManager {
 
     private BasicDataSource ds;
-    
+
     private static final int POOL_SIZE = 5;
-    
+
     @Override
     public void configure(String url, String user, String passwd, String host, String sid) {
 //        this.url = url;
@@ -30,9 +36,11 @@ public class JDBCPoolManager implements DatabasePoolManager {
         this.sid = sid;
         this.configure(url, user, passwd, host, sid, POOL_SIZE);
     }
-    
+
     private String host, sid;
-    
+
+    private String timeout = null;
+
     @Override
     public void configure(String url, String user, String passwd, String host, String sid, int poolsize) {
 
@@ -50,6 +58,16 @@ public class JDBCPoolManager implements DatabasePoolManager {
 
             properties.put("defaultAutoCommit", String.valueOf(Boolean.FALSE));
             properties.put("maxActive", String.valueOf(poolsize));
+            // If cannot read the file? BUG.. FIXME
+            timeout = Configuration.getProperty("database.timeout");
+            if (timeout == null) {
+                String thr = Thread.currentThread().getName();
+                if (thr.equals("thread-1")) { //FIXME.. if the name of the thread changes, this code does not work.
+                    log.warn("Global property database.timeout not found. Timeout will be reset to 5s by default.\n");
+                }
+                timeout = "5000";
+            }
+            properties.setProperty(OracleConnection.CONNECTION_PROPERTY_THIN_NET_CONNECT_TIMEOUT, timeout);
 
             StringBuilder connectionProperties = new StringBuilder();
             for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
@@ -89,10 +107,9 @@ public class JDBCPoolManager implements DatabasePoolManager {
             }
             conn = ds.getConnection();
             conn.setAutoCommit(false); //FIXME: hardcoded.
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("Connection pool exception\n  ->  {}", e.getMessage());
-        } 
-        finally {
+        } finally {
         }
         return conn;
     }

@@ -1,0 +1,23 @@
+BUG 101.001
+========== --> OPEN
+Worker 0 connected to XE@CHIARA at 12:10:39.490
+Worker 1 connected to XE@CHIARA at 12:10:39.530
+ . . (worker 1) exporting SYS.DBA_REGISTRY..                      
+ . . (worker 0) exporting SYS.DBA_SOURCE..                        
+  SHA-01004: Thread 0 interrupted abnormally..
+ --> com.fil.shauni.exception.ShauniException:   SHA-01020:   SHA-01005: Error while writing data to the file %t-%d_[%n-%w%u]
+ -> out\SYS.DBA_SOURCE-090517-1210_[thread-1-00].txt (Impossibile trovare il percorso specificato)
+
+Exception shows two errors instead of one.
+
+BUG 101.002
+========== --> CLOSED
+Syntax "Task # finished. Elapsed time XX ms" does not let you understand what task is referring to.
+
+ISSUE 101.001
+========== --> OPEN
+Timeout is fixed to 2 seconds. Should be adjustable by the client
+
+ADDING 102.1
+========== --> OPEN
+Add support for MySQL

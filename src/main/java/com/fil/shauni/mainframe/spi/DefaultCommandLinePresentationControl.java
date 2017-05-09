@@ -2,6 +2,7 @@ package com.fil.shauni.mainframe.spi;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.fil.shauni.Configuration;
 import com.fil.shauni.command.Command;
 import com.fil.shauni.command.CommandLineSupporter;
 import com.fil.shauni.command.ConfigCommandControl;
@@ -91,6 +92,14 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Override
     public void executeCommand(final String args[]) throws Exception {
+        
+        // Initialize configuration.. NOT HERE.. FIXME
+        try {
+            Class.forName("com.fil.shauni.Configuration");
+        } catch (ClassNotFoundException e) {
+            throw new ShauniException(600, "Configuration file " + Configuration.MAIN_CFG_PATH + " cannot be loaded.");
+        }
+        
 
         if (args != null && args.length > 0) {
         } else {
@@ -202,6 +211,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                         log.debug("Thread is done.");
                     }
                 } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
                     throw new ShauniException(600, e.getMessage());
                 }
             }

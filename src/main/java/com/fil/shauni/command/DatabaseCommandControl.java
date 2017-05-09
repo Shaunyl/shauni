@@ -97,7 +97,7 @@ public abstract class DatabaseCommandControl extends Command {
                 this.run();
                 long finishTime = System.currentTimeMillis() - startTime;;
                 endTime += finishTime;
-                log.info("Task #{} finished. Elapsed Time: {} ms", i, finishTime / 1e3);
+                log.info("Session {} task #{} finished in {} ms", currentThreadName, i, finishTime / 1e3);
 
                 this.takedown();
 //                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> end");
