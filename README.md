@@ -1,5 +1,5 @@
 # **Shauni**
-Command line based tool to perform automated actions on different Oracle databases on multiple servers simultaneously
+Command line based tool to perform automated actions on different Oracle databases on multiple servers simultaneously.
 
 Libraries used are JCommander, Spring, JDBC, Log4J, Lombok
 
