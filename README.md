@@ -1,19 +1,18 @@
 # **Shauni**
 Command line based tool to perform automated actions on different Oracle databases on multiple servers simultaneously
 
-Library Used: JCommander, Spring, JDBC
+Libraries used are JCommander, Spring, JDBC, Log4J
 
 Current version is **1.0.1 Alpha**  
 
 ## **Changelog**  
- Introduced Chain of Responsability pattern to cope with the filename building through wildcards  
- Introduced a way to run jobs simultaneously on different servers/instances  
- Added parallism to the Export Command
- Connection strings are now encrypted in the configuration file multidb.cry [not yet supported]  
- New command **addcs** which let you add connection string to the encrypted file [alpha]
+ Introduced Chain of Responsability pattern to cope with the filename building through wildcards.  
+ Introduced a way to run jobs simultaneously on different servers/instances.  
+ Added parallism to the Export Command.
+ Added the property **database.timeout** to specify the timeout of database connections.<br/>
+ Up bounded the parameter **cluster**.<br/>
  
 ## **Issues & Improvements**<br/>
-Upper bound cluster parameter<br/>
 Add a property to choose if to use a crypted configuration file or a not<br/>
 Add the commands **viewcs** and **removecs** to copy easily with crypted configuration files<br/>
 Add the possibility to use a specific configuration file (not only multidb.cfg or multidb.cry)<br/>
