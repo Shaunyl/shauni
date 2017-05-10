@@ -117,16 +117,16 @@ public class ExportTestMock extends TestCase {
         String filename = "out/%i-%t-%d.txt";
         Map<String, Integer> colformats = new HashMap<>();
         colformats.put("username", 120);
-
-        DefaultExporter cmd = beanFactory.getBean(TabularExporter.class);
-//        DefaultExporterControl cmd = new TabularExporterControl();
-        cmd.setParallel(parallel);
-        cmd.setTables(tables);
-//        cmd.setQueries(tables);
-        cmd.setFormat(format);
-        cmd.setFilename(filename);
-        ((TabularExporter) cmd).setColformats(colformats);
-
-        cmd.execute();
+//
+//        DefaultExporter cmd = beanFactory.getBean(TabularExporter.class);
+////        DefaultExporterControl cmd = new TabularExporterControl();
+//        cmd.setParallel(parallel);
+//        cmd.setTables(tables);
+////        cmd.setQueries(tables);
+//        cmd.setFormat(format);
+//        cmd.setFilename(filename);
+//        ((TabularExporter) cmd).setColformats(colformats);
+//
+//        cmd.execute();
     }
 }

@@ -29,14 +29,8 @@ import org.springframework.stereotype.Component;
  */
 @Log4j @Component(value = "monmem") @Parameters(separators = "=") @NoArgsConstructor
 public class DefaultMonMem extends DatabaseCommandControl {
-//    @Parameter(required = true, arity = 1)
-//    private final List<String> cmd = Lists.newArrayList(1);
-    
     @Parameter(names = "-directory", arity = 1)
     protected String directory = ".";
-    
-    @Inject
-    private CommandLinePresentation commandLinePresentation;
 
     @Inject
     private StatementManager statementManager;

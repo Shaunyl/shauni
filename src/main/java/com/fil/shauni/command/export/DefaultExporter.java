@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Shaunyl
  */
-@Log4j2 @NoArgsConstructor @Component("exp") @Scope("prototype")
+@Log4j2 @NoArgsConstructor @Component("exp-off") @Scope("prototype")
 public abstract class DefaultExporter extends DatabaseCommandControl implements Exporter {
 
     @Setter @Parameter(names = "-parallel", description = "parallelism Shauni will try to use to export data")
@@ -201,7 +201,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
 
             String path = String.format("%s/%s", directory, filename);
 
-            Filename fn = new DefaultFilename(path, name);
+            Filename fn = new DefaultFilename(path, filename);
 
             String timestamp = GeneralUtil.getCurrentDate(DateFormat.CLEAN_DATETIME); // FIXME: Should be modifiable from client..
             Context ctx = new Context(workerId, objectId, timestamp, obj, currentThreadName);

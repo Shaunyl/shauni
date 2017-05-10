@@ -10,6 +10,8 @@ import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.config.DefaultCSAdder;
 import com.fil.shauni.command.config.DefaultCSViewer;
 import com.fil.shauni.command.export.DefaultExporter;
+import com.fil.shauni.command.export.SpringExporter;
+import com.fil.shauni.command.memory.DefaultMonMem;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
 import com.fil.shauni.command.support.DefaultWorkSplitter;
 import com.fil.shauni.concurrency.pool.FixedThreadPoolManager;
@@ -56,13 +58,11 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     Map<String, String> project, buildNumber;
 
-    // TEMPME:
-    boolean isCrypto = false;
-
     // List of commands goes here:
     static {
-        addCommand(DefaultExporter.class, "exp");
+        addCommand(SpringExporter.class, "exp");
         addCommand(DefaultMonTbs.class, "montbs");
+        addCommand(DefaultMonMem.class, "monmem");
 
         // Configuration commands
         addCommand(DefaultCSAdder.class, "addcs");
@@ -124,7 +124,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
         // Exporter Format -- FIXME. Don't like this here...
         String ecmd = cmd;
-        if (this.clazz.isAssignableFrom(DefaultExporter.class)) {
+        if (this.clazz.isAssignableFrom(SpringExporter.class)) {
             ecmd += cliSupporter.getValue("format", String.class);
             if (ecmd.equals("exp")) {
                 ecmd += "tab";
@@ -135,7 +135,15 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
         AbstractCommandFactory factory = new CommandFactory(fcommand, clazz);
 
-        CommandContext ctx = new CommandContext(isCrypto);
+        // FIXME: duplicate code...
+        String cryptable = Configuration.getProperty("database.configuration.file.cryptable");
+        if (cryptable == null) {
+            log.warn("Global property 'database.configuration.file.cryptable' not found. It will be reset to 'false'.");
+            cryptable = "false";
+        }
+        boolean isCryptable = Boolean.parseBoolean(cryptable);
+        
+        CommandContext ctx = new CommandContext(isCryptable);
 
         Class<?> superclass = this.clazz.getSuperclass();
 
@@ -193,11 +201,11 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     printHelp();
                     break; // for help no need to invoke different threads..
                 }
-                if (c.isCluster()) { // FIXME
+//                if (c.isCluster()) { // FIXME
                     threads[node] = pool.submit(c);
-                } else {
-                    c.execute();
-                }
+//                } else {
+//                    c.execute(); // BUG, threads[i] will be null if the code passes by here..
+//                }
             }
             FixedThreadPoolManager.shutdownPool();
             Long[] results = new Long[threads.length];

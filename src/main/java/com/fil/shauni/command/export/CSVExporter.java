@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  * @author Shaunyl
  */
 @Log4j2 @Component(value = "expcsv") @Parameters(separators = "=") @Scope("prototype")
-public class CSVExporter extends DefaultExporter {
+public class CSVExporter extends SpringExporter {
     
     @Parameter(names = "-start", arity = 1, validateWith = PositiveInteger.class, description = "Line at which starting to export")
     private Integer start = -1;
@@ -37,11 +37,11 @@ public class CSVExporter extends DefaultExporter {
         super("exp");
     }
     
-    public CSVExporter(@Qualifier String name) {
+    public CSVExporter(String name) {
         super(name);
     }
     
-    public CSVExporter(@Qualifier String name, @Qualifier Set<WildcardReplacer> replacers) {
+    public CSVExporter(String name, Set<WildcardReplacer> replacers) {
         super(name, replacers);
     }
     

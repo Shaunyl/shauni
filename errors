@@ -1,3 +1,5 @@
+exp -format=tab -tables=sys.dba_source,sys.dba_registry -parallel=1 -cluster=1 -directory=out -filename=%t-%d_[%n-%w%u]
+
 BUG 101.001
 ========== --> OPEN
 Worker 0 connected to XE@CHIARA at 12:10:39.490
@@ -21,3 +23,21 @@ Timeout is fixed to 2 seconds. Should be adjustable by the client
 ADDING 102.1
 ========== --> OPEN
 Add support for MySQL
+
+BUG 101.003
+========== --> OPEN
+When a filename already exists, it is overwritte. The name should be modified at runtime to avoid this.
+
+BUG 101.004
+========== --> OPEN
+The number of warnings is not updated correctly
+=====
+parameter -script=test.gy
+
+Shauni will take the Groovy script and will execute it to filter/extend options from command line.
+Example:
+
+# Prevent exporter to export table dba_users while connected to URL1
+
+context.setConnections(url1);
+context.excludeTables(dba_users);

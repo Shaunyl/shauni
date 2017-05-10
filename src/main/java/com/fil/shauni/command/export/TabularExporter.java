@@ -2,7 +2,10 @@ package com.fil.shauni.command.export;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameters;
+import com.fil.shauni.command.export.support.WildcardReplacer;
 import com.fil.shauni.command.writer.TabularWriter;
+import com.fil.shauni.util.DateFormat;
+import com.fil.shauni.util.GeneralUtil;
 import com.fil.shauni.util.file.Filename;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -17,7 +21,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Log4j2 @Component(value = "exptab") @Parameters(separators = "=") @Scope("prototype")
-public class TabularExporter extends DefaultExporter {
+public class TabularExporter extends SpringExporter {
     
     @Setter @DynamicParameter(names = "-C", description = "Pad the columns")
     private Map<String, Integer> colformats = new HashMap<>();
@@ -26,8 +30,12 @@ public class TabularExporter extends DefaultExporter {
         super("exp");
     }
     
-    public TabularExporter(@Qualifier String name) {
+    public TabularExporter(String name) {
         super(name);
+    }
+    
+    public TabularExporter(String name, Set<WildcardReplacer> replacers) {
+        super(name, replacers);
     }
     
     @Override
@@ -36,7 +44,7 @@ public class TabularExporter extends DefaultExporter {
         
         int rows = writer.writeAll(rs, true);
         writer.close();
-        log.info("Dump {} created successfully", filename.getName() + ".txt");
+        log.info("Dump {}.txt created successfully at {}", filename.getName(), GeneralUtil.getCurrentDate(DateFormat.TIMEONLY));
         return rows;
     }
 }

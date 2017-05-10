@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import javax.crypto.SecretKey;
 import javax.inject.Inject;
+import javax.sql.DataSource;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
@@ -53,6 +55,8 @@ public abstract class DatabaseCommandControl extends Command {
     protected boolean firstThread = false;
 
     protected String state = "completed";
+
+    protected JdbcTemplate jdbc;
 
     @Override
     public Long call() throws Exception {
@@ -91,6 +95,7 @@ public abstract class DatabaseCommandControl extends Command {
 //                databasePoolManager = new JDBCPoolManager();
                 DbConnection _dbc = dbcs.get(i);
                 databasePoolManager.configure(_dbc.getUrl(), _dbc.getUser(), _dbc.getPasswd(), _dbc.getHost(), _dbc.getSid());
+                this.setDataSource(databasePoolManager.getDataSource());
 
 //                commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "run() -> start");
                 long startTime = System.currentTimeMillis();
@@ -107,6 +112,11 @@ public abstract class DatabaseCommandControl extends Command {
             state = "aborted";
         }
         return endTime;
+    }
+
+    public void setDataSource(DataSource ds) {
+        this.jdbc = new JdbcTemplate(ds);
+        this.jdbc.setFetchSize(100); // FIXME: not here.. (should override PreparedStatementCreator and pass it to jdbcTemplate
     }
 
     public Connection getConnection(int workerId) throws ShauniException {

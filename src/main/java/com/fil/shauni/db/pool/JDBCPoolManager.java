@@ -1,15 +1,12 @@
 package com.fil.shauni.db.pool;
 
 import com.fil.shauni.Configuration;
-import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.mainframe.ui.CommandLinePresentation;
-import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oracle.jdbc.OracleConnection;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -23,7 +20,8 @@ import org.apache.commons.dbcp.BasicDataSourceFactory;
 @Log4j2 // @Component
 public class JDBCPoolManager implements DatabasePoolManager {
 
-    private BasicDataSource ds;
+    @Getter
+    private BasicDataSource dataSource;
 
     private static final int POOL_SIZE = 5;
 
@@ -81,17 +79,17 @@ public class JDBCPoolManager implements DatabasePoolManager {
             }
             properties.put("connectionProperties", connectionProperties.toString());
 
-            ds = (BasicDataSource) BasicDataSourceFactory.createDataSource(properties);
+            dataSource = (BasicDataSource) BasicDataSourceFactory.createDataSource(properties);
 
         } catch (Exception e) {
             String message = "Could not create a connection pool: " + e;
-            if (ds != null) {
+            if (dataSource != null) {
                 try {
-                    ds.close();
+                    dataSource.close();
                 } catch (Exception e2) {
                     // ignore
                 }
-                ds = null;
+                dataSource = null;
             }
             throw new RuntimeException(message, e);
         }
@@ -101,11 +99,11 @@ public class JDBCPoolManager implements DatabasePoolManager {
     public Connection getConnection() {
         Connection conn = null;
         try {
-            if (ds == null) {
+            if (dataSource == null) {
                 log.error("Data Source is null.");
                 return null;
             }
-            conn = ds.getConnection();
+            conn = dataSource.getConnection();
             conn.setAutoCommit(false); //FIXME: hardcoded.
         } catch (SQLException e) {
             log.error("Connection pool exception\n  ->  {}", e.getMessage());
@@ -128,9 +126,9 @@ public class JDBCPoolManager implements DatabasePoolManager {
     @Override
     public void close() throws RuntimeException {
         try {
-            if (ds != null) {
-                ds.close();
-                ds = null;
+            if (dataSource != null) {
+                dataSource.close();
+                dataSource = null;
             } else {
             }
         } catch (Exception e) {

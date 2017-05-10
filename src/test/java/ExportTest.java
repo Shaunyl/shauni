@@ -124,16 +124,16 @@ public class ExportTest {
         Map<String, Integer> colformats = new HashMap<>();
         colformats.put("username", 120);
 
-        DefaultExporter cmd = beanFactory.getBean(TabularExporter.class);
+//        DefaultExporter cmd = beanFactory.getBean(TabularExporter.class);
 //        DefaultExporterControl cmd = new TabularExporterControl();
-        cmd.setParallel(parallel);
-        cmd.setTables(tables);
+//        cmd.setParallel(parallel);
+//        cmd.setTables(tables);
 //        cmd.setQueries(tables);
-        cmd.setFormat(format);
-        cmd.setFilename(filename);
-        ((TabularExporter) cmd).setColformats(colformats);
+//        cmd.setFormat(format);
+//        cmd.setFilename(filename);
+//        ((TabularExporter) cmd).setColformats(colformats);
 
-        cmd.execute();
+//        cmd.execute();
     }
 
 //    @Test

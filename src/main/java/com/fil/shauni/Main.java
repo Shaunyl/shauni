@@ -46,6 +46,7 @@ public class Main {
 //                System.out.println(line);
 //            }
 //        }
+
         CommandLinePresentationControl cliControl = beanFactory.getBean(CommandLinePresentationControl.class);
         try {
             cliControl.printBanner();
@@ -54,7 +55,6 @@ public class Main {
             log.error(e.getMessage());
             e.printStackTrace();
             cliControl.printFooter();
-//            throw new ShauniException(e.getCode(), e.getMessage());
         }
     }
 
