@@ -7,17 +7,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oracle.jdbc.OracleConnection;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Shaunyl
  * @version v0.1 basic hardcoded pool
  */
-@Log4j2 // @Component
+@Log4j2
 public class JDBCPoolManager implements DatabasePoolManager {
 
     @Getter
@@ -45,6 +47,7 @@ public class JDBCPoolManager implements DatabasePoolManager {
         try {
             Properties properties = new Properties();
 
+            // should read the driver from the shauni.properties
             properties.put("driverClassName", "oracle.jdbc.driver.OracleDriver");
             properties.put("url", url);
 

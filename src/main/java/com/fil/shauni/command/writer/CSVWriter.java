@@ -208,7 +208,6 @@ public class CSVWriter implements WriterManager {
     @Override
     public int writeAll(@NonNull final ResultSet rs, boolean includeColumnNames)
             throws SQLException, IOException {
-
         ResultSetMetaData metadata = rs.getMetaData();
 
         if (includeColumnNames) {

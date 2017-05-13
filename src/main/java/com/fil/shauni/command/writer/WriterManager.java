@@ -13,7 +13,7 @@ public interface WriterManager {
 
     public String[] getValidFileExtensions();
 
-    public void writeAll(final List allLines) throws IOException;
+    public void writeAll(final List<String[]> allLines) throws IOException;
 
     public int writeAll(final ResultSet rs, final boolean includeColumnNames)
             throws SQLException, IOException;

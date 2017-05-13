@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
@@ -25,6 +24,8 @@ public class TabularExporter extends SpringExporter {
     
     @Setter @DynamicParameter(names = "-C", description = "Pad the columns")
     private Map<String, Integer> colformats = new HashMap<>();
+    
+    private final static String EXTENSION = ".txt";
 
     public TabularExporter() {
         super("exp");
@@ -40,11 +41,12 @@ public class TabularExporter extends SpringExporter {
     
     @Override
     public int write(ResultSet rs, Filename filename) throws SQLException, IOException {
-        TabularWriter writer = new TabularWriter(new FileWriter(filename.getPath() + ".txt"), colformats);
+        String file = filename.getPath() + EXTENSION;
+        TabularWriter writer = new TabularWriter(new FileWriter(file), colformats);
         
         int rows = writer.writeAll(rs, true);
         writer.close();
-        log.info("Dump {}.txt created successfully at {}", filename.getName(), GeneralUtil.getCurrentDate(DateFormat.TIMEONLY));
+        log.info("Dump {} created successfully.", file);
         return rows;
     }
 }

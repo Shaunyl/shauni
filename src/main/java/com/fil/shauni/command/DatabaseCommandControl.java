@@ -57,7 +57,7 @@ public abstract class DatabaseCommandControl extends Command {
     protected String state = "completed";
 
     protected JdbcTemplate jdbc;
-
+    
     @Override
     public Long call() throws Exception {
         currentThreadName = Thread.currentThread().getName();
@@ -90,9 +90,8 @@ public abstract class DatabaseCommandControl extends Command {
             commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "\nSetting up..");
             this.setup();
 //            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "setup() -> end\n");
-            databasePoolManager = new JDBCPoolManager();
+            databasePoolManager = new JDBCPoolManager(); // Untestable...try to inject in the constructor...
             for (int i = 0; i < dbcs.size(); i++) {
-//                databasePoolManager = new JDBCPoolManager();
                 DbConnection _dbc = dbcs.get(i);
                 databasePoolManager.configure(_dbc.getUrl(), _dbc.getUser(), _dbc.getPasswd(), _dbc.getHost(), _dbc.getSid());
                 this.setDataSource(databasePoolManager.getDataSource());
@@ -114,7 +113,9 @@ public abstract class DatabaseCommandControl extends Command {
         return endTime;
     }
 
+    DataSource ds;
     public void setDataSource(DataSource ds) {
+        this.ds = ds;
         this.jdbc = new JdbcTemplate(ds);
         this.jdbc.setFetchSize(100); // FIXME: not here.. (should override PreparedStatementCreator and pass it to jdbcTemplate
     }

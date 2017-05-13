@@ -1,39 +1,38 @@
-Shauni - 1.0.1.79a - Built at 2017-05-08 16:10
+Shauni 1.0.1.97a - Built at 2017-05-13 01:37
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  exp -format=tab -tables=sys.dba_source,sys.dba_registry -parallel=3 -cluster=2 -directory=out -filename=%t-%d_[%n-%w%u]
+  exp -tables=sys.dba_users,sys.dba_registry -parallel=2 -cluster=6 -directory=out -filename=%t-%d_[%n-%w%u]
 
-Session thread-1 started at 16:30:33.913
+Cluster parameter adjusted to 2 (max cores available)
 
-Session thread-2 started at 16:30:33.913
+Session thread-1 started at 12:38:00.35
 
-  Note: parallelism enabled (requested: 3, adjusted: 2)
+Session thread-2 started at 12:38:00.38
 
-Worker 0 connected to XE@shaunil.it at 16:30:34.107
-Worker 0 connected to XE@shaunil.it at 16:30:34.148
-Worker 1 connected to XE@shaunil.it at 16:30:34.150
-Worker 1 connected to XE@shaunil.it at 16:30:34.155
- . . (worker 1) exporting SYS.DBA_REGISTRY..                      
- . . (worker 0) exporting SYS.DBA_SOURCE..                        
- . . (worker 1) exporting SYS.DBA_REGISTRY..                      
- . . (worker 0) exporting SYS.DBA_SOURCE..                        
-Dump /SYS.DBA_REGISTRY-080517-1630_[thread-1-10].txt created successfully
-Dump /SYS.DBA_REGISTRY-080517-1630_[thread-2-10].txt created successfully
-  -> exported SYS.DBA_REGISTRY                                                     5 rows
-  -> exported SYS.DBA_REGISTRY                                                     5 rows
-Dump /SYS.DBA_SOURCE-080517-1630_[thread-1-00].txt created successfully
-  -> exported SYS.DBA_SOURCE                                                  231901 rows
-Task #0 finished. Elapsed Time: 2.387 ms
+  Note: parallelism enabled (requested: 2, adjusted: 2)
 
-Session thread-1 completed at 16:30:36.327 with 0 warning(s)
-Elapsed time: 2.387 s
-Dump /SYS.DBA_SOURCE-080517-1630_[thread-2-00].txt created successfully
-  -> exported SYS.DBA_SOURCE                                                  231901 rows
-Task #0 finished. Elapsed Time: 2.407 ms
+ . . (worker 0) exporting SYS.DBA_USERS@LOCALHOST..                             
+ . . (worker 1) exporting SYS.DBA_REGISTRY@LOCALHOST..                             
+ . . (worker 0) exporting SYS.DBA_USERS@FILIPPO-PC..                            
+ . . (worker 1) exporting SYS.DBA_REGISTRY@FILIPPO-PC..                            
+SHA-01004: Thread 0 interrupted abnormally..
+ --> org.springframework.jdbc.CannotGetJdbcConnectionException: Could not get JDBC Connection;
+   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Listener refused the connection
+   with the following error:
+ORA-12505, TNS:listener does not currently know of SID given in connect descriptor
+ )
 
-Session thread-2 completed at 16:30:36.346 with 0 warning(s)
-Elapsed time: 2.407 s
+Session thread-2 aborted at 12:38:00.328 with 0 warning(s)
+Elapsed time: 0.0 s
+Dump out/SYS.DBA_REGISTRY-130517-1238_[thread-1-10].txt created successfully.
+  -> exported SYS.DBA_REGISTRY@FILIPPO-PC                                          5 rows
+Dump out/SYS.DBA_USERS-130517-1238_[thread-1-00].txt created successfully.
+  -> exported SYS.DBA_USERS@FILIPPO-PC                                            12 rows
+Session thread-1 task #0 finished in 0.734 ms
+
+Session thread-1 completed at 12:38:00.858 with 0 warning(s)
+Elapsed time: 0.734 s
 
 Summary:
- -> [exp]	min: 2387 ms	max: 2407 ms	avg: 2397 ms
+ -> [exp]	min: 0 ms	max: 734 ms	avg: 367 ms

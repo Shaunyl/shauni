@@ -3,6 +3,7 @@ package com.fil.shauni.command.export;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.validators.PositiveInteger;
+import com.fil.shauni.Configuration;
 import com.fil.shauni.Main;
 import com.fil.shauni.command.Check;
 import com.fil.shauni.command.DatabaseCommandControl;
@@ -38,8 +39,6 @@ import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -100,7 +99,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
         });
     }
 
-    @Autowired
     public SpringExporter(String name, Set<WildcardReplacer> replacers) {
         this.replacers = replacers;
         this.name = name;
@@ -154,6 +152,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
                 throw new ShauniException(1004, String.format("Thread %d interrupted abnormally..\n --> %s", w, e.getMessage()));
             }
         }
@@ -186,6 +185,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
             String path = String.format("%s/%s", directory, filename);
             Filename fn = new DefaultFilename(path, filename);
 
+            // FIXME: Give the possibility to choose the date format to the clients
             String timestamp = GeneralUtil.getCurrentDate(DateFormat.CLEAN_DATETIME); // FIXME: Should be modifiable from client..
             Context ctx = new Context(workerId, objectId, timestamp, obj, currentThreadName);
 
@@ -193,15 +193,16 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
                 fn = replacer.replace(fn, ctx);
             }
 
-            log.debug("Path will be: {}", fn.getPath());
-            commandLinePresentation.print(LogLevel.INFO, " . . (worker %d) exporting %-40s", workerId, exportMode.getShortName(obj) + "..");
+            commandLinePresentation.printIf(firstThread && objectId == 0 && workerId == 0, LogLevel.DEBUG, "Output directory is: %s/%s", Configuration.ROOT_DIRECTORY, directory);
+            commandLinePresentation.print(LogLevel.INFO, " . . (worker %d) exporting %s@%-40s", workerId, exportMode.getShortName(obj), databasePoolManager.getHost() + "..");
+
             int rows = jdbc.query(sql, new ExporterExtractor(this, fn));
-            commandLinePresentation.print(LogLevel.INFO, "  -> %s %-60s%10d%5s", "exported", exportMode.getName(obj), rows, " rows");
+            commandLinePresentation.print(LogLevel.INFO, "  -> %s %-60s%10d%5s", "exported", exportMode.getName(obj) + "@" + databasePoolManager.getHost(), rows, " rows");
         }
     }
 
     protected abstract int write(final ResultSet rs, Filename filename) throws SQLException, IOException;
-    
+
     @Override
     public void takedown() {
         super.takedown();

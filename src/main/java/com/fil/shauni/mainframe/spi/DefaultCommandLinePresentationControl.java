@@ -47,7 +47,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Inject
     private PropertiesFileManager propertiesFileManager;
-    
+
     @Inject
     private CommandBuilder builder;
 
@@ -92,14 +92,13 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Override
     public void executeCommand(final String args[]) throws Exception {
-        
+
         // Initialize configuration.. NOT HERE.. FIXME
         try {
             Class.forName("com.fil.shauni.Configuration");
         } catch (ClassNotFoundException e) {
             throw new ShauniException(600, "Configuration file " + Configuration.MAIN_CFG_PATH + " cannot be loaded.");
         }
-        
 
         if (args != null && args.length > 0) {
         } else {
@@ -125,10 +124,15 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         // Exporter Format -- FIXME. Don't like this here...
         String ecmd = cmd;
         if (this.clazz.isAssignableFrom(SpringExporter.class)) {
-            ecmd += cliSupporter.getValue("format", String.class);
-            if (ecmd.equals("exp")) {
+            String format = cliSupporter.getValue("format", String.class);
+            if (format == null) {
                 ecmd += "tab";
+            } else {
+                ecmd += format;
             }
+//            if (ecmd.equals("exp")) {
+//                ecmd += "tab";
+//            }
         }
 
         final String fcommand = ecmd;
@@ -142,7 +146,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             cryptable = "false";
         }
         boolean isCryptable = Boolean.parseBoolean(cryptable);
-        
+
         CommandContext ctx = new CommandContext(isCryptable);
 
         Class<?> superclass = this.clazz.getSuperclass();
@@ -154,20 +158,23 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 builder.initialize(ctx);
 
                 List<String> urls = ctx.getUrls();
-                work = new DefaultWorkSplitter().splitWork(cluster, urls);
-                isDbCommand = true;
                 int urlsSize = urls.size();
-                int cores = Runtime.getRuntime().availableProcessors();
+                int cores = Runtime.getRuntime().availableProcessors(); // FIXME, not here...
                 int maxCluster = Math.min(urlsSize, cores);
                 if (cluster > maxCluster) {
                     cluster = maxCluster;
+                    String coresMex = urlsSize < cores ? "due to connections configuration" : "max cores available";
+                    log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
                 }
                 
+                work = new DefaultWorkSplitter().splitWork(cluster, urls);
+                isDbCommand = true;
+
             }
             if (work == null) {
                 throw new ShauniException(600, "Could not split the work.");
             }
-            
+
             Future<Long>[] threads = new Future[cluster];
             ExecutorService pool = FixedThreadPoolManager.getInstance(cluster,
                     new BasicThreadFactory.Builder().namingPattern("thread-%d").daemon(true).build());
@@ -202,7 +209,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     break; // for help no need to invoke different threads..
                 }
 //                if (c.isCluster()) { // FIXME
-                    threads[node] = pool.submit(c);
+                threads[node] = pool.submit(c);
 //                } else {
 //                    c.execute(); // BUG, threads[i] will be null if the code passes by here..
 //                }

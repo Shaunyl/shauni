@@ -2,11 +2,13 @@ package com.fil.shauni.command.memory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.fil.shauni.command.Check;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.Query;
 import com.fil.shauni.command.support.StatementManager;
 import com.fil.shauni.command.writer.MemWriter;
 import com.fil.shauni.command.writer.WriterManager;
+import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.log.LogLevel;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.DateFormat;
@@ -20,15 +22,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Shaunyl
  */
-@Log4j @Component(value = "monmem") @Parameters(separators = "=") @NoArgsConstructor
+@Log4j2 @Component(value = "monmem") @Parameters(separators = "=") @NoArgsConstructor
 public class DefaultMonMem extends DatabaseCommandControl {
+    
     @Parameter(names = "-directory", arity = 1)
     protected String directory = ".";
 
@@ -38,7 +41,13 @@ public class DefaultMonMem extends DatabaseCommandControl {
     public DefaultMonMem(String name) {
         this.name = name;
     }
-    
+
+    @Override
+    public Check validate() throws ShauniException {
+        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "No parameters to validate.");
+        return new Check();
+    }
+  
     @Override
     public void run() {
         String query = Query.getTotalPGAUsed();

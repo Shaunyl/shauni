@@ -1,8 +1,6 @@
 package com.fil.shauni.command.writer;
 
-import static com.fil.shauni.command.writer.TabularWriter.DEFAULT_COLUMN_LENGTH;
 import com.fil.shauni.util.DatabaseUtil;
-import com.fil.shauni.util.DateFormat;
 import com.fil.shauni.util.GeneralUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,7 +8,12 @@ import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 
 /**
@@ -19,48 +22,70 @@ import lombok.NonNull;
  */
 public abstract class DefaultWriter implements WriterManager {
 
-    protected Writer rawWriter;
-
     protected PrintWriter printer;
 
-    private String endline;
+    protected String endline, pattern;
+
+    protected char separator;
 
     public static final String DEFAULT_END_LINE = "\n";
 
     public static final char DEFAULT_SEPARATOR = '-';
 
+    public static final int DEFAULT_COLUMN_LENGTH = 25;
+
+    protected final Map<String, Integer> cols = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+    public DefaultWriter(@NonNull final Writer rawWriter) {
+        this(rawWriter, DEFAULT_END_LINE);
+    }
+
+    public DefaultWriter(@NonNull final Writer rawWriter, String endline) {
+        this(rawWriter, endline, DEFAULT_SEPARATOR);
+    }
+
+    public DefaultWriter(@NonNull final Writer rawWriter, String endline, char separator) {
+        this.printer = new PrintWriter(rawWriter);
+        this.endline = endline;
+        this.separator = separator;
+    }
+
     @Override
     public abstract String[] getValidFileExtensions();
 
     @Override
-    public void writeAll(List allLines) throws IOException {
+    public void writeAll(@NonNull List<String[]> lines) throws IOException {
+        lines.forEach((nextLine) -> {
+            writeNext(nextLine);
+        });
     }
 
     @Override
-    public int writeAll(ResultSet rs, boolean includeColumnNames) throws SQLException, IOException {
-        writeHeader();
-        int rows = 0;
-        try {
-            ResultSetMetaData metadata = rs.getMetaData();
-            if (includeColumnNames) {
-                writeColumnNames(metadata);
-            }
-            int columnCount = metadata.getColumnCount();
+    public int writeAll(@NonNull ResultSet rs, boolean includeColumnNames) throws SQLException, IOException {
+        this.writeHeader();
 
-            while (rs.next()) {
+        ResultSetMetaData metadata = rs.getMetaData();
+        if (includeColumnNames) {
+            writeColumnNames(metadata);
+        }
+        int columnCount = metadata.getColumnCount();
+
+        int rows = 0;
+
+        if (!rs.next()) {
+            writeNext(new String[]{ "\nno rows selected" });
+        } else {
+            do {
                 String[] nextLine = new String[columnCount];
 
                 for (int i = 0; i < columnCount; i++) {
                     nextLine[i] = DatabaseUtil.getColumnValue(rs, metadata.getColumnType(i + 1), i + 1).trim();
                 }
-                formatLine(nextLine);
+                this.formatLine(nextLine);
                 rows++;
-            }
-        } catch (SQLException | IOException ex) {
-            throw new SQLException(ex.getMessage(), ex);
-        } finally {
-            writeFooter();
+            } while (rs.next());
         }
+        this.writeFooter();
 
         return rows;
     }
@@ -71,47 +96,42 @@ public abstract class DefaultWriter implements WriterManager {
 
     @Override
     public void close() throws IOException {
-        printer.flush();
         printer.close();
-        rawWriter.close();
     }
 
     public abstract void formatLine(String[] record);
 
     protected void writeNext(String[] nextLine) {
-        String pattern = "";
-        StringBuilder sb = new StringBuilder();
-
-        int len = DEFAULT_COLUMN_LENGTH;
-
-        for (int i = 0; i < nextLine.length; i++) {
-            pattern += "%-" + len + "s ";
-        }
-        sb.append(String.format(pattern, (Object[]) nextLine));
-
-        sb.append(DEFAULT_END_LINE);
-        printer.write(sb.toString());
+        printer.write(String.format(pattern, (Object[]) nextLine) + endline);
     }
 
     protected void writeNext(String nextLine) {
-        printer.write(nextLine + "\n");
+        printer.write(nextLine + endline);
     }
 
-    private void writeColumnNames(@NonNull final ResultSetMetaData metadata)
-            throws SQLException {
-
+    private void writeColumnNames(@NonNull final ResultSetMetaData metadata) throws SQLException {
         int columnCount = metadata.getColumnCount();
 
         String[] nextLine = new String[columnCount];
         String[] separators = new String[columnCount];
-        for (int i = 0; i < columnCount; i++) {
-            nextLine[i] = metadata.getColumnName(i + 1);
-        }
 
         for (int i = 0; i < columnCount; i++) {
-            separators[i] = GeneralUtil.repeat(String.valueOf(DEFAULT_SEPARATOR), DEFAULT_COLUMN_LENGTH);
+            this.buildColumnNames(i, metadata, nextLine, separators);
         }
+
+        this.pattern = buildRowPattern(cols);
+
         writeNext(nextLine);
         writeNext(separators);
+    }
+
+    protected String buildRowPattern(Map<String, Integer> sampleNextLine) {
+        return sampleNextLine.entrySet().stream().map(m -> "%-" + m + "s").collect(Collectors.joining(" "));
+    }
+
+    protected void buildColumnNames(int i, ResultSetMetaData metadata, String[] nextLine, String[] separators) throws SQLException {
+        nextLine[i] = metadata.getColumnName(i + 1);
+        cols.put(nextLine[i], DEFAULT_COLUMN_LENGTH);
+        separators[i] = GeneralUtil.repeat(String.valueOf(separator), DEFAULT_COLUMN_LENGTH);
     }
 }

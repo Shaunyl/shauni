@@ -1,6 +1,7 @@
 package com.fil.shauni.exception;
 
 import lombok.Getter;
+import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
@@ -28,4 +29,11 @@ public class ShauniException extends Exception {
         this.code = code;
         this.indent = indent;
     }
+
+    @Override
+    public String getMessage() {
+        return WordUtils.wrap(super.getMessage(), 140, "\n   ", false);
+    }
+    
+    
 }

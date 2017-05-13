@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -32,9 +34,6 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2 @NoArgsConstructor
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
-
-//    @Parameter(required = true, arity = 1)
-//    private final List<String> cmd = Lists.newArrayList(1);
 
     @Parameter(names = "-directory", arity = 1)
     protected String directory = ".";
@@ -73,7 +72,6 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     public Check validate() throws ShauniException {
         if ((warning | critical) < 1 || (warning | critical) > 99) {
             return new Check(false, 1120, "Threshold parameters must be between 1 to 99.");
-//            throw new ShauniException(1020, "Warning: Threshold parameters must be between 1 to 99.");
         } else  {
             commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check threshold between [1,99] -> OK"); // FIXME
         }

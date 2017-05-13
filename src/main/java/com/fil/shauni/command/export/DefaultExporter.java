@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import javax.inject.Inject;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
@@ -110,6 +111,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
                 commandLinePresentation.printIf(firstThread, LogLevel.INFO, "{} wildcard %%t is not supported in Query Mode", LOG_NOTE);
             }
         }
+        
         if (parallel < 1) {
             throw new ShauniException(1001, "Parallel degree must be greater than zero [" + currentThreadName + "]");
         }
@@ -210,7 +212,7 @@ public abstract class DefaultExporter extends DatabaseCommandControl implements 
                 fn = replacer.replace(fn, ctx);
             }
 
-            log.debug("Path will be: {}", fn.getPath());
+            log.debug("Output directory is: {}", directory);
             commandLinePresentation.print(LogLevel.INFO, " . . (worker %d) exporting %-40s", workerId, exportMode.getShortName(obj) + "..");
             int rows = 0;
             try {
