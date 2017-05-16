@@ -26,5 +26,5 @@ Improve boolean command inputs (from this -undo=y to this -undo)<br/>
 * montbs
   
 Example:<br/>
-&nbsp;&nbsp;exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] -Cusername=30<br/>
-&nbsp;&nbsp;montbs -directory=tbs -undo=n -exclude=users,stat -cluster=2 -warning=60
+`exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] -Cusername=30`<br/>
+`montbs -directory=tbs -undo=n -exclude=users,stat -cluster=2 -warning=60`
