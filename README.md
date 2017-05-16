@@ -10,7 +10,7 @@ For further information surf to Wiki!
 ### **Changelog**  
  Used Chain of Responsability design pattern to cope with the filename building through wildcards.  
  Introduced a way to run jobs simultaneously on different servers/instances.  
- Added parallism to the Export Command.
+ Added durther parallelism to the Export Command.  
  Added the property **database.timeout** to specify the timeout of database connections.<br/>
  Up bounded the parameter **cluster**.<br/>
  
