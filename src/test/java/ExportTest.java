@@ -1,6 +1,5 @@
 
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.export.DefaultExporter;
 import com.fil.shauni.command.export.TabularExporter;
 import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
 import java.sql.SQLException;

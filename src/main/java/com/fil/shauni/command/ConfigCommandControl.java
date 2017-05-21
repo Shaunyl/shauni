@@ -1,8 +1,8 @@
 package com.fil.shauni.command;
 
 import com.fil.shauni.exception.ShauniException;
-import com.fil.shauni.util.DateFormat;
 import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.Sysdate;
 import lombok.extern.log4j.Log4j;
 
 /**
@@ -17,7 +17,7 @@ public abstract class ConfigCommandControl extends Command {
     
     @Override
     public long execute() {
-        String currentDate = GeneralUtil.getCurrentDate(DateFormat.TIMEONLY.toString());
+        String currentDate = Sysdate.now(Sysdate.TIMEONLY);
         log.info("Task started at " + currentDate + "\n");
 
         long endTime = 0;
@@ -38,7 +38,7 @@ public abstract class ConfigCommandControl extends Command {
             state = "aborted";
         }
 
-        currentDate = GeneralUtil.getCurrentDate(DateFormat.TIMEONLY.toString());
+        currentDate = Sysdate.now(Sysdate.TIMEONLY);
         log.info("\nTask " + state + " at " + currentDate + " with " + errorCount + " warning(s)\nElapsed time: " + endTime / 1e3 + " s");
         return endTime;
     }

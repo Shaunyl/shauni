@@ -6,15 +6,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-// addcs -key=url4 -user=system -password=dfh5irj9 -host=h3mih230.ced.h3g.it -port=1522 -sid=emrep
-// exp -format=tab -tables=sys.dba_registry, sys.dba_users -parallel=2
 /**
  *
  * @author Shaunyl
  */
 @Log4j2
 public class Main {
-
+    
     public static final BeanFactory beanFactory;
 
     static {
@@ -23,9 +21,25 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        
-        
-        
+//        List<String> tables = null;// new ArrayList() {{ add("ciao"); }};
+//        
+//        List<String> queries = new ArrayList() {{ add("cia"); }};
+//        
+//        SupplierPredicate p1 = () -> tables == null;
+//        
+//        SupplierPredicate p2 = () -> queries == null;
+//        
+//        if (p1.xnor(p2).test()) {
+//            if (p1.test()) {
+//                System.out.println("at least one between queries and tables must be specified");
+//                return;
+//            }
+//            System.out.println("queries and tables cannot be specified at the same time");
+//        } else {
+//            System.out.println("OK");
+//        }
+
+//        System.exit(0);
 
         Locale.setDefault(new Locale("en"));
 //        StoreKey sk = new StoreKey(); // key has already been initialized.

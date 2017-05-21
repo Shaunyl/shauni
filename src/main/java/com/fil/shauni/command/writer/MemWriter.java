@@ -1,6 +1,6 @@
 package com.fil.shauni.command.writer;
 
-import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.StringUtils;
 import java.io.IOException;
 import java.io.Writer;
 import java.sql.ResultSet;
@@ -9,8 +9,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.*;
 import lombok.NonNull;
 
 /**
@@ -61,7 +60,7 @@ public class MemWriter extends DefaultWriter {
     protected void buildColumnNames(int i, ResultSetMetaData metadata, String[] nextLine, String[] separators) throws SQLException {
         nextLine[i] = metadata.getColumnName(i + 1);
         cols.put(nextLine[i], widths[i]);
-        separators[i] = GeneralUtil.repeat(String.valueOf(separator), widths[i]);
+        separators[i] = StringUtils.repeat(String.valueOf(separator), widths[i]);
     }
     
     @Override
@@ -71,7 +70,7 @@ public class MemWriter extends DefaultWriter {
 
     @Override
     protected String buildRowPattern(Map<String, Integer> sampleNextLine) {
-        return sampleNextLine.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(Collectors.joining(" "));
+        return sampleNextLine.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(joining(" "));
     }
 
 }

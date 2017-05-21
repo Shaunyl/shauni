@@ -1,20 +1,20 @@
 package com.fil.shauni.command.writer;
 
 import com.fil.shauni.util.DatabaseUtil;
-import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.StringUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import static java.util.stream.Collectors.*;
+import java.util.stream.Stream;
 
 /**
  *
@@ -28,20 +28,20 @@ public abstract class DefaultWriter implements WriterManager {
 
     protected char separator;
 
-    public static final String DEFAULT_END_LINE = "\n";
+    public static final String ENDLINE = "\n";
 
-    public static final char DEFAULT_SEPARATOR = '-';
+    public static final char SEPARATOR = '-';
 
-    public static final int DEFAULT_COLUMN_LENGTH = 25;
+    public static final int COLUMN_WIDTH = 25;
 
-    protected final Map<String, Integer> cols = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected final Map<String, Integer> cols = new LinkedHashMap<>();
 
     public DefaultWriter(@NonNull final Writer rawWriter) {
-        this(rawWriter, DEFAULT_END_LINE);
+        this(rawWriter, ENDLINE);
     }
 
     public DefaultWriter(@NonNull final Writer rawWriter, String endline) {
-        this(rawWriter, endline, DEFAULT_SEPARATOR);
+        this(rawWriter, endline, SEPARATOR);
     }
 
     public DefaultWriter(@NonNull final Writer rawWriter, String endline, char separator) {
@@ -65,20 +65,24 @@ public abstract class DefaultWriter implements WriterManager {
         this.writeHeader();
 
         ResultSetMetaData metadata = rs.getMetaData();
+
+        int cols = metadata.getColumnCount();
+                
         if (includeColumnNames) {
             writeColumnNames(metadata);
+        } else {
+            pattern = Stream.generate(() -> "%-" + COLUMN_WIDTH + "s").limit(cols).collect(Collectors.joining());
         }
-        int columnCount = metadata.getColumnCount();
-
+        
         int rows = 0;
 
         if (!rs.next()) {
             writeNext(new String[]{ "\nno rows selected" });
         } else {
             do {
-                String[] nextLine = new String[columnCount];
+                String[] nextLine = new String[cols];
 
-                for (int i = 0; i < columnCount; i++) {
+                for (int i = 0; i < cols; i++) {
                     nextLine[i] = DatabaseUtil.getColumnValue(rs, metadata.getColumnType(i + 1), i + 1).trim();
                 }
                 this.formatLine(nextLine);
@@ -126,12 +130,12 @@ public abstract class DefaultWriter implements WriterManager {
     }
 
     protected String buildRowPattern(Map<String, Integer> sampleNextLine) {
-        return sampleNextLine.entrySet().stream().map(m -> "%-" + m + "s").collect(Collectors.joining(" "));
+        return sampleNextLine.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(joining(" "));
     }
 
     protected void buildColumnNames(int i, ResultSetMetaData metadata, String[] nextLine, String[] separators) throws SQLException {
-        nextLine[i] = metadata.getColumnName(i + 1);
-        cols.put(nextLine[i], DEFAULT_COLUMN_LENGTH);
-        separators[i] = GeneralUtil.repeat(String.valueOf(separator), DEFAULT_COLUMN_LENGTH);
+        nextLine[i] = metadata.getColumnName(i + 1).toLowerCase();
+        cols.put(nextLine[i], COLUMN_WIDTH);
+        separators[i] = StringUtils.repeat(String.valueOf(separator), COLUMN_WIDTH);
     }
 }

@@ -12,18 +12,15 @@ import com.fil.shauni.command.support.CharBooleanValidator;
 import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.log.LogLevel;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
-import com.fil.shauni.util.DateFormat;
-import com.fil.shauni.util.file.DefaultFilename;
-import com.fil.shauni.util.GeneralUtil;
-import com.fil.shauni.util.StringUtil;
+import com.fil.shauni.util.file.DefaultFilepath;
+import com.fil.shauni.util.StringUtils;
+import com.fil.shauni.util.Sysdate;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -94,7 +91,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
             commentUNDO = "";
         }
 
-        String inexclude = StringUtil.replace(exclude.toString(), "[", "(", "]", ")"); 
+        String inexclude = StringUtils.replace(exclude.toString(), "[", "(", "]", ")"); 
         if (inexclude.length() > 2) {
             commentTBS = "";
         }
@@ -127,10 +124,10 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
             commandLinePresentation.print(LogLevel.ERROR, " . . (worker %d) error while fetching datar\n  -> Result Set is null");
             return;
         }
-        String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), GeneralUtil.getCurrentDate(DateFormat.SQUELCHED_TIMEDATE.toString()));
+        String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
         String path = String.format("%s/%s", directory, filename);
-        DefaultFilename fn = new DefaultFilename(path, filename);
-        log.info("Output file is:\n   " + fn.getPath());
+        DefaultFilepath fn = new DefaultFilepath(path);
+        log.info("Output file is:\n   " + fn.getFilename());
         try {
             write(rs, fn);
         } catch (IOException ex) {
@@ -144,7 +141,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     //TEMP: need to be abstract.. because i wanna unbound the export action with the writer one..
     // If I want to combine multiple writing in a single task, I cannot do that if they are coupled..
     // This classe need to be abstract, 
-    public abstract int write(final ResultSet rs, DefaultFilename filename) throws SQLException, IOException;
+    public abstract int write(final ResultSet rs, DefaultFilepath filename) throws SQLException, IOException;
 
     @Override
     public void takedown() {

@@ -1,5 +1,6 @@
 package com.fil.shauni.util;
 
+import com.fil.shauni.command.export.SupplierPredicate;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +16,9 @@ import java.math.RoundingMode;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -91,12 +94,9 @@ public class GeneralUtil {
         return files;
     }
 
-    public static String getCurrentDate(String format) {
-        return new SimpleDateFormat(format).format(new java.util.Date());
-    }
-    
-    public static String getCurrentDate(DateFormat format) {
-        return getCurrentDate(format.toString());
+    public static String date(String s, DateFormatter f) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(s);
+        return f.format(formatter);
     }
 
     public static String readFile(String path) {
@@ -158,14 +158,6 @@ public class GeneralUtil {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
-    }
-
-    public static String repeat(String str, int repeat) {
-        String repeated = "";
-        for (int i = 0; i < repeat; i++) {
-            repeated += str;
-        }
-        return repeated;
     }
 
     public static double round(double value, int places) {

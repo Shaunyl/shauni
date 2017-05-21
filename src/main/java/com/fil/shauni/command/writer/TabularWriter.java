@@ -1,10 +1,9 @@
 package com.fil.shauni.command.writer;
 
-import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.StringUtils;
 import java.io.Writer;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -33,9 +32,20 @@ public class TabularWriter extends DefaultWriter {
      * @param colformats formats specified for columns.
      */
     public TabularWriter(Writer writer, Map<String, Integer> colformats) {
-        this(writer, DEFAULT_SEPARATOR, colformats);
+        this(writer, SEPARATOR, colformats);
     }
 
+    /**
+     * Build a tabular writer without col formats
+     * 
+     * @param writer the writer to a character stream
+     * @param separator the separator used to separate header from data
+     * @param endline the line feed to use
+     */
+    public TabularWriter(Writer writer, char separator, String endline) {
+        this(writer, separator, endline, new TreeMap<String, Integer>());
+    }
+    
     /**
      * Constructs TabularWriter with supplied separator.
      *
@@ -44,7 +54,7 @@ public class TabularWriter extends DefaultWriter {
      * @param separator the separator to use for separating header from data.
      */
     public TabularWriter(Writer writer, char separator, Map<String, Integer> colformats) {
-        this(writer, separator, DEFAULT_END_LINE, colformats);
+        this(writer, separator, ENDLINE, colformats);
     }
 
     /**
@@ -57,19 +67,19 @@ public class TabularWriter extends DefaultWriter {
      */
     public TabularWriter(Writer writer, char separator, String endline, Map<String, Integer> colformats) {
         super(writer, endline, separator);
-        this.colformats = colformats == null ? new TreeMap<>(String.CASE_INSENSITIVE_ORDER) : colformats;
+        this.colformats = colformats == null ? new TreeMap<>() : colformats;
     }
 
     @Override
     protected void buildColumnNames(int i, ResultSetMetaData metadata, String[] nextLine, String[] separators) throws SQLException {
-        nextLine[i] = metadata.getColumnName(i + 1);
-        int width = DEFAULT_COLUMN_LENGTH;
+        nextLine[i] = metadata.getColumnName(i + 1).toLowerCase();
+        int width = COLUMN_WIDTH;
         if (colformats.containsKey(nextLine[i])) {
             width = colformats.get(nextLine[i]);
         }
         cols.put(nextLine[i], width);
 
-        separators[i] = GeneralUtil.repeat(String.valueOf(separator), width);
+        separators[i] = StringUtils.repeat(String.valueOf(separator), width);
     }
 
     /**
@@ -104,10 +114,9 @@ public class TabularWriter extends DefaultWriter {
     public void formatLine(String[] record) {
         writeNext(record);
     }
-
+    
     @Override
-    protected String buildRowPattern(Map<String, Integer> sampleNextLine) { // Dont like this..
-        return sampleNextLine.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(Collectors.joining(" "));
+    protected String buildRowPattern(Map<String, Integer> sampleNextLine) {
+        return cols.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(Collectors.joining(" "));
     }
-
 }

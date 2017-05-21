@@ -1,9 +1,9 @@
 package com.fil.shauni.command.export.support;
 
 import com.fil.shauni.command.support.Context;
-import com.fil.shauni.util.file.Filename;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
+import com.fil.shauni.util.file.Filepath;
 
 /**
  *
@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class WWildcardReplacer implements WildcardReplacer {
 
     @Override
-    public Filename replace(Filename in, Context context) {
-        return in.replaceWildcard("%w", context.getWorkerId());
+    public void replace(Filepath in, Context context) {
+        in.replaceWildcard("%w", context.getWorkerId());
     }
     
 }

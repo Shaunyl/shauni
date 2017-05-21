@@ -1,8 +1,0 @@
-Retrieving information of memory..
-
-INST_ID PGA_USED_MB          TYPE                
-------- -------------------- --------------------
-1       1.93                 USER                
-1       21.08                BACKGROUND          
-
-Report terminated

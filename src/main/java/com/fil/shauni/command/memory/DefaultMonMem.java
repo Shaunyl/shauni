@@ -10,10 +10,8 @@ import com.fil.shauni.command.writer.MemWriter;
 import com.fil.shauni.command.writer.WriterManager;
 import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.mainframe.ui.CommandLinePresentation;
-import com.fil.shauni.util.DateFormat;
-import com.fil.shauni.util.file.DefaultFilename;
-import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.file.DefaultFilepath;
+import com.fil.shauni.util.Sysdate;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
@@ -44,7 +42,7 @@ public class DefaultMonMem extends DatabaseCommandControl {
 
     @Override
     public Check validate() throws ShauniException {
-        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "No parameters to validate.");
+        cli.printIf(firstThread, LogLevel.DEBUG, "No parameters to validate.");
         return new Check();
     }
   
@@ -57,14 +55,14 @@ public class DefaultMonMem extends DatabaseCommandControl {
         try {
             rs = statement.executeQuery(query);
         } catch (SQLException e) {
-            commandLinePresentation.print(LogLevel.ERROR, "Error while fetching data\n  -> %s", e.getMessage());
+            cli.print(LogLevel.ERROR, "Error while fetching data\n  -> %s", e.getMessage());
         }
         if (rs == null) {
-            commandLinePresentation.print(LogLevel.ERROR, " . . (worker %d) error while fetching datar\n  -> Result Set is null");
+            cli.print(LogLevel.ERROR, " . . (worker %d) error while fetching datar\n  -> Result Set is null");
         }
-        String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), GeneralUtil.getCurrentDate(DateFormat.SQUELCHED_TIMEDATE.toString()));
+        String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.DASH_TIMEDATE));
         String path = String.format("%s/%s", directory, filename);
-        DefaultFilename fn = new DefaultFilename(path, filename);
+        DefaultFilepath fn = new DefaultFilepath(path);
         try {
             write(rs, fn);
         } catch (IOException ex) {
@@ -72,11 +70,11 @@ public class DefaultMonMem extends DatabaseCommandControl {
         } catch (SQLException ex) {
             log.error("Error while reading the result set\n -> " + ex.getMessage());
         } //modify Filename, just path, can calculate name itself...
-        commandLinePresentation.print(LogLevel.DEBUG, "  -> data written to the file %s", path);
+        cli.print(LogLevel.DEBUG, "  -> data written to the file %s", path);
     }
     
-    public int write(final ResultSet rs, final DefaultFilename filename) throws SQLException, IOException {
-        WriterManager writer = new MemWriter(new FileWriter(filename.getPath()));
+    public int write(final ResultSet rs, final DefaultFilepath filename) throws SQLException, IOException {
+        WriterManager writer = new MemWriter(new FileWriter(filename.getFilename()));
         int rows = writer.writeAll(rs, true);
         writer.close();
         return rows;

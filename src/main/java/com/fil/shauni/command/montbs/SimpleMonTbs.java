@@ -3,7 +3,7 @@ package com.fil.shauni.command.montbs;
 import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.writer.MonTbsWriter;
 import com.fil.shauni.command.writer.WriterManager;
-import com.fil.shauni.util.file.DefaultFilename;
+import com.fil.shauni.util.file.DefaultFilepath;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -29,8 +29,8 @@ public class SimpleMonTbs extends DefaultMonTbs {
     }
     
     @Override
-    public int write(final ResultSet rs, final DefaultFilename filename) throws SQLException, IOException {
-        WriterManager writer = new MonTbsWriter(new FileWriter(filename.getPath()), databasePoolManager.getSid(), warning, critical, undo, exclude);
+    public int write(final ResultSet rs, final DefaultFilepath filename) throws SQLException, IOException {
+        WriterManager writer = new MonTbsWriter(new FileWriter(filename.getFilename()), databasePoolManager.getSid(), warning, critical, undo, exclude);
         int rows = writer.writeAll(rs, true);
         writer.close();
         return rows;

@@ -6,5 +6,5 @@ package com.fil.shauni.util.file;
  */
 public interface TableFilename {
     void setTable(String table);
-    Filename convertTable();
+    Filepath convertTable();
 }

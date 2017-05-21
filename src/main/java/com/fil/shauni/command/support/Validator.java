@@ -9,6 +9,6 @@ import java.util.List;
  * @author Shaunyl
  * @param <T>
  */
-public interface Validator<T> {
-    ArrayList<T> validate(List<T>... field) throws ShauniException; 
+public interface Validator<T extends Object> {
+    <T> ArrayList<T> validate(List<T>[] field) throws ShauniException; 
 }

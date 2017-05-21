@@ -1,7 +1,7 @@
 package com.fil.shauni.command.writer;
 
-import com.fil.shauni.util.GeneralUtil;
 import com.fil.shauni.util.DatabaseUtil;
+import com.fil.shauni.util.StringUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.*;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
@@ -20,7 +20,7 @@ import lombok.NonNull;
  *
  * @author Shaunyl
  */
-@NoArgsConstructor
+@NoArgsConstructor @Deprecated
 public class TabularWriterOld implements WriterManager {
 
     private Writer rawWriter;
@@ -109,7 +109,7 @@ public class TabularWriterOld implements WriterManager {
             }
             cols.put(nextLine[i], width);
 
-            separators[i] = GeneralUtil.repeat(String.valueOf(separator), width);
+            separators[i] = StringUtils.repeat(String.valueOf(separator), width);
         }
 
         writeNext(nextLine);
@@ -191,7 +191,7 @@ public class TabularWriterOld implements WriterManager {
      * @param nextLine a string array with each element as a separate entry.
      */
     public void writeNext(String[] nextLine) {
-        String pattern = cols.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(Collectors.joining(" "));
+        String pattern = cols.entrySet().stream().map(m -> "%-" + m.getValue() + "s").collect(joining(" "));
         printer.write(String.format(pattern + endline, (Object[]) nextLine));
     }
 

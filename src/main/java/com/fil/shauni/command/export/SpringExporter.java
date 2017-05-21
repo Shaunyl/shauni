@@ -3,27 +3,19 @@ package com.fil.shauni.command.export;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.validators.PositiveInteger;
-import com.fil.shauni.Configuration;
 import com.fil.shauni.Main;
 import com.fil.shauni.command.Check;
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.export.support.DWildcardReplacer;
-import com.fil.shauni.command.export.support.NWildcardReplacer;
-import com.fil.shauni.command.export.support.TWildcardReplacer;
-import com.fil.shauni.command.export.support.UWildcardReplacer;
-import com.fil.shauni.command.export.support.WWildcardReplacer;
-import com.fil.shauni.command.export.support.WildcardReplacer;
+import com.fil.shauni.command.export.support.*;
 import com.fil.shauni.command.support.Context;
 import com.fil.shauni.command.support.SemicolonParameterSplitter;
-import com.fil.shauni.command.support.Validator;
 import com.fil.shauni.command.support.WorkSplitter;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.exception.ShauniException;
-import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.util.DateFormat;
-import com.fil.shauni.util.GeneralUtil;
-import com.fil.shauni.util.file.DefaultFilename;
-import com.fil.shauni.util.file.Filename;
+import com.fil.shauni.util.BooleanUtils;
+import com.fil.shauni.util.Sysdate;
+import com.fil.shauni.util.WildcardContext;
+import com.fil.shauni.util.file.DefaultFilepath;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import javax.inject.Inject;
@@ -41,6 +32,8 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import com.fil.shauni.util.file.Filepath;
+import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  *
@@ -52,11 +45,11 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
     @Setter @Parameter(names = "-parallel", description = "parallelism Shauni will try to use to export data")
     protected int parallel = 1;
 
-    @Setter @Parameter(names = "-tables", description = "list of tables to export from", splitter = CommaParameterSplitter.class, variableArity = true)
-    protected List<String> tables;
+    @Setter @Parameter(names = "-tables", description = "list of tables to export from", converter = TableObjectConverter.class, splitter = CommaParameterSplitter.class, variableArity = true)
+    protected List<ExporterObject> tables;
 
-    @Setter @Parameter(names = "-queries", description = "list of queries to fetch data from", splitter = SemicolonParameterSplitter.class, variableArity = true)
-    protected List<String> queries;
+    @Setter @Parameter(names = "-queries", description = "list of queries to fetch data from", converter = QueryObjectConverter.class, splitter = SemicolonParameterSplitter.class, variableArity = true)
+    protected List<ExporterObject> queries;
 
     @Setter @Parameter(names = "-directory", description = "directory object to be used for dumpfiles")
     protected String directory = ".";
@@ -70,21 +63,14 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
     @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
     public Integer cluster = 1;
 
-    private int batchSize = 0, adjustedParallel;
+    private int adjParallel;
 
-    private ArrayList<String> objects;
+    private List<ExporterObject> sqlObjects;
 
     private final List<FutureTask<Void>> futures = new ArrayList<>();
 
-    private final static String LOG_NOTE = "  Note:";
-
     @Inject
-    private WorkSplitter workSplitter;
-
-    @Inject
-    private final Validator<String> validator = new ExportValidator<>();
-
-    private ExportMode exportMode;
+    private WorkSplitter<ExporterObject> workSplitter;
 
     private Set<WildcardReplacer> replacers;
 
@@ -105,21 +91,24 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
         super.isCluster = true;
     }
 
-    @Override
+    @Override @SuppressWarnings("unchecked")
     public Check validate() throws ShauniException {
-        this.objects = validator.validate(tables, queries);
-        if (tables != null) {
-            this.exportMode = new TableExportMode();
-            this.replacers.add(Main.beanFactory.getBean(TWildcardReplacer.class));
+        sqlObjects = BooleanUtils.xor(tables, queries);
+        if (sqlObjects == null) {
+            if (tables == null) {
+                return new Check(1040, "At least one parameter bewteen -queries and -tables must be specified");
+            }
+            return new Check(1041, "Parameters -queries and -tables are mutually exclusive");
         }
-        if (queries != null) {
-            this.exportMode = new QueryExportMode();
+        if (tables != null) {
+            this.replacers.add(Main.beanFactory.getBean(TWildcardReplacer.class));
+        } else {
             if (filename.contains("%t")) {
-                commandLinePresentation.printIf(firstThread, LogLevel.INFO, "{} wildcard %%t is not supported in Query Mode", LOG_NOTE);
+                cli.print(() -> firstThread, (l, p) -> log.info(l), "* Wildcard %%t not supported in query mode");
             }
         }
         if (parallel < 1) {
-            throw new ShauniException(1001, "Parallel degree must be greater than zero [" + currentThreadName + "]");
+            return new Check(1042, "Parallel degree must be greater than zero [" + currentThreadName + "]");
         }
         return new Check();
     }
@@ -128,26 +117,18 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
     public void setup() throws ShauniException {
         super.setup();
         this.executorService = ThreadPoolManager.getInstance();
-        this.batchSize = objects.size();
-        this.adjustedParallel = batchSize <= parallel ? batchSize : parallel;
-        if (adjustedParallel > 1) {
-            commandLinePresentation.printIf(firstThread, LogLevel.INFO, "%s parallelism enabled (requested: %d, adjusted: %d)\n", LOG_NOTE, parallel, adjustedParallel);
-        }
-    }
-
-    @Override
-    public Long call() throws Exception {
-        return super.call();
+        this.adjParallel = Math.min(sqlObjects.size(), parallel);
+        cli.print(() -> adjParallel > 1 && firstThread, (l, p) -> log.info(l, p), "* Parallelism enabled (requested: {}, adjusted: {})\n", parallel, adjParallel);
     }
 
     @Override
     public void run() throws ShauniException {
-        Map<Integer, String[]> workersJobs = workSplitter.splitWork(adjustedParallel, objects);
-        for (int w = 0; w < this.adjustedParallel; w++) {
+        Map<Integer, ExporterObject[]> workersJobs = workSplitter.splitWork(ExporterObject.class, adjParallel, sqlObjects);
+        for (int w = 0; w < this.adjParallel; w++) {
             this.runMultiple(w, workersJobs.get(w));
         }
 
-        for (int w = 0; w < this.adjustedParallel; w++) {
+        for (int w = 0; w < this.adjParallel; w++) {
             FutureTask<Void> future = futures.get(w);
             try {
                 future.get();
@@ -158,55 +139,49 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
         }
     }
 
-    private void runMultiple(final int worker, final Object[] set) {
-        log.debug("worker " + worker + " has been submitted");
-        FutureTask<Void> future = new FutureTask<>(new Callable<Void>() {
-            @Override
-            public Void call() throws ShauniException {
-                try {
-                    export(worker, set);
-                } catch (ShauniException e) {
-                    throw new ShauniException(1020, e.getMessage());
+    private void runMultiple(final int worker, final ExporterObject[] set) {
+        FutureTask<Void> future = new FutureTask<>(() -> {
+            try {
+                cli.print((l, p) -> log.debug(l, p), "worker {} is preparing for the export", worker);
+                for (int objectId = 0; objectId < set.length; objectId++) {
+                    export(worker, objectId, set);
                 }
-                return null;
+                cli.print((l, p) -> log.debug(l, p), "worker {} has terminated", worker);
+            } catch (ShauniException e) {
+                throw new ShauniException(1020, e.getMessage());
             }
+            return null;
         });
         futures.add(future);
         this.executorService.execute(future);
     }
 
     @Override
-    public void export(int workerId, Object[] set) throws ShauniException {
-        log.debug("worker {} is preparing for the export", workerId);
-        for (int objectId = 0; objectId < set.length; objectId++) {
-            String obj = set[objectId].toString().toUpperCase();
-            String sql = this.exportMode.rearrangeSQL(obj);
+    public void export(final int workerId, final int objectId, ExporterObject[] set) throws ShauniException {
+        ExporterObject obj = set[objectId];
+        Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
 
-            String path = String.format("%s/%s", directory, filename);
-            Filename fn = new DefaultFilename(path, filename);
+        String timestamp = Sysdate.now(Sysdate.MINIMAL);
+        Context ctx = new Context(workerId, objectId, timestamp, obj, currentThreadName);
+        replacers.forEach((WildcardReplacer replacer) -> replacer.replace(filepath, ctx));
 
-            // FIXME: Give the possibility to choose the date format to the clients
-            String timestamp = GeneralUtil.getCurrentDate(DateFormat.CLEAN_DATETIME); // FIXME: Should be modifiable from client..
-            Context ctx = new Context(workerId, objectId, timestamp, obj, currentThreadName);
-
-            for (WildcardReplacer replacer : replacers) {
-                fn = replacer.replace(fn, ctx);
+        cli.print((l, p) -> log.info(l), " . . (worker %d) exporting %s..", workerId, obj.display());
+        Integer rows = jdbc.query(obj.sql(), (ResultSetExtractor<Integer>) rs -> {
+            try {
+                return write(rs, filepath);
+            } catch (IOException e) {
+                cli.print((l, p) -> log.error(l, p), "Error while writing data to the file {}\n -> {}", filepath.getFilepath(), e.getMessage());
+                return -1;
             }
-
-            commandLinePresentation.printIf(firstThread && objectId == 0 && workerId == 0, LogLevel.DEBUG, "Output directory is: %s/%s", Configuration.ROOT_DIRECTORY, directory);
-            commandLinePresentation.print(LogLevel.INFO, " . . (worker %d) exporting %s@%-40s", workerId, exportMode.getShortName(obj), databasePoolManager.getHost() + "..");
-
-            int rows = jdbc.query(sql, new ExporterExtractor(this, fn));
-            commandLinePresentation.print(LogLevel.INFO, "  -> %s %-60s%10d%5s", "exported", exportMode.getName(obj) + "@" + databasePoolManager.getHost(), rows, " rows");
-        }
+        });
+        cli.print(() -> 0 < rows, (l, p) -> log.info(l), "  -> exported %-55s%10d rows", obj.display(), rows);
     }
 
-    protected abstract int write(final ResultSet rs, Filename filename) throws SQLException, IOException;
+    protected abstract int write(final ResultSet rs, Filepath filename) throws SQLException, IOException;
 
     @Override
     public void takedown() {
         super.takedown();
-//        ThreadPoolManager.shutdownPool();
         futures.clear();
     }
 }

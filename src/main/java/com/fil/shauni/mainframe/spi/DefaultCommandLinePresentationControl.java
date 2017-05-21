@@ -9,7 +9,6 @@ import com.fil.shauni.command.ConfigCommandControl;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.config.DefaultCSAdder;
 import com.fil.shauni.command.config.DefaultCSViewer;
-import com.fil.shauni.command.export.DefaultExporter;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.memory.DefaultMonMem;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
@@ -21,11 +20,13 @@ import com.fil.shauni.io.PropertiesFileManager;
 import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
 import java.util.Arrays;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import static java.util.stream.Collectors.*;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -92,7 +93,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Override
     public void executeCommand(final String args[]) throws Exception {
-
         // Initialize configuration.. NOT HERE.. FIXME
         try {
             Class.forName("com.fil.shauni.Configuration");
@@ -120,7 +120,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         if (this.clazz == null) {
             throw new ShauniException(1, "Command '" + cmd + "' is unknown.\nTask has been aborted!");
         }
-
         // Exporter Format -- FIXME. Don't like this here...
         String ecmd = cmd;
         if (this.clazz.isAssignableFrom(SpringExporter.class)) {
@@ -130,9 +129,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             } else {
                 ecmd += format;
             }
-//            if (ecmd.equals("exp")) {
-//                ecmd += "tab";
-//            }
         }
 
         final String fcommand = ecmd;
@@ -167,7 +163,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
                 }
                 
-                work = new DefaultWorkSplitter().splitWork(cluster, urls);
+                work = new DefaultWorkSplitter<>().splitWork(String.class, cluster, urls);
                 isDbCommand = true;
 
             }
@@ -208,20 +204,13 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     printHelp();
                     break; // for help no need to invoke different threads..
                 }
-//                if (c.isCluster()) { // FIXME
                 threads[node] = pool.submit(c);
-//                } else {
-//                    c.execute(); // BUG, threads[i] will be null if the code passes by here..
-//                }
             }
             FixedThreadPoolManager.shutdownPool();
             Long[] results = new Long[threads.length];
-            long total = 0;
             for (int i = 0; i < results.length; i++) {
                 try {
-                    long et = threads[i].get();
-                    results[i] = et;
-                    total += et;
+                    results[i] = threads[i].get();
                     if (threads[i].isDone()) {
                         log.debug("Thread is done.");
                     }
@@ -231,8 +220,9 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 }
             }
             ThreadPoolManager.shutdownPool();
-            Arrays.sort(results);
-            log.info("\nSummary:\n -> [{}]\tmin: {} ms\tmax: {} ms\tavg: {} ms", cmd, results[0], results[threads.length - 1], total / threads.length);
+            LongSummaryStatistics stats = Arrays.stream(results).collect(summarizingLong(d -> d));
+            log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)"
+                    , cmd, stats.getCount(), stats.getMax(), stats.getMin(), stats.getAverage());
         } catch (NoSuchBeanDefinitionException b) {
             throw new ShauniException(600, b.getMessage());
         }
@@ -242,9 +232,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     public void printHelp() {
         StringBuilder sb = new StringBuilder();
         jc.usage(sb);
-        log.info("Printing help..\n");
-        log.info(sb);
-        log.info("Task terminated");
+        log.info("Printing help..\n{}Task terminated", sb.toString());
     }
 
     @Override

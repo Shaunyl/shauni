@@ -1,8 +1,8 @@
 package com.fil.shauni.command.writer;
 
 import com.fil.shauni.util.DatabaseUtil;
-import com.fil.shauni.util.DateFormat;
 import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.Sysdate;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -54,7 +54,7 @@ public class MonTbsWriter implements WriterManager {
     }
 
     protected void writeFooter(boolean isSuccess) { //TEMPME: remove.....
-        writeNext("\nJob completed " + (isSuccess ? "successfully " : "with errors ") + GeneralUtil.getCurrentDate(DateFormat.DASH_TIMEDATE.toString()));
+        writeNext("\nJob completed " + (isSuccess ? "successfully " : "with errors ") + Sysdate.now(Sysdate.DASH_TIMEDATE));
     }
 
     protected void ignoreTbsList() {
@@ -134,7 +134,7 @@ public class MonTbsWriter implements WriterManager {
 
             int columnCount = metadata.getColumnCount();
 
-            writeNext(new String[]{"Starting MonTbs on instance " + instance + " at " + GeneralUtil.getCurrentDate(DateFormat.DASH_TIMEDATE.toString())});
+            writeNext(new String[]{"Starting MonTbs on instance " + instance + " at " + Sysdate.now(Sysdate.DASH_TIMEDATE)});
             ignoreTbsList();
             thresholdUsed();
             writeNext("\nRetrieving tablespaces info..\n");
@@ -168,7 +168,7 @@ public class MonTbsWriter implements WriterManager {
     @Override
     public void writeAll(@NonNull final List lines) {
         writeHeader();
-        writeNext(new String[]{"Starting MonTbs on instance " + instance + " at " + GeneralUtil.getCurrentDate(DateFormat.DASH_TIMEDATE.toString())});
+        writeNext(new String[]{"Starting MonTbs on instance " + instance + " at " + Sysdate.now(Sysdate.DASH_TIMEDATE)});
         ignoreTbsList();
         thresholdUsed();
         writeNext("\nRetrieving tablespaces info..");

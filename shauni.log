@@ -1,38 +1,34 @@
-Shauni 1.0.1.97a - Built at 2017-05-13 01:37
+Shauni 1.0.1.129a - Built at 2017-05-21 16:08
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  exp -tables=sys.dba_users,sys.dba_registry -parallel=2 -cluster=6 -directory=out -filename=%t-%d_[%n-%w%u]
+  exp -tables=dba_users,dba_registry -parallel=2 -cluster=2 -directory=out -filename=%t-%d_[%n-%w%u]
 
-Cluster parameter adjusted to 2 (max cores available)
+Session thread-1 started at 16:29:43.26
 
-Session thread-1 started at 12:38:00.35
+Session thread-2 started at 16:29:43.26
 
-Session thread-2 started at 12:38:00.38
+* Parallelism enabled (requested: 2, adjusted: 2)
 
-  Note: parallelism enabled (requested: 2, adjusted: 2)
-
- . . (worker 0) exporting SYS.DBA_USERS@LOCALHOST..                             
- . . (worker 1) exporting SYS.DBA_REGISTRY@LOCALHOST..                             
- . . (worker 0) exporting SYS.DBA_USERS@FILIPPO-PC..                            
- . . (worker 1) exporting SYS.DBA_REGISTRY@FILIPPO-PC..                            
+ . . (worker 1) exporting DBA_REGISTRY..
+ . . (worker 0) exporting DBA_USERS..
+ . . (worker 0) exporting DBA_USERS..
+ . . (worker 1) exporting DBA_REGISTRY..
 SHA-01004: Thread 0 interrupted abnormally..
  --> org.springframework.jdbc.CannotGetJdbcConnectionException: Could not get JDBC Connection;
-   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Listener refused the connection
-   with the following error:
-ORA-12505, TNS:listener does not currently know of SID given in connect descriptor
- )
+   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could
+   not establish the connection)
 
-Session thread-2 aborted at 12:38:00.328 with 0 warning(s)
+Session thread-2 aborted at 16:29:47.68 with 0 warning(s)
 Elapsed time: 0.0 s
-Dump out/SYS.DBA_REGISTRY-130517-1238_[thread-1-10].txt created successfully.
-  -> exported SYS.DBA_REGISTRY@FILIPPO-PC                                          5 rows
-Dump out/SYS.DBA_USERS-130517-1238_[thread-1-00].txt created successfully.
-  -> exported SYS.DBA_USERS@FILIPPO-PC                                            12 rows
-Session thread-1 task #0 finished in 0.734 ms
+SHA-01004: Thread 0 interrupted abnormally..
+ --> org.springframework.jdbc.CannotGetJdbcConnectionException: Could not get JDBC Connection;
+   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could
+   not establish the connection)
 
-Session thread-1 completed at 12:38:00.858 with 0 warning(s)
-Elapsed time: 0.734 s
+Session thread-1 aborted at 16:29:48.71 with 0 warning(s)
+Elapsed time: 0.0 s
 
 Summary:
- -> [exp]	min: 0 ms	max: 734 ms	avg: 367 ms
+ -> [exp]	count: 2
+		max: 0	min: 0	avg: 0.0	(ms)

@@ -7,6 +7,6 @@ import java.util.Map;
  *
  * @author Shaunyl
  */
-public interface WorkSplitter {
-    Map<Integer, String[]> splitWork(int adjustedParallel, List<String> objects);
+public interface WorkSplitter<T> {
+    <T> Map<Integer, T[]> splitWork(Class<T> clazz, int adjustedParallel, List<T> objects);
 }
