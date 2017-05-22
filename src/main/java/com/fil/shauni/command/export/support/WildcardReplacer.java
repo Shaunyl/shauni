@@ -7,7 +7,6 @@ import com.fil.shauni.util.file.Filepath;
  *
  * @author Chiara
  */
-@FunctionalInterface
 public interface WildcardReplacer {
     void replace(Filepath in, Context context);
 }

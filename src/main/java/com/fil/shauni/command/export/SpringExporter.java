@@ -3,7 +3,6 @@ package com.fil.shauni.command.export;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.validators.PositiveInteger;
-import com.fil.shauni.Main;
 import com.fil.shauni.command.Check;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.export.support.*;
@@ -14,24 +13,19 @@ import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.util.BooleanUtils;
 import com.fil.shauni.util.Sysdate;
-import com.fil.shauni.util.WildcardContext;
 import com.fil.shauni.util.file.DefaultFilepath;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import javax.inject.Inject;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import com.fil.shauni.util.file.Filepath;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -39,7 +33,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
  *
  * @author Chiara
  */
-@Log4j2 @NoArgsConstructor @Component("exp") @Scope("prototype")
+@Log4j2 @Scope("prototype")
 public abstract class SpringExporter extends DatabaseCommandControl implements Exporter {
 
     @Setter @Parameter(names = "-parallel", description = "parallelism Shauni will try to use to export data")
@@ -61,7 +55,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
     protected String format = "tab";
 
     @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
-    public Integer cluster = 1;
+    protected Integer cluster = 1;
 
     private int adjParallel;
 
@@ -69,25 +63,13 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
 
     private final List<FutureTask<Void>> futures = new ArrayList<>();
 
-    @Inject
-    private WorkSplitter<ExporterObject> workSplitter;
+    private final WorkSplitter<ExporterObject> workSplitter;
 
-    private Set<WildcardReplacer> replacers;
-
-    public SpringExporter(String name) {
-        this(name, new HashSet<WildcardReplacer>() {
-            {
-                add(Main.beanFactory.getBean(WWildcardReplacer.class));
-                add(Main.beanFactory.getBean(UWildcardReplacer.class));
-                add(Main.beanFactory.getBean(DWildcardReplacer.class));
-                add(Main.beanFactory.getBean(NWildcardReplacer.class));
-            }
-        });
-    }
-
-    public SpringExporter(String name, Set<WildcardReplacer> replacers) {
+    private final Set<WildcardReplacer> replacers;
+   
+    public SpringExporter(Set<WildcardReplacer> replacers, WorkSplitter<ExporterObject> workSplitter) {
         this.replacers = replacers;
-        this.name = name;
+        this.workSplitter = workSplitter;
         super.isCluster = true;
     }
 
@@ -101,7 +83,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
             return new Check(1041, "Parameters -queries and -tables are mutually exclusive");
         }
         if (tables != null) {
-            this.replacers.add(Main.beanFactory.getBean(TWildcardReplacer.class));
+            this.replacers.add(new TWildcardReplacer());
         } else {
             if (filename.contains("%t")) {
                 cli.print(() -> firstThread, (l, p) -> log.info(l), "* Wildcard %%t not supported in query mode");

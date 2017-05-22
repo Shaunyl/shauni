@@ -72,10 +72,10 @@ public class TabularWriter extends DefaultWriter {
 
     @Override
     protected void buildColumnNames(int i, ResultSetMetaData metadata, String[] nextLine, String[] separators) throws SQLException {
-        nextLine[i] = metadata.getColumnName(i + 1).toLowerCase();
+        nextLine[i] = metadata.getColumnName(i + 1);
         int width = COLUMN_WIDTH;
-        if (colformats.containsKey(nextLine[i])) {
-            width = colformats.get(nextLine[i]);
+        if (colformats.containsKey(nextLine[i].toLowerCase())) {
+            width = colformats.get(nextLine[i].toLowerCase());
         }
         cols.put(nextLine[i], width);
 

@@ -5,20 +5,16 @@ import com.fil.shauni.log.LogLevel;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import java.util.function.Supplier;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Shaunyl
  */
-@Component @Configuration @ComponentScan(basePackages = { "com.fil.shauni" })
-@ImportResource("file:src/main/resources/beans/Beans.xml") @Log4j2
+@Log4j2 @Component
 public class CommandLine implements CommandLinePresentation {
 
-    @Override
+    @Override @Deprecated
     public void print(LogLevel level, String msg, Object... parameters) {
         String message = String.format(msg, parameters);
         switch (level) {
@@ -39,7 +35,7 @@ public class CommandLine implements CommandLinePresentation {
         }
     }
 
-    @Override
+    @Override @Deprecated
     public void printIf(boolean condition, LogLevel level, String msg, Object... parameters) {
         if (condition) {
             this.print(level, msg, parameters);

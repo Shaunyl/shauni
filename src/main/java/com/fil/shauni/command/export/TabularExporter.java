@@ -3,6 +3,7 @@ package com.fil.shauni.command.export;
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.export.support.WildcardReplacer;
+import com.fil.shauni.command.support.WorkSplitter;
 import com.fil.shauni.command.writer.TabularWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +18,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import com.fil.shauni.util.file.Filepath;
+import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Value;
 
 @Log4j2 @Component(value = "exptab") @Parameters(separators = "=") @Scope("prototype")
 public class TabularExporter extends SpringExporter {
@@ -25,17 +28,10 @@ public class TabularExporter extends SpringExporter {
     private Map<String, Integer> colformats = new HashMap<>();
 
     private final static String EXTENSION = ".txt";
-
-    public TabularExporter() {
-        super("exp");
-    }
-
-    public TabularExporter(String name) {
-        super(name);
-    }
-
-    public TabularExporter(String name, Set<WildcardReplacer> replacers) {
-        super(name, replacers);
+    
+    @Inject
+    public TabularExporter(@Value("#{wildcardReplacers}") Set<WildcardReplacer> replacers, WorkSplitter<ExporterObject> workSplitter) {
+        super(replacers, workSplitter);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.export.support.WildcardReplacer;
+import com.fil.shauni.command.support.WorkSplitter;
 import com.fil.shauni.command.writer.CSVWriter;
 import com.fil.shauni.command.writer.WriterManager;
 import java.io.FileWriter;
@@ -13,10 +14,11 @@ import java.sql.SQLException;
 import java.util.Set;
 import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import com.fil.shauni.util.file.Filepath;
+import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  *
@@ -36,16 +38,9 @@ public class CSVExporter extends SpringExporter {
 
     private final static String EXTENSION = ".txt";
     
-    public CSVExporter() {
-        super("exp");
-    }
-
-    public CSVExporter(String name) {
-        super(name);
-    }
-
-    public CSVExporter(String name, Set<WildcardReplacer> replacers) {
-        super(name, replacers);
+    @Inject
+    public CSVExporter(@Value("#{wildcardReplacers}") Set<WildcardReplacer> replacers, WorkSplitter<ExporterObject> workSplitter) {
+        super(replacers, workSplitter);
     }
 
     @Override

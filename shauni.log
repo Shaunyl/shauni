@@ -1,12 +1,12 @@
-Shauni 1.0.1.129a - Built at 2017-05-21 16:08
+Shauni 1.0.1.148a - Built at 2017-05-22 02:01
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
   exp -tables=dba_users,dba_registry -parallel=2 -cluster=2 -directory=out -filename=%t-%d_[%n-%w%u]
 
-Session thread-1 started at 16:29:43.26
+Session thread-1 started at 02:02:00.76
 
-Session thread-2 started at 16:29:43.26
+Session thread-2 started at 02:02:00.76
 
 * Parallelism enabled (requested: 2, adjusted: 2)
 
@@ -14,21 +14,23 @@ Session thread-2 started at 16:29:43.26
  . . (worker 0) exporting DBA_USERS..
  . . (worker 0) exporting DBA_USERS..
  . . (worker 1) exporting DBA_REGISTRY..
-SHA-01004: Thread 0 interrupted abnormally..
- --> org.springframework.jdbc.CannotGetJdbcConnectionException: Could not get JDBC Connection;
-   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could
-   not establish the connection)
+Dump out/DBA_REGISTRY-220517-0202_[thread-2-10].txt created successfully.
+Dump out/DBA_REGISTRY-220517-0202_[thread-1-10].txt created successfully.
+  -> exported DBA_REGISTRY                                                    5 rows
+  -> exported DBA_REGISTRY                                                    5 rows
+Dump out/DBA_USERS-220517-0202_[thread-1-00].txt created successfully.
+  -> exported DBA_USERS                                                      12 rows
+Session thread-1 task #0 finished in 0.686 ms
 
-Session thread-2 aborted at 16:29:47.68 with 0 warning(s)
-Elapsed time: 0.0 s
-SHA-01004: Thread 0 interrupted abnormally..
- --> org.springframework.jdbc.CannotGetJdbcConnectionException: Could not get JDBC Connection;
-   nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could
-   not establish the connection)
+Session thread-1 completed at 02:02:01.54 with 0 warning(s)
+Elapsed time: 0.686 s
+Dump out/DBA_USERS-220517-0202_[thread-2-00].txt created successfully.
+  -> exported DBA_USERS                                                      12 rows
+Session thread-2 task #0 finished in 0.702 ms
 
-Session thread-1 aborted at 16:29:48.71 with 0 warning(s)
-Elapsed time: 0.0 s
+Session thread-2 completed at 02:02:01.55 with 0 warning(s)
+Elapsed time: 0.702 s
 
 Summary:
  -> [exp]	count: 2
-		max: 0	min: 0	avg: 0.0	(ms)
+		max: 702	min: 686	avg: 694.0	(ms)

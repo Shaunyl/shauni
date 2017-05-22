@@ -9,7 +9,7 @@ import com.fil.shauni.util.file.Filepath;
  *
  * @author Chiara
  */
-@Component @NoArgsConstructor
+@NoArgsConstructor
 public class UWildcardReplacer implements WildcardReplacer {
 
     @Override
