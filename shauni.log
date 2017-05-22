@@ -1,36 +1,36 @@
-Shauni 1.0.1.148a - Built at 2017-05-22 02:01
+Shauni 1.0.1.154a - Built at 2017-05-22 13:06
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
   exp -tables=dba_users,dba_registry -parallel=2 -cluster=2 -directory=out -filename=%t-%d_[%n-%w%u]
 
-Session thread-1 started at 02:02:00.76
+Session thread-2 started at 13:07:05.37
 
-Session thread-2 started at 02:02:00.76
+Session thread-1 started at 13:07:05.37
 
 * Parallelism enabled (requested: 2, adjusted: 2)
 
- . . (worker 1) exporting DBA_REGISTRY..
- . . (worker 0) exporting DBA_USERS..
  . . (worker 0) exporting DBA_USERS..
  . . (worker 1) exporting DBA_REGISTRY..
-Dump out/DBA_REGISTRY-220517-0202_[thread-2-10].txt created successfully.
-Dump out/DBA_REGISTRY-220517-0202_[thread-1-10].txt created successfully.
+ . . (worker 0) exporting DBA_USERS..
+ . . (worker 1) exporting DBA_REGISTRY..
+Dump out/DBA_REGISTRY-220517-1307_[thread-1-10].txt created successfully.
+Dump out/DBA_USERS-220517-1307_[thread-1-00].txt created successfully.
+Dump out/DBA_REGISTRY-220517-1307_[thread-2-10].txt created successfully.
   -> exported DBA_REGISTRY                                                    5 rows
+Dump out/DBA_USERS-220517-1307_[thread-2-00].txt created successfully.
+  -> exported DBA_USERS                                                      12 rows
+  -> exported DBA_USERS                                                      12 rows
   -> exported DBA_REGISTRY                                                    5 rows
-Dump out/DBA_USERS-220517-0202_[thread-1-00].txt created successfully.
-  -> exported DBA_USERS                                                      12 rows
-Session thread-1 task #0 finished in 0.686 ms
+Session thread-1 task #0 finished in 0.946 ms
+Session thread-2 task #0 finished in 0.948 ms
 
-Session thread-1 completed at 02:02:01.54 with 0 warning(s)
-Elapsed time: 0.686 s
-Dump out/DBA_USERS-220517-0202_[thread-2-00].txt created successfully.
-  -> exported DBA_USERS                                                      12 rows
-Session thread-2 task #0 finished in 0.702 ms
+Session thread-2 completed at 13:07:06.41 with 0 warning(s)
+Elapsed time: 0.948 s
 
-Session thread-2 completed at 02:02:01.55 with 0 warning(s)
-Elapsed time: 0.702 s
+Session thread-1 completed at 13:07:06.41 with 0 warning(s)
+Elapsed time: 0.946 s
 
 Summary:
  -> [exp]	count: 2
-		max: 702	min: 686	avg: 694.0	(ms)
+		max: 948	min: 946	avg: 947.0	(ms)

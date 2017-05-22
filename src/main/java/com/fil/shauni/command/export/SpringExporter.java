@@ -83,7 +83,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements E
             return new Check(1041, "Parameters -queries and -tables are mutually exclusive");
         }
         if (tables != null) {
-            this.replacers.add(new TWildcardReplacer());
+            this.replacers.add((s, c) -> s.replaceWildcard("%t", c.getQuery().get()));
         } else {
             if (filename.contains("%t")) {
                 cli.print(() -> firstThread, (l, p) -> log.info(l), "* Wildcard %%t not supported in query mode");

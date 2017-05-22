@@ -1,9 +1,5 @@
 package com.fil.shauni;
 
-import com.fil.shauni.command.export.support.DWildcardReplacer;
-import com.fil.shauni.command.export.support.NWildcardReplacer;
-import com.fil.shauni.command.export.support.UWildcardReplacer;
-import com.fil.shauni.command.export.support.WWildcardReplacer;
 import com.fil.shauni.command.export.support.WildcardReplacer;
 import com.fil.shauni.command.support.DefaultWorkSplitter;
 import com.fil.shauni.command.support.WorkSplitter;
@@ -25,15 +21,15 @@ public class BeanConfiguration {
     public <T> WorkSplitter<T> workSplitter() {
         return new DefaultWorkSplitter<>();
     }
-
+    
     @Bean
     public Set<WildcardReplacer> wildcardReplacers() {
         return new HashSet<WildcardReplacer>() {
             {
-                add(new WWildcardReplacer());
-                add(new UWildcardReplacer());
-                add(new DWildcardReplacer());
-                add(new NWildcardReplacer());
+                add((s, c) -> s.replaceWildcard("%w", c.getWorkerId()));
+                add((s, c) -> s.replaceWildcard("%u", c.getObjectId()));
+                add((s, c) -> s.replaceWildcard("%d", c.getTimestamp()));
+                add((s, c) -> s.replaceWildcard("%n", c.getThreadName()));
             }
         };
     }
