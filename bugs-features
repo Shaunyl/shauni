@@ -1,8 +1,0 @@
-BUG:
-task Monmem
- ->
-if result set is invalid (forward only but cal beforeFirst() for example), the task is not interrupted
-and the file is created the same
-
-FEAT:
-use Predicate<T> to validate commands
