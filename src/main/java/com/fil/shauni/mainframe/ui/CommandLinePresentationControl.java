@@ -4,10 +4,6 @@ package com.fil.shauni.mainframe.ui;
  *
  * @author Shaunyl
  */
-public interface CommandLinePresentationControl {
-    void printBanner();
-    
+public interface CommandLinePresentationControl {   
     void executeCommand(String args[]) throws Exception;
-
-    void printFooter();
 }

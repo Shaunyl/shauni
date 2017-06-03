@@ -1,6 +1,6 @@
 package com.fil.shauni.db.pool;
 
-import com.fil.shauni.Configuration;
+import com.fil.shauni.Project;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -60,7 +60,7 @@ public class JDBCPoolManager implements DatabasePoolManager {
             properties.put("defaultAutoCommit", String.valueOf(Boolean.FALSE));
             properties.put("maxActive", String.valueOf(poolsize));
             // If cannot read the file? BUG.. FIXME
-            timeout = Configuration.getProperty("database.timeout");
+            timeout = Project.getProperty("database.timeout");
             if (timeout == null) {
                 String thr = Thread.currentThread().getName();
                 if (thr.equals("thread-1")) { //FIXME.. if the name of the thread changes, this code does not work.

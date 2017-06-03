@@ -2,17 +2,14 @@ package com.fil.shauni.mainframe.spi;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.fil.shauni.Configuration;
+import com.fil.shauni.Project;
 import com.fil.shauni.command.Command;
 import com.fil.shauni.command.CommandLineSupporter;
 import com.fil.shauni.command.ConfigCommandControl;
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.config.DefaultCSAdder;
-import com.fil.shauni.command.config.DefaultCSViewer;
 import com.fil.shauni.command.export.SpringExporter;
-import com.fil.shauni.command.memory.DefaultMonMem;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
-import com.fil.shauni.command.support.DefaultWorkSplitter;
+import com.fil.shauni.command.support.worksplitter.DefaultWorkSplitter;
 import com.fil.shauni.concurrency.pool.FixedThreadPoolManager;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.exception.ShauniException;
@@ -63,12 +60,11 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     static {
         addCommand(SpringExporter.class, "exp");
         addCommand(DefaultMonTbs.class, "montbs");
-        addCommand(DefaultMonMem.class, "monmem");
+//        addCommand(DefaultMonMem.class, "monmem");
 
         // Configuration commands
-        addCommand(DefaultCSAdder.class, "addcs");
-        addCommand(DefaultCSViewer.class, "viewcs");
-
+//        addCommand(DefaultCSAdder.class, "addcs");
+//        addCommand(DefaultCSViewer.class, "viewcs");
     }
 
     private static void addCommand(final Class<? extends Command> clazz, String name) {
@@ -79,8 +75,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         return commands.get(name);
     }
 
-    @Override
-    public void printBanner() {
+    private void printBanner() {
         project = propertiesFileManager.readAllWithKeys("target/classes/project.properties", "");
         String version = project.get("version");
         buildNumber = propertiesFileManager.readAllWithKeys("buildNumber.properties", "");
@@ -93,11 +88,12 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Override
     public void executeCommand(final String args[]) throws Exception {
+        printBanner();
         // Initialize configuration.. NOT HERE.. FIXME
         try {
-            Class.forName("com.fil.shauni.Configuration");
+            Class.forName("com.fil.shauni.Project"); //FIXME, name of the class is hardcoded...
         } catch (ClassNotFoundException e) {
-            throw new ShauniException(600, "Configuration file " + Configuration.MAIN_CFG_PATH + " cannot be loaded.");
+            throw new ShauniException(600, "Configuration file " + Project.MAIN_CFG_PATH + " cannot be loaded.");
         }
 
         if (args != null && args.length > 0) {
@@ -124,7 +120,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         String ecmd = cmd;
         if (this.clazz.isAssignableFrom(SpringExporter.class)) {
             String format = cliSupporter.getValue("format", String.class);
-            if (format == null) {
+            if (format == null) { // FIXME: not open closed..
                 ecmd += "tab";
             } else {
                 ecmd += format;
@@ -136,7 +132,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         AbstractCommandFactory factory = new CommandFactory(fcommand, clazz);
 
         // FIXME: duplicate code...
-        String cryptable = Configuration.getProperty("database.configuration.file.cryptable");
+        String cryptable = Project.getProperty("database.configuration.file.cryptable");
         if (cryptable == null) {
             log.warn("Global property 'database.configuration.file.cryptable' not found. It will be reset to 'false'.");
             cryptable = "false";
@@ -162,7 +158,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     String coresMex = urlsSize < cores ? "due to connections configuration" : "max cores available";
                     log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
                 }
-                
+
                 work = new DefaultWorkSplitter<>().splitWork(String.class, cluster, urls);
                 isDbCommand = true;
 
@@ -185,7 +181,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 try {
                     jc = new JCommander(c);
                     jc.parse(args);
-
+                    
                     int ndparams = cliSupporter.countNoDashedParameters();
                     if (ndparams > 0) {
                         throw new ParameterException("Options without a dash in front are not supported");
@@ -221,8 +217,8 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             }
             ThreadPoolManager.shutdownPool();
             LongSummaryStatistics stats = Arrays.stream(results).collect(summarizingLong(d -> d));
-            log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)"
-                    , cmd, stats.getCount(), stats.getMax(), stats.getMin(), stats.getAverage());
+            log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)",
+                    cmd, stats.getCount(), stats.getMax(), stats.getMin(), stats.getAverage());
         } catch (NoSuchBeanDefinitionException b) {
             throw new ShauniException(600, b.getMessage());
         }
@@ -235,7 +231,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         log.info("Printing help..\n{}Task terminated", sb.toString());
     }
 
-    @Override
     public void printFooter() {
         log.info("\nClosing {}..", project.get("name"));
     }

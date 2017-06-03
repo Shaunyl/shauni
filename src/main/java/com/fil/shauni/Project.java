@@ -5,9 +5,9 @@ import java.util.Map;
 
 /**
  *
- * @author Chiara
+ * @author Filippo
  */
-public class Configuration {
+public class Project {
 
     public final static String MAIN_CFG_PATH = "shauni.properties";
     

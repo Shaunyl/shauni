@@ -1,32 +1,33 @@
 package com.fil.shauni.command;
 
-//import com.fil.mvc.BeanFactory;
 import com.fil.shauni.command.crypto.StoreKey;
 import com.fil.shauni.util.GeneralUtil;
 import com.fil.shauni.db.DbConnection;
 import com.fil.shauni.db.pool.DatabasePoolManager;
-import com.fil.shauni.db.pool.JDBCPoolManager;
 import com.fil.shauni.exception.ShauniException;
-import com.fil.shauni.log.LogLevel;
+import com.fil.shauni.mainframe.impl.cli.CommandLine;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.Sysdate;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import javax.crypto.SecretKey;
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Shaunyl
  */
-@Log4j2
-public abstract class DatabaseCommandControl extends Command {
+@Log4j2 @Component
+public abstract class DatabaseCommandControl<T> extends Command<T> {
 
     // temp ignorable for now..
     private static final String PROP_KEY = "url";
@@ -36,21 +37,15 @@ public abstract class DatabaseCommandControl extends Command {
 
     private final static String MULTIDB_CONN = DatabaseConfiguration.MULTIDB_CONN;
 
-    protected DatabasePoolManager databasePoolManager;
-
     @Inject
     private StoreKey sk;
 
     private SecretKey skey;
 
-    protected ExecutorService executorService;
-
     private final List<DbConnection> dbcs = new ArrayList<>();
 
-    protected String currentThreadName = "";
-
-    @Inject
-    protected CommandLinePresentation cli;
+//    @Inject TEMPME
+    protected CommandLinePresentation cli = new CommandLine();
 
     protected boolean firstThread = false;
 
@@ -60,74 +55,64 @@ public abstract class DatabaseCommandControl extends Command {
 
     private String host;
 
+    // Only for testing purpose
+//    public void setCurrentThreadName(String name) {
+//        currentThreadName = name;
+//    }
+    
+    private DataSource dataSource;
+    
+    protected DatabasePoolManager databasePoolManager;
+    
+    @Autowired(required = true)
+    public void setDatabasePoolManager(final @NonNull @Value("#{databasePoolManager}") DatabasePoolManager databasePoolManager) {
+        this.databasePoolManager = databasePoolManager;
+    }
+
     @Override
     public Long call() throws Exception {
-        currentThreadName = Thread.currentThread().getName();
+        _thread = Thread.currentThread().getName();
 
         String currentDate = Sysdate.now(Sysdate.TIMEONLY);
-        log.info("Session {} started at {}\n", currentThreadName, currentDate);
+        log.info("Session {} started at {}\n", _thread, currentDate);
         long et = this.execute();
         currentDate = Sysdate.now(Sysdate.TIMEONLY);
-        log.info("\nSession {} {} at {} with {} warning(s)\nElapsed time: {} s", currentThreadName, state, currentDate, errorCount, et / 1e3);
+        log.info("\nSession {} {} at {} with {} warning(s)\nElapsed time: {} s", _thread, state, currentDate, getErrorCount(), et / 1e3);
         return et;
     }
 
     @Override
-    public void setup() throws ShauniException {
-        databasePoolManager = new JDBCPoolManager();
+    public long execute() {
+        this.firstThread = "thread-1".equals(_thread);
+        return super.execute();
     }
 
     @Override
-    public long execute() {
-        this.firstThread = "thread-1".equals(currentThreadName);
-        long endTime = 0;
-        try {
-            cli.printIf(firstThread, LogLevel.DEBUG, "Validating..");
-            Check check = this.validate();
-            if (!check.isValid()) {
-                throw new ShauniException(check.getCode(), check.getMessage());
-            }
-
-            cli.printIf(firstThread, LogLevel.DEBUG, "\nSetting up..");
-            this.setup();
-            for (int i = 0; i < dbcs.size(); i++) {
-                DbConnection _dbc = dbcs.get(i);
-                databasePoolManager.configure(_dbc.getUrl(), _dbc.getUser(), _dbc.getPasswd(), _dbc.getHost(), _dbc.getSid());
-                this.setDataSource(databasePoolManager.getDataSource());
-
-                long startTime = System.currentTimeMillis();
-                this.run();
-                long finishTime = System.currentTimeMillis() - startTime;;
-                endTime += finishTime;
-                log.info("Session {} task #{} finished in {} ms", currentThreadName, i, finishTime / 1e3);
-
-                this.takedown();
-            }
-        } catch (ShauniException sh) {
-            log.error(sh.getMessage());
-            state = "aborted";
-        }
-        return endTime;
+    public void setup() throws ShauniException {
+        threads = dbcs.size();
+        super.setup();
     }
 
-    DataSource ds;
-
-    public void setDataSource(DataSource ds) {
-        this.ds = ds;
-        this.jdbc = new JdbcTemplate(ds);
-        this.jdbc.setFetchSize(100); // FIXME: not here.. (should override PreparedStatementCreator and pass it to jdbcTemplate
+    @Override
+    protected void initThread(int i) {
+        DbConnection _dbc = dbcs.get(i);
+        databasePoolManager.configure(_dbc.getUrl(), _dbc.getUser(), _dbc.getPasswd(), _dbc.getHost(), _dbc.getSid());
+        this.dataSource = databasePoolManager.getDataSource();
+        this.jdbc = new JdbcTemplate(dataSource);
+        this.jdbc.setFetchSize(100);
     }
 
     public Connection getConnection(int workerId) throws ShauniException {
         Connection connection = databasePoolManager.getConnection(); // this need to be here because every thread needs to create a different connection.
         if (connection == null) {
+            incrementErrorCount();
             log.error("> Worker {} could not connect to {}@{}", workerId, databasePoolManager.getSid(), databasePoolManager.getHost());
         }
         return connection;
     }
 
     @Override
-    public void takedown() {
+    public void takedownThread() {
         this.databasePoolManager.close();
         log.debug("Pool has been closed at " + Sysdate.now(Sysdate.TIMEONLY));
     }

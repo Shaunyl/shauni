@@ -1,7 +1,6 @@
 package com.fil.shauni.command;
 
 import com.fil.shauni.exception.ShauniException;
-import com.fil.shauni.util.GeneralUtil;
 import com.fil.shauni.util.Sysdate;
 import lombok.extern.log4j.Log4j;
 
@@ -29,17 +28,17 @@ public abstract class ConfigCommandControl extends Command {
             setup();
 
             long startTime = System.currentTimeMillis();
-            run();
+            runThread();
             endTime = System.currentTimeMillis() - startTime;
 
-            takedown();
+            takedownThread();
         } catch (ShauniException sh) {
             log.error(sh.getMessage());
             state = "aborted";
         }
 
         currentDate = Sysdate.now(Sysdate.TIMEONLY);
-        log.info("\nTask " + state + " at " + currentDate + " with " + errorCount + " warning(s)\nElapsed time: " + endTime / 1e3 + " s");
+        log.info("\nTask " + state + " at " + currentDate + " with " + getErrorCount() + " warning(s)\nElapsed time: " + endTime / 1e3 + " s");
         return endTime;
     }
 }

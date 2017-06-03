@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -21,6 +22,15 @@ public class CommandLineSupporter {
             throw new ShauniException(600, "Arguments cannot be null!");
         }
         this.args = args;
+    }
+    
+    public String isThere(final @NonNull String option) {
+        for (String arg : args) {
+            if (arg.matches("-" + option + "=.+")) {
+                return option;
+            }
+        }
+        return null;
     }
 
     /**

@@ -64,21 +64,20 @@ public abstract class DefaultWriter implements WriterManager {
     public int writeAll(@NonNull ResultSet rs, boolean includeColumnNames) throws SQLException, IOException {
         this.writeHeader();
 
-        ResultSetMetaData metadata = rs.getMetaData();
-
-        int cols = metadata.getColumnCount();
-                
-        if (includeColumnNames) {
-            writeColumnNames(metadata);
-        } else {
-            pattern = Stream.generate(() -> "%-" + COLUMN_WIDTH + "s").limit(cols).collect(Collectors.joining());
-        }
-        
         int rows = 0;
 
         if (!rs.next()) {
-            writeNext(new String[]{ "\nno rows selected" });
+//            writeNext(new String[]{ "\nno rows selected" });
         } else {
+            ResultSetMetaData metadata = rs.getMetaData();
+
+            int cols = metadata.getColumnCount();
+
+            if (includeColumnNames) {
+                writeColumnNames(metadata);
+            } else {
+                pattern = Stream.generate(() -> "%-" + COLUMN_WIDTH + "s").limit(cols).collect(Collectors.joining());
+            }
             do {
                 String[] nextLine = new String[cols];
 
@@ -89,8 +88,8 @@ public abstract class DefaultWriter implements WriterManager {
                 rows++;
             } while (rs.next());
         }
-        this.writeFooter();
 
+        this.writeFooter();
         return rows;
     }
 

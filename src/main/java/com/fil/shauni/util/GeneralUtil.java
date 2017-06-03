@@ -1,6 +1,5 @@
 package com.fil.shauni.util;
 
-import com.fil.shauni.command.export.SupplierPredicate;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,8 +14,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,5 +167,13 @@ public class GeneralUtil {
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
+    }
+
+    public static <E> void addAllIfNotNull(List<E> list, Collection<? extends E>... c) {
+        for (Collection<? extends E> x : c) {
+            if (x != null) {
+                list.addAll(x);
+            }
+        }
     }
 }

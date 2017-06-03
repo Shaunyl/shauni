@@ -10,13 +10,13 @@ import org.junit.Test;
 public class ConfigurationTest {
     @Test
     public void getProperty() {
-        String value = Configuration.getProperty("database.name");
+        String value = Project.getProperty("database.name");
         Assert.assertEquals("oracle", value);
     }
     
     @Test
     public void getPropertyNotExistent() {
-        String value = Configuration.getProperty("foo.property");
+        String value = Project.getProperty("foo.property");
         Assert.assertNull(value);
     }
 }

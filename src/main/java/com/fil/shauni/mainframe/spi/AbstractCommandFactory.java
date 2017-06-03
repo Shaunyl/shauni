@@ -1,6 +1,7 @@
 package com.fil.shauni.mainframe.spi;
 
 import com.fil.shauni.command.Command;
+import lombok.NonNull;
 
 /**
  *
@@ -9,4 +10,6 @@ import com.fil.shauni.command.Command;
 public interface AbstractCommandFactory {
     Command createDatabaseCommand(final String[] urls);
     Command createConfigurationCommand();
+        
+    Command springExporter(final @NonNull String format);
 }

@@ -4,6 +4,7 @@ import com.fil.shauni.Main;
 import com.fil.shauni.command.Command;
 import com.fil.shauni.command.ConfigCommandControl;
 import com.fil.shauni.command.DatabaseCommandControl;
+import lombok.NonNull;
 
 /**
  *
@@ -12,14 +13,14 @@ import com.fil.shauni.command.DatabaseCommandControl;
 public class CommandFactory implements AbstractCommandFactory {
 
     private final String subcmd;
-    
+
     private final Class<? extends Command> clazz;
-        
+
     public CommandFactory(String subcmd, Class<? extends Command> clazz) {
         this.subcmd = subcmd;
         this.clazz = clazz;
     }
-    
+
     @Override
     public DatabaseCommandControl createDatabaseCommand(String[] urls) {
         Command cmd = Main.beanFactory.getBean(subcmd, clazz);
@@ -31,6 +32,11 @@ public class CommandFactory implements AbstractCommandFactory {
     @Override
     public ConfigCommandControl createConfigurationCommand() {
         Command cmd = Main.beanFactory.getBean(subcmd, clazz);
-        return (ConfigCommandControl)cmd;
+        return (ConfigCommandControl) cmd;
+    }
+
+    @Override
+    public Command springExporter(final @NonNull String format) {
+        return (Command) Main.beanFactory.getBean("springExporter", format);
     }
 }

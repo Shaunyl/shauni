@@ -1,5 +1,6 @@
-package com.fil.shauni.command.writer;
+package com.fil.shauni.command.writer.spi;
 
+import com.fil.shauni.command.writer.DefaultWriter;
 import com.fil.shauni.util.StringUtils;
 import java.io.IOException;
 import java.io.Writer;

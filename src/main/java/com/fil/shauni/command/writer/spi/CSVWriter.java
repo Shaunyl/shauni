@@ -1,5 +1,6 @@
-package com.fil.shauni.command.writer;
+package com.fil.shauni.command.writer.spi;
 
+import com.fil.shauni.command.writer.WriterManager;
 import com.fil.shauni.util.DatabaseUtil;
 import java.io.IOException;
 import java.io.PrintWriter;

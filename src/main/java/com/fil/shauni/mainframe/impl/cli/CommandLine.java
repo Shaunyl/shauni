@@ -1,6 +1,6 @@
 package com.fil.shauni.mainframe.impl.cli;
 
-import com.fil.shauni.command.export.Logger;
+import com.fil.shauni.command.support.Logger;
 import com.fil.shauni.log.LogLevel;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import java.util.function.Supplier;
