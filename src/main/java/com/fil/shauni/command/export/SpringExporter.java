@@ -176,11 +176,13 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
                         cli.print((l, p) -> log.info(l), "  -> %s skipped because it is empty", out);
                     }
                 } catch (IOException | SQLException e) {
+                    status.error();
                     log.error("Error while exporting to file {}\n -> {}", filepath.getFilepath(), e.getMessage());
                 }
                 return null;
             });
         } catch (DataAccessException e) {
+            status.error();
             log.error("Error while fetching data:\n -> {}", e.getMessage());
         }
     }
@@ -199,7 +201,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         final String timestamp;
         final String table;
         final String threadName;
-
     }
 
     interface WildcardReplacer {

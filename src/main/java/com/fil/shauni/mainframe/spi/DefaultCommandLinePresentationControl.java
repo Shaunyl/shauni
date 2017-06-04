@@ -1,30 +1,24 @@
 package com.fil.shauni.mainframe.spi;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
+import com.fil.shauni.command.parser.CommandParser;
+import com.fil.shauni.command.parser.spi.SpringExporterParser;
+import com.fil.shauni.command.CommandConfiguration;
+import com.beust.jcommander.*;
 import com.fil.shauni.Main;
-import com.fil.shauni.Project;
-import com.fil.shauni.command.Command;
-import com.fil.shauni.command.CommandLineSupporter;
-import com.fil.shauni.command.DatabaseConfiguration;
+import com.fil.shauni.command.*;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
 import com.fil.shauni.command.support.worksplitter.DefaultWorkSplitter;
-import com.fil.shauni.concurrency.pool.FixedThreadPoolManager;
-import com.fil.shauni.concurrency.pool.ThreadPoolManager;
+import com.fil.shauni.concurrency.pool.*;
 import com.fil.shauni.exception.ShauniException;
-import com.fil.shauni.io.PropertiesFileManager;
+import com.fil.shauni.io.spi.PropertiesFileManager;
 import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
 import com.fil.shauni.util.Sysdate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.LongSummaryStatistics;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.*;
+import static com.fil.shauni.util.GeneralUtil.*;
+import java.util.concurrent.*;
 import static java.util.stream.Collectors.*;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino
  */
 @Component @Log4j2 @NoArgsConstructor
 public class DefaultCommandLinePresentationControl implements CommandLinePresentationControl {
@@ -47,112 +41,85 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     @Inject
     private PropertiesFileManager propertiesFileManager;
 
-    private CommandLineSupporter cliSupporter;
-
     @Getter
-    private static final Map<String, Class<? extends Command>> commands = new TreeMap<>();
+    private static final Map<String, Class<? extends Command>> commands = new HashMap<>();
 
-    Map<String, String> project, buildNumber;
+    private static final Map<Class<? extends Command>, Class<? extends CommandParser>> parsers = new HashMap();
+
+    private Map<String, String> project, buildNumber;
 
     static {
-        addCommand(SpringExporter.class, "exp");
-        addCommand(DefaultMonTbs.class, "montbs");
+        addCommand("exp", SpringExporter.class, SpringExporterParser.class);
+        addCommand("montbs", DefaultMonTbs.class, null);
     }
 
-    private static void addCommand(final Class<? extends Command> clazz, String name) {
-        commands.put(name, clazz);
+    @PostConstruct
+    public void init() {
+        printBanner();
     }
 
-    private Class<? extends Command> toTask(final String name) {
+    private static void addCommand(String name, final Class<? extends Command> c, Class<? extends CommandParser> p) {
+        commands.put(name, c);
+        parsers.put(c, p);
+    }
+
+    private Class<? extends Command> nameToClass(final String name) {
         return commands.get(name);
     }
 
-    private void printBanner() {
-        project = propertiesFileManager.readAllWithKeys("target/classes/project.properties", "");
-        String version = project.get("version");
-        buildNumber = propertiesFileManager.readAllWithKeys("buildNumber.properties", "");
-        version += "." + buildNumber.get("buildNumber") + buildNumber.get("status");
-        String banner = project.get("name") + " " + version + " - Built at " + project.get("build.date") + "\n";
-        banner += "Copyright (c) " + buildNumber.get("dates") + ", " + buildNumber.get("author") + ". All rights reserved.";
-
-        log.info("{}\n", banner);
-    }
-
-    @Override
+    @Override @SuppressWarnings("unchecked")
     public void executeCommand(final String args[]) throws Exception {
-        printBanner();
-        // Initialize configuration.. NOT HERE.. FIXME
-        try {
-            Class.forName("com.fil.shauni.Project"); //FIXME, name of the class is hardcoded...
-        } catch (ClassNotFoundException e) {
-            throw new ShauniException(600, "Configuration file " + Project.MAIN_CFG_PATH + " cannot be loaded.");
-        }
-
-        if (args != null && args.length > 0) {
-        } else {
+        if (args == null || args.length == 0) {
             throw new ShauniException(600, "Arguments cannot be null or empty");
         }
-
         String cmd = args[0];
-        cliSupporter = new CommandLineSupporter(args);
+
+        CommandLineSupporter cliSupporter = new CommandLineSupporter(args);
 
         String command = cliSupporter.getCommand();
-        Integer cluster = cliSupporter.getValue("cluster", Integer.class);
-        if (cluster == null) {
-            cluster = 1;
-        }
-        Integer parallel = cliSupporter.getValue("parallel", Integer.class);
-        if (parallel == null) {
-            parallel = 1;
-        }
+        Integer cluster = cliSupporter.getValue("cluster", Integer.class, 1);
+        Integer parallel = cliSupporter.getValue("parallel", Integer.class, 1);
 
         log.info("Command -->\n  {}\n", command);
 
-        this.clazz = this.toTask(cmd);
+        this.clazz = this.nameToClass(cmd);
         if (this.clazz == null) {
             throw new ShauniException(1, "Command '" + cmd + "' is unknown.\nTask has been aborted!");
         }
-        // Exporter Format -- FIXME. Don't like this here...
-        String ecmd = cmd;
-        if (this.clazz.isAssignableFrom(SpringExporter.class)) {
-            String format = cliSupporter.getValue("format", String.class);
-            if (format == null) { // FIXME: not open closed..
-                ecmd += "tab";
-            } else {
-                ecmd += format;
-            }
+
+        Class<? extends CommandParser> parser = parsers.get(clazz);
+        if (parser != null) {
+            clazz = (Class<? extends Command>) parser.getDeclaredMethod("parse", String[].class).invoke(parser.newInstance(), cliSupporter, new Object[]{ args });
         }
 
-        final String fcommand = ecmd;
-
         try {
-            List<String> urls = propertiesFileManager.readAll(DatabaseConfiguration.MULTIDB_CONN);
-            int urlsSize = urls.size();
-            int cores = Runtime.getRuntime().availableProcessors(); // FIXME, not here...
-            int maxCluster = Math.min(urlsSize, cores);
-            if (cluster > maxCluster) {
-                cluster = maxCluster;
-                String coresMex = urlsSize < cores ? "due to connections configuration" : "max cores available";
-                log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
+            Map<Integer, List<String>> workset;
+            if (clazz.isAssignableFrom(DatabaseCommandControl.class)) {
+                List<String> urls = propertiesFileManager.readAll(DatabaseConfiguration.MULTIDB_CONN);
+                int urlsSize = urls.size();
+                int cores = availableProcessors();
+                int maxCluster = Math.min(urlsSize, cores);
+                if (cluster > maxCluster) {
+                    cluster = maxCluster;
+                    String coresMex = urlsSize < cores ? "based on configuration" : "max cores available";
+                    log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
+                }
+                workset = new DefaultWorkSplitter<>().splitWork(cluster, urls);
+            } else {
+                throw new ShauniException(600, "Command not supported.");
             }
-            Map<Integer, List<String>> workset = new DefaultWorkSplitter<>().splitWork(cluster, urls);
+            
             if (workset == null || workset.isEmpty()) {
                 throw new ShauniException(600, "Could not split the workload.");
             }
 
-            @SuppressWarnings("unchecked")
             Future<Long>[] threads = new Future[cluster];
-            ExecutorService pool = FixedThreadPoolManager.getInstance(cluster,
-                    new BasicThreadFactory.Builder().namingPattern("thread-%d").daemon(true).build());
+            ExecutorService pool = FixedThreadPoolManager.getInstance(cluster, new BasicThreadFactory.Builder().namingPattern("thread-%d").daemon(true).build());
 
             for (int i = 0; i < cluster; i++) {
                 final int thread = i;
-                List<String> sset = workset.get(i);
-
-                Command c = (Command) Main.beanFactory.getBean(fcommand, clazz);
-                
-                CommandConfiguration conf = Main.beanFactory
-                        .getBean(CommandConfiguration.class, sset, parallel, thread);
+                Command c = (Command) Main.beanFactory.getBean(clazz);
+                CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), parallel, thread);
                 c.setConfiguration(conf);
                 try {
                     jc = new JCommander(c);
@@ -201,17 +168,30 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)",
                     cmd, stats.getCount(), stats.getMax(), stats.getMin(), stats.getAverage());
         } catch (NoSuchBeanDefinitionException b) {
-            throw new ShauniException(600, b.getMessage());
+            throw new ShauniException(600, "Command not found.\n" + b.getMessage());
+        } finally {
+            printFooter();
         }
     }
 
-    public void printHelp() {
+    private void printHelp() {
         StringBuilder sb = new StringBuilder();
         jc.usage(sb);
         log.info("Printing help..\n{}Task terminated", sb.toString());
     }
 
-    public void printFooter() {
+    private void printBanner() {
+        project = propertiesFileManager.readAllWithKeys("target/classes/project.properties", "");
+        String version = project.get("version");
+        buildNumber = propertiesFileManager.readAllWithKeys("buildNumber.properties", "");
+        version += "." + buildNumber.get("buildNumber") + buildNumber.get("status");
+        String banner = project.get("name") + " " + version + " - Built at " + project.get("build.date") + "\n";
+        banner += "Copyright (c) " + buildNumber.get("dates") + ", " + buildNumber.get("author") + ". All rights reserved.";
+
+        log.info("{}\n", banner);
+    }
+
+    private void printFooter() {
         log.info("\nClosing {}..", project.get("name"));
     }
 }

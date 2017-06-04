@@ -1,18 +1,17 @@
 package com.fil.shauni.db.pool;
 
-import com.fil.shauni.Project;
+import com.fil.shauni.io.spi.PropertiesFileManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import javax.inject.Inject;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oracle.jdbc.OracleConnection;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -26,6 +25,9 @@ public class JDBCPoolManager implements DatabasePoolManager {
     private BasicDataSource dataSource;
 
     private static final int POOL_SIZE = 5;
+    
+    @Inject
+    private PropertiesFileManager propertiesFileManager;
 
     @Override
     public void configure(String url, String user, String passwd, String host, String sid) {
@@ -59,8 +61,7 @@ public class JDBCPoolManager implements DatabasePoolManager {
 
             properties.put("defaultAutoCommit", String.valueOf(Boolean.FALSE));
             properties.put("maxActive", String.valueOf(poolsize));
-            // If cannot read the file? BUG.. FIXME
-            timeout = Project.getProperty("database.timeout");
+            timeout = propertiesFileManager.read("shauni.properties", "database.timeout");
             if (timeout == null) {
                 String thr = Thread.currentThread().getName();
                 if (thr.equals("thread-1")) { //FIXME.. if the name of the thread changes, this code does not work.

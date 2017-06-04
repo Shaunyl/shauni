@@ -1,4 +1,4 @@
-package com.fil.shauni.mainframe.spi;
+package com.fil.shauni.command;
 
 import java.util.List;
 import lombok.Builder;

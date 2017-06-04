@@ -2,13 +2,9 @@ package com.fil.shauni.command;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
-import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import java.util.List;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -23,12 +19,18 @@ public abstract class Command {
     @Getter @Parameter(required = true, arity = 1)
     protected final List<String> cmd = Lists.newArrayList(1);
 
-    protected String name;
+//    protected String name;
 
-    protected String description;
+//    protected String description;
 
     protected CommandConfiguration configuration;
+    
+    protected CommandStatus status;
 
+    public Command() {
+        status = new CommandStatus();
+    }
+    
     public void setConfiguration(CommandConfiguration configuration) {
         this.configuration = configuration;
     }
@@ -47,13 +49,12 @@ public abstract class Command {
         log.debug("Session started");
         long start = System.currentTimeMillis();
         if (!validate()) {
-            throw new RuntimeException();
+            throw new RuntimeException("Validation went wrong.");
         }
 
         setup();
 
         for (int s = 0; s < configuration.getSessions(); s++) {
-//            log.debug("Task {} started", s);
             long et = 0;
             try {
                 long st = System.currentTimeMillis();
@@ -62,7 +63,6 @@ public abstract class Command {
             } finally {
                 log.info("Task #{} of session {} finished in {} ms", s, configuration.getTid(), et / 1e3);
                 takedown();
-//                log.debug("Task {} finished", s);
             }
         }
 

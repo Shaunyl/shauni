@@ -1,6 +1,5 @@
 package com.fil.shauni.command;
 
-import com.fil.shauni.exception.ShauniException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,10 +16,7 @@ public class CommandLineSupporter {
 
     private final String[] args;
 
-    public CommandLineSupporter(final String[] args) throws ShauniException {
-        if (args == null) {
-            throw new ShauniException(600, "Arguments cannot be null!");
-        }
+    public CommandLineSupporter(final @NonNull String[] args) {
         this.args = args;
     }
     
@@ -42,14 +38,14 @@ public class CommandLineSupporter {
      * found.
      * @throws com.fil.shauni.exception.ShauniException
      */
-    public <T> T getValue(String parameter, Class<T> clazz) throws ShauniException {
+    public <T> T getValue(String parameter, Class<T> clazz, T def) {
         if (args == null || args.length == 0) {
             return null;
         }
         if (parameter == null || parameter.length() == 0) {
             return null;
         }
-        T value = null;
+        T value = def;
         for (String arg : args) {
             if (arg.matches("-" + parameter + "=.+")) {
                 String v = arg.replaceFirst("-" + parameter + "=", "");
@@ -58,17 +54,12 @@ public class CommandLineSupporter {
                 } else if (clazz.isAssignableFrom(String.class)) {
                     value = (T) v;
                 } else if (clazz.isAssignableFrom(Boolean.class)) {
-                    if (v.equals("y")) {
-                        v = "true";
-                    } else if (v.equals("n")) {
-                        v = "false";
-                    }
+                    v = v.equals("y") ? "true" : "false";
+                    // Check better boolean parameter when passing inexistent parameters..
                     value = (T) (Boolean) Boolean.parseBoolean(v);
                 } else { // That is a checked exception, because I know that the shell here does not support the passed type, so I have to handle that.
                     // In this case is the caller that should handle the exception..
-                    String message = "not supported by command line.\nAborting..";
-                    log.info("{} {}", clazz, message);
-                    throw new ShauniException(600, clazz + " " + message);
+                    throw new RuntimeException("Type not supported.");
                 }
                 break;
             }

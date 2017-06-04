@@ -7,7 +7,7 @@ import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.command.writer.spi.CSVWriter;
 import com.fil.shauni.command.writer.WriterManager;
-import com.fil.shauni.mainframe.spi.CommandConfiguration;
+import com.fil.shauni.command.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
 import java.io.IOException;

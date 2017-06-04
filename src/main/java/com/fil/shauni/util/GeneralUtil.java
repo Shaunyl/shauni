@@ -176,4 +176,8 @@ public class GeneralUtil {
             }
         }
     }
+    
+    public static int availableProcessors() {
+        return Runtime.getRuntime().availableProcessors();
+    }
 }

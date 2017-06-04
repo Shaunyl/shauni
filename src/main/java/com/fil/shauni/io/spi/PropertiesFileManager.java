@@ -1,5 +1,6 @@
-package com.fil.shauni.io;
+package com.fil.shauni.io.spi;
 
+import com.fil.shauni.io.FileManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;

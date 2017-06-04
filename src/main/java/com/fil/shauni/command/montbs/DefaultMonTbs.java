@@ -8,7 +8,7 @@ import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.CharBooleanValidator;
 import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.mainframe.spi.CommandConfiguration;
+import com.fil.shauni.command.CommandConfiguration;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.file.DefaultFilepath;
 import com.fil.shauni.util.StringUtils;

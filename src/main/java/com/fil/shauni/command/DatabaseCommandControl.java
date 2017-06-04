@@ -58,7 +58,12 @@ public abstract class DatabaseCommandControl extends Command {
 
     @Override
     public void takedown() {
-        this.databasePoolManager.close();
+        try {
+            this.databasePoolManager.close();
+        } catch (Exception e) {
+            status.error();
+            log.error("Pool couldn't be closed.\n{}", e.getMessage());
+        }
         log.debug("Pool has been closed at " + Sysdate.now(Sysdate.TIMEONLY));
     }
 

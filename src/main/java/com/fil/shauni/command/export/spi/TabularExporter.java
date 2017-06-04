@@ -5,7 +5,6 @@ import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.command.writer.spi.TabularWriter;
-import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
 import java.io.IOException;

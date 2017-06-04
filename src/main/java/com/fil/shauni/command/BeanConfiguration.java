@@ -1,11 +1,10 @@
-package com.fil.shauni.mainframe.spi;
+package com.fil.shauni.command;
 
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.DefaultWorkSplitter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.db.pool.DatabasePoolManager;
 import com.fil.shauni.db.pool.JDBCPoolManager;
-import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import com.fil.shauni.util.file.Filepath;
 import java.util.ArrayList;

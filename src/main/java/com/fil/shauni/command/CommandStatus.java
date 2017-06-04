@@ -13,13 +13,9 @@ public class CommandStatus {
     private State state = State.NULL;
 
     @Getter
-    private int warnings, errors;
-
-    public void gotWarn() {
-        warnings++;
-    }
-
-    public void gotError() {
+    private int errors;
+    
+    public void error() {
         errors++;
     }
 
