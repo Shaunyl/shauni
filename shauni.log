@@ -1,30 +1,25 @@
-Shauni 1.0.2.26a - Built at 2017-06-03 16:53
+Shauni 1.0.2.34a - Built at 2017-06-04 03:24
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  exp -tables=sys.dba_users,sys.dba_tables -directory=out -parallel=2 -cluster=2
+  exp -tables=sys.dba_users,sys.dba_tables,sys.dba_registry -directory=out -parallel=1 -cluster=1
 
-Cluster parameter adjusted to 1 (due to connections configuration)
+Session 0 started at 03:26:27.16
 
-Session thread-1 started at 16:54:05.56
-
-worker 1 is preparing for the export
-worker 0 is preparing for the export
  . . (worker 0) exporting SYS.DBA_USERS..
- . . (worker 1) exporting SYS.DBA_TABLES..
-Dump out/SYS.DBA_USERS-030617-1654-thread-1[00].txt created successfully.
+Dump out/SYS.DBA_USERS-040617-0326-thread-0[00].txt created successfully.
   -> exported SYS.DBA_USERS                                                  12 rows
-worker 0 has terminated
-Dump out/SYS.DBA_TABLES-030617-1654-thread-1[10].txt created successfully.
+ . . (worker 0) exporting SYS.DBA_TABLES..
+Dump out/SYS.DBA_TABLES-040617-0326-thread-0[01].txt created successfully.
   -> exported SYS.DBA_TABLES                                               1664 rows
-worker 1 has terminated
-Session thread-1 task #0 finished in 1.372 ms
-Pool has been closed at 16:54:07.01
+ . . (worker 0) exporting SYS.DBA_REGISTRY..
+Dump out/SYS.DBA_REGISTRY-040617-0326-thread-0[02].txt created successfully.
+  -> exported SYS.DBA_REGISTRY                                                5 rows
+Task #0 of session 0 finished in 1.311 ms
 
-Session thread-1 completed at 16:54:07.01 with 0 warning(s)
-Elapsed time: 1.452 s
-Thread is done.
+Session 0 finished at 03:26:28.47
+Elapsed time: 1.311 s
 
 Summary:
  -> [exp]	count: 1
-		max: 1452	min: 1452	avg: 1452.0	(ms)
+		max: 1311	min: 1311	avg: 1311.0	(ms)

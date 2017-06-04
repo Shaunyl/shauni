@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import lombok.extern.log4j.Log4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -20,14 +19,6 @@ import org.springframework.stereotype.Component;
 @Log4j @Component(value = "montbs") @Parameters(separators = "=") @Scope("prototype")
 public class SimpleMonTbs extends DefaultMonTbs {
 
-    public SimpleMonTbs() {
-        super("montbs");
-    }
-    
-    public SimpleMonTbs(@Qualifier String name) {
-        super(name);
-    }
-    
     @Override
     protected int write(final ResultSet rs, final Filepath filename) throws SQLException, IOException {
         WriterManager writer = new MonTbsWriter(new FileWriter(filename.getFilepath()), databasePoolManager.getSid(), warning, critical, undo, exclude);

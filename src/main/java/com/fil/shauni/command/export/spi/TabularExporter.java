@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.command.writer.spi.TabularWriter;
+import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,14 +36,11 @@ public class TabularExporter extends SpringExporter {
     private final static String EXTENSION = ".txt";
 
     @Inject
-    public TabularExporter(@Value("#{wildcardReplacers}") List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
+    public TabularExporter(@Value("#{wildcardReplacers}") List<Processor<Filepath, WildcardContext>> replacers
+            , @Value("#{workSplitter}") WorkSplitter<String> workSplitter) {
         super(replacers, workSplitter);
     }
     
-//    public TabularExporter(List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
-//        super(replacers, workSplitter);
-//    }
-
     @Override
     public int write(ResultSet rs, Filepath filename) throws SQLException, IOException {
         String file = filename.getFilepath() + EXTENSION; // FIXME.. should be global not local....

@@ -2,11 +2,11 @@ package com.fil.shauni.mainframe.spi;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.fil.shauni.Main;
 import com.fil.shauni.Project;
 import com.fil.shauni.command.Command;
 import com.fil.shauni.command.CommandLineSupporter;
-import com.fil.shauni.command.ConfigCommandControl;
-import com.fil.shauni.command.DatabaseCommandControl;
+import com.fil.shauni.command.DatabaseConfiguration;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
 import com.fil.shauni.command.support.worksplitter.DefaultWorkSplitter;
@@ -15,6 +15,7 @@ import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.io.PropertiesFileManager;
 import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
+import com.fil.shauni.util.Sysdate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LongSummaryStatistics;
@@ -46,9 +47,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     @Inject
     private PropertiesFileManager propertiesFileManager;
 
-    @Inject
-    private CommandBuilder builder;
-
     private CommandLineSupporter cliSupporter;
 
     @Getter
@@ -56,15 +54,9 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     Map<String, String> project, buildNumber;
 
-    // List of commands goes here:
     static {
         addCommand(SpringExporter.class, "exp");
         addCommand(DefaultMonTbs.class, "montbs");
-//        addCommand(DefaultMonMem.class, "monmem");
-
-        // Configuration commands
-//        addCommand(DefaultCSAdder.class, "addcs");
-//        addCommand(DefaultCSViewer.class, "viewcs");
     }
 
     private static void addCommand(final Class<? extends Command> clazz, String name) {
@@ -109,6 +101,10 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         if (cluster == null) {
             cluster = 1;
         }
+        Integer parallel = cliSupporter.getValue("parallel", Integer.class);
+        if (parallel == null) {
+            parallel = 1;
+        }
 
         log.info("Command -->\n  {}\n", command);
 
@@ -129,59 +125,39 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
         final String fcommand = ecmd;
 
-        AbstractCommandFactory factory = new CommandFactory(fcommand, clazz);
-
-        // FIXME: duplicate code...
-        String cryptable = Project.getProperty("database.configuration.file.cryptable");
-        if (cryptable == null) {
-            log.warn("Global property 'database.configuration.file.cryptable' not found. It will be reset to 'false'.");
-            cryptable = "false";
-        }
-        boolean isCryptable = Boolean.parseBoolean(cryptable);
-
-        CommandContext ctx = new CommandContext(isCryptable);
-
-        Class<?> superclass = this.clazz.getSuperclass();
-
         try {
-            Map<Integer, String[]> work = null;
-            boolean isDbCommand = false;
-            if (superclass == DatabaseCommandControl.class) {
-                builder.initialize(ctx);
-
-                List<String> urls = ctx.getUrls();
-                int urlsSize = urls.size();
-                int cores = Runtime.getRuntime().availableProcessors(); // FIXME, not here...
-                int maxCluster = Math.min(urlsSize, cores);
-                if (cluster > maxCluster) {
-                    cluster = maxCluster;
-                    String coresMex = urlsSize < cores ? "due to connections configuration" : "max cores available";
-                    log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
-                }
-
-                work = new DefaultWorkSplitter<>().splitWork(String.class, cluster, urls);
-                isDbCommand = true;
-
+            List<String> urls = propertiesFileManager.readAll(DatabaseConfiguration.MULTIDB_CONN);
+            int urlsSize = urls.size();
+            int cores = Runtime.getRuntime().availableProcessors(); // FIXME, not here...
+            int maxCluster = Math.min(urlsSize, cores);
+            if (cluster > maxCluster) {
+                cluster = maxCluster;
+                String coresMex = urlsSize < cores ? "due to connections configuration" : "max cores available";
+                log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
             }
-            if (work == null) {
-                throw new ShauniException(600, "Could not split the work.");
+            Map<Integer, List<String>> workset = new DefaultWorkSplitter<>().splitWork(cluster, urls);
+            if (workset == null || workset.isEmpty()) {
+                throw new ShauniException(600, "Could not split the workload.");
             }
 
+            @SuppressWarnings("unchecked")
             Future<Long>[] threads = new Future[cluster];
             ExecutorService pool = FixedThreadPoolManager.getInstance(cluster,
                     new BasicThreadFactory.Builder().namingPattern("thread-%d").daemon(true).build());
 
-            for (int node = 0; node < cluster; node++) {
-                Command c = null;
-                if (isDbCommand) {
-                    c = factory.createDatabaseCommand(work.get(node));
-                } else if (superclass == ConfigCommandControl.class) {
-                    c = factory.createConfigurationCommand();
-                }
+            for (int i = 0; i < cluster; i++) {
+                final int thread = i;
+                List<String> sset = workset.get(i);
+
+                Command c = (Command) Main.beanFactory.getBean(fcommand, clazz);
+                
+                CommandConfiguration conf = Main.beanFactory
+                        .getBean(CommandConfiguration.class, sset, parallel, thread);
+                c.setConfiguration(conf);
                 try {
                     jc = new JCommander(c);
                     jc.parse(args);
-                    
+
                     int ndparams = cliSupporter.countNoDashedParameters();
                     if (ndparams > 0) {
                         throw new ParameterException("Options without a dash in front are not supported");
@@ -200,10 +176,15 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                     printHelp();
                     break; // for help no need to invoke different threads..
                 }
-                threads[node] = pool.submit(c);
+                threads[i] = pool.submit(() -> {
+                    log.info("Session {} started at {}\n", thread, Sysdate.now(Sysdate.TIMEONLY));
+                    long et = c.execute();
+                    log.info("\nSession {} finished at {}\nElapsed time: {} s", thread, Sysdate.now(Sysdate.TIMEONLY), et / 1e3);
+                    return et;
+                });
             }
             FixedThreadPoolManager.shutdownPool();
-            Long[] results = new Long[threads.length];
+            Long[] results = new Long[cluster];
             for (int i = 0; i < results.length; i++) {
                 try {
                     results[i] = threads[i].get();
@@ -222,7 +203,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         } catch (NoSuchBeanDefinitionException b) {
             throw new ShauniException(600, b.getMessage());
         }
-        System.exit(0);
     }
 
     public void printHelp() {

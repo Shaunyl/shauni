@@ -7,8 +7,8 @@ import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.CharBooleanValidator;
-import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.log.LogLevel;
+import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.file.DefaultFilepath;
 import com.fil.shauni.util.StringUtils;
@@ -27,8 +27,8 @@ import org.springframework.jdbc.core.ResultSetExtractor;
  *
  * @author Shaunyl
  */
-@Log4j2 @NoArgsConstructor
-public abstract class DefaultMonTbs<Object> extends DatabaseCommandControl<Object> {
+@Log4j2
+public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Parameter(names = "-directory", arity = 1)
     protected String directory = ".";
@@ -44,9 +44,9 @@ public abstract class DefaultMonTbs<Object> extends DatabaseCommandControl<Objec
 
     @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class, variableArity = true)
     protected List<String> exclude = Lists.newArrayList();
-    
+
     @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
-    public Integer cluster = 1;    
+    public Integer cluster = 1;
 
     @Inject
     private CommandLinePresentation commandLinePresentation;
@@ -55,17 +55,13 @@ public abstract class DefaultMonTbs<Object> extends DatabaseCommandControl<Objec
 
     private String query;
 
-    public DefaultMonTbs(String name) {
-        this.name = name;
-    }
-
     @Override
     public boolean validate() {
         boolean result = false;
         if ((warning | critical) < 1 || (warning | critical) > 99) {
             log.error("Threshold parameters must be between 1 to 99.");
             return result;
-        } else  {
+        } else {
             commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check threshold between [1,99] -> OK"); // FIXME
         }
         if (warning >= critical) {
@@ -78,7 +74,7 @@ public abstract class DefaultMonTbs<Object> extends DatabaseCommandControl<Objec
     }
 
     @Override
-    public void setup() throws ShauniException {
+    public void setup() {
         super.setup();
 
         String commentUNDO = COMMENT, commentTBS = COMMENT;
@@ -87,40 +83,39 @@ public abstract class DefaultMonTbs<Object> extends DatabaseCommandControl<Objec
             commentUNDO = "";
         }
 
-        String inexclude = StringUtils.replace(exclude.toString(), "[", "(", "]", ")"); 
+        String inexclude = StringUtils.replace(exclude.toString(), "[", "(", "]", ")");
         if (inexclude.length() > 2) {
             commentTBS = "";
         }
 
         this.query = Query.getTablespacesAllocation(inexclude, "'UNDO'", warning, commentTBS, commentUNDO);
-        
-        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "> query to execute:\n" + this.query.replaceAll("(?m)^", "  ") + "\n");   
+
+        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "> query to execute:\n" + this.query.replaceAll("(?m)^", "  ") + "\n");
     }
 
     @Override
-    protected void runTask(int w, int t, List<Object> set) {
+    public void runJob(int w) {
         String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
         String path = String.format("%s/%s", directory, filename);
         Filepath filepath = new DefaultFilepath(path);
         log.info("Output file is:\n   " + filepath.getFilepath());
         jdbc.query(query, (ResultSetExtractor<Integer>) rs -> {
-                try {
-                    return write(rs, filepath);
-                } catch (IOException e) {
-                    log.error("Error while writing to file {}\n -> {}", filepath.getFilepath(), e.getMessage());
-                } catch (SQLException e) {
-                    commandLinePresentation.print(LogLevel.ERROR, "Error while fetching data\n  -> %s", e.getMessage());
-                }
-                incrementErrorCount();
-                return -1;
-            });
+            try {
+                return write(rs, filepath);
+            } catch (IOException e) {
+                log.error("Error while writing to file {}\n -> {}", filepath.getFilepath(), e.getMessage());
+            } catch (SQLException e) {
+                commandLinePresentation.print(LogLevel.ERROR, "Error while fetching data\n  -> %s", e.getMessage());
+            }
+            return -1;
+        });
         commandLinePresentation.print(LogLevel.DEBUG, "  -> data written to the file %s", path);
     }
 
     protected abstract int write(final ResultSet rs, Filepath filename) throws SQLException, IOException;
 
     @Override
-    public void takedownThread() {
-        super.takedownThread();
+    public void takedown() {
+        super.takedown();
     }
 }

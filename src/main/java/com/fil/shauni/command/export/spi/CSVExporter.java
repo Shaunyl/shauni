@@ -7,6 +7,7 @@ import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.command.writer.spi.CSVWriter;
 import com.fil.shauni.command.writer.WriterManager;
+import com.fil.shauni.mainframe.spi.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +17,8 @@ import lombok.Cleanup;
 import lombok.extern.log4j.Log4j2;
 import com.fil.shauni.util.file.Filepath;
 import java.util.List;
+import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -39,14 +42,10 @@ public class CSVExporter extends SpringExporter {
     private final String delimiter = ",";
 
     private final static String EXTENSION = ".txt";
-    
-//    @Inject
-//    public CSVExporter(@Value("#{wildcardReplacers}") List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
-//        super(replacers, workSplitter);
-//    }
-//    
 
-    public CSVExporter(List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
+    @Inject
+    public CSVExporter(@Value("#{wildcardReplacers}") List<Processor<Filepath, WildcardContext>> replacers
+            , @Value("#{workSplitter}") WorkSplitter<String> workSplitter) {
         super(replacers, workSplitter);
     }
 
