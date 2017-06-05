@@ -46,5 +46,6 @@ Improve boolean command inputs (i.e., from this -log=y to this -log)<br/>
 * montbs
   
 Example Usage:<br/>
-`exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] -Cusername=30`<br/>
-`montbs -directory=tbs -undo=n -exclude=users,stat -cluster=2 -warning=60`
+`exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] \  
+   -Cusername=30 -Cuser_id=9 -directory=export`<br/>
+`montbs -directory=tbs -undo=n -exclude=users,stat -cluster=2 -warning=60`  
