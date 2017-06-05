@@ -1,11 +1,11 @@
 # **Shauni**
-Command line based tool to perform automated actions on different Oracle databases on multiple servers simultaneously.
+Command line based tool useful to DBAs to perform automated actions on different Oracle databases on multiple servers simultaneously.
 
 Exeternal dependencies used are JCommander, Spring 4, JDBC, Log4J2, Lombok, Mockito, JUnit, Java 8  
 
 It is a Spring version of enver (see my other repositories).  It also takes advantage of Threads (ExecutorService so far) to parallelize some tasks and to perform the same task on different nodes/databases at the same time.  
 
-Current version is **1.0.1 Alpha**  
+Current version is **1.0.2 Alpha**  
 
 For further information surf to Wiki!
 
@@ -16,12 +16,10 @@ For further information surf to Wiki!
  Added the property **database.timeout** to specify the timeout of database connections.<br/>
  Up bounded the parameter **cluster**.<br/>
  
-### **Issues & Improvements**<br/>
-Add a property to choose if to use a crypted configuration file or a not<br/>
-Add the commands **viewcs** and **removecs** to copy easily with crypted configuration files<br/>
-Add the possibility to use a specific configuration file (not only multidb.cfg or multidb.cry)<br/>
+### **Future Improvements**<br/>
+Add the possibility to use a custom configuration file (not just multidb.cfg)<br/>
 Add the support for MySQLs databases<br/>
-Improve boolean command inputs (from this -undo=y to this -undo)<br/>
+Improve boolean command inputs (i.e., from this -log=y to this -log)<br/>
 
 ### **Commands**  
 * exp

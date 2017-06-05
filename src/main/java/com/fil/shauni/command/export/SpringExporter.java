@@ -26,7 +26,6 @@ import com.fil.shauni.util.file.Filepath;
 import lombok.Getter;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import static com.fil.shauni.util.GeneralUtil.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
@@ -47,14 +46,14 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @Setter @Parameter(names = "-queries", description = "list of queries to fetch data from", splitter = SemicolonParameterSplitter.class, variableArity = true)
     protected List<String> queries;
-
+    
     @Setter @Parameter(names = "-directory", description = "directory object to be used for dumpfiles")
     protected String directory = ".";
 
     @Setter @Parameter(names = "-filename", description = "destination dump files. Must use wildchar when multiple objects are exported")
     protected String filename = "%t-%d-%n[%w%u]";
 
-    @Setter @Parameter(names = "-format", description = "format dump files (tab|csv)", required = false)
+    @Setter @Parameter(names = "-format", description = "format of dump files (tab|csv)", required = false)
     protected String format = "tab";
 
     @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
@@ -75,8 +74,8 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     private final List<FutureTask<Void>> futures = new ArrayList<>();
 
     private int tid;
-    
-    private ExecutorService executorService = ThreadPoolManager.getInstance();
+
+    private final ExecutorService executorService = ThreadPoolManager.getInstance();
 
     public SpringExporter(List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
         this.replacers = replacers;
@@ -88,7 +87,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         this.tid = configuration.getTid();
         boolean result = false;
         if (tables == null && queries == null) {
-            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "({}) At least one parameters between queries and tables must be specified", tid);
+            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "At least one parameters between queries and tables must be specified");
             return result;
         }
         if (tables != null && queries != null) {
@@ -102,7 +101,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         if (queries != null) {
             e = new DatabaseQuery();
         }
-        addAllIfNotNull(sqlObjects, tables, queries);
         if (parallel < 1) {
             log.error("({}) Parallel degree must be greater than zero", tid);
             return result;
@@ -156,13 +154,17 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     }
 
     void export(int w, int t, List<String> set) {
-        final String obj = set.get(t);
+        String obj = set.get(t);
 
         final String sql = e.convert(obj);
-        final String out = e.display(obj);
+        if (sql == null) {
+            log.error(" -> '{}' has been skipped.", obj);
+            return;
+        }
+        final String out = e.display(obj).trim();
 
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
-        WildcardContext ctx = new WildcardContext(w, t, Sysdate.now(Sysdate.MINIMAL), out.replace("$", "\\$"), configuration.getTname());
+        WildcardContext ctx = new WildcardContext(w, t, Sysdate.now(Sysdate.MINIMAL), out, configuration.getTname());
         replacers.stream().reduce(replacers.get(0), (f, c) -> f.andThen(c)).process(filepath, ctx);
         cli.print((l, p) -> log.info(l), " . . (worker %d) exporting %s..", w, out);
 
@@ -197,13 +199,19 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @RequiredArgsConstructor @Getter
     public class WildcardContext {
+
         final int workerId, objectId;
+
         final String timestamp;
+
         final String table;
+
         final String threadName;
+
     }
 
     interface WildcardReplacer {
+
         void replace(Filepath in, WildcardContext context);
     }
 }

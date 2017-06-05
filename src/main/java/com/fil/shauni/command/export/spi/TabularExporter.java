@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-@Log4j2 
-@Component(value = "exptab") 
-@Parameters(separators = "=") 
-@Scope("prototype")
+@Log4j2 @Component(value = "exptab") @Parameters(separators = "=") @Scope("prototype")
 public class TabularExporter extends SpringExporter {
 
     @Setter @DynamicParameter(names = "-C", description = "Pad the columns")

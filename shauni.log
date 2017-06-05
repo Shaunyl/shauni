@@ -1,3 +1,10 @@
-Shauni 1.0.2.34a - Built at 2017-06-04 03:24
+Shauni 1.0.2.42a - Built at 2017-06-05 23:19
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
+Command -->
+  exp -parfile=parfile.txt -filename=%t-%d-%w%u -queries=dba_users(user_id,username):WHERE profile = 'DEFAULT'; dba_registry(comp_id,comp_name):; dual:; v$session(sid,event):WHERE type != 'BACKGROUND' -directory=out -parallel=2 -cluster=2
+
+Cluster parameter adjusted to 1 (based on configuration)
+
+SHA-00600: Unknown option: -queries=dba_users(user_id,username):WHERE profile = 'DEFAULT'; dba_registry(comp_id,comp_name):; dual:;
+   v$session(sid,event):WHERE type != 'BACKGROUND'

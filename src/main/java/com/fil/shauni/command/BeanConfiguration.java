@@ -35,7 +35,7 @@ public class BeanConfiguration {
                 add((s, c) -> s.replaceWildcard("%u", Integer.toString(c.getObjectId())));
                 add((s, c) -> s.replaceWildcard("%d", c.getTimestamp()));
                 add((s, c) -> s.replaceWildcard("%n", c.getThreadName()));
-                add((s, c) -> s.replaceWildcard("%t", c.getTable()));
+                add((s, c) -> s.replaceWildcard("%t", c.getTable().replace("$", "\\$").trim()));
             }
         };
     }
@@ -46,10 +46,11 @@ public class BeanConfiguration {
     }
 
     @Bean @Scope("prototype")
-    public CommandConfiguration commandConfiguration(List<String> sessions, int parallel, int thread) {
+    public CommandConfiguration commandConfiguration(List<String> sessions, int parallel, int thread, boolean firstThread) {
         return new CommandConfiguration.CommandConfigurationBuilder()
                 .sessions(sessions.size())
                 .parallel(parallel)
+                .firstThread(firstThread)
                 .tid(thread).tname("thread-" + thread)
                 .workset(sessions)
                 .build();

@@ -19,7 +19,7 @@ public class CommandStatus {
         errors++;
     }
 
-    private enum State {
+    public enum State {
         NULL, COMPLETED, ABORTED
     }
 }

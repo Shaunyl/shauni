@@ -16,4 +16,5 @@ public interface DatabasePoolManager extends AutoCloseable {
     void closeConnection(Connection conn);
     String getSid();
     String getHost();
+    String getUsername();
 }

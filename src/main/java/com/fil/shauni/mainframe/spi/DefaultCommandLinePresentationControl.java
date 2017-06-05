@@ -26,6 +26,9 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.stereotype.Component;
+import static com.fil.shauni.command.Command.CommandAction;
+import static com.fil.shauni.command.CommandLineSupporter.*;
+import com.fil.shauni.io.spi.ParFileManager;
 
 /**
  *
@@ -34,23 +37,25 @@ import org.springframework.stereotype.Component;
 @Component @Log4j2 @NoArgsConstructor
 public class DefaultCommandLinePresentationControl implements CommandLinePresentationControl {
 
-    private Class<? extends Command> clazz;
-
     private JCommander jc;
 
     @Inject
     private PropertiesFileManager propertiesFileManager;
 
     @Getter
-    private static final Map<String, Class<? extends Command>> commands = new HashMap<>();
-
-    private static final Map<Class<? extends Command>, Class<? extends CommandParser>> parsers = new HashMap();
+    private static final Map<String, Command> COMMANDS = new HashMap<String, Command>();
 
     private Map<String, String> project, buildNumber;
 
     static {
-        addCommand("exp", SpringExporter.class, SpringExporterParser.class);
-        addCommand("montbs", DefaultMonTbs.class, null);
+        addCommand(new Command(SpringExporter.class, "exp", SpringExporterParser.class)
+                .withDescription("Export data to dumpfiles"));
+        addCommand(new Command(DefaultMonTbs.class, "montbs")
+                .withDescription("Check tablespace status"));
+    }
+
+    private static void addCommand(final Command command) {
+        COMMANDS.put(command.getName(), command);
     }
 
     @PostConstruct
@@ -58,57 +63,54 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         printBanner();
     }
 
-    private static void addCommand(String name, final Class<? extends Command> c, Class<? extends CommandParser> p) {
-        commands.put(name, c);
-        parsers.put(c, p);
-    }
-
-    private Class<? extends Command> nameToClass(final String name) {
-        return commands.get(name);
+    protected Class<? extends CommandAction> toClass(final String name) {
+        return COMMANDS.get(name).getCmdClass();
     }
 
     @Override @SuppressWarnings("unchecked")
-    public void executeCommand(final String args[]) throws Exception {
-        if (args == null || args.length == 0) {
-            throw new ShauniException(600, "Arguments cannot be null or empty");
+    public void executeCommand(List<String> args) throws Exception {
+        if (args.isEmpty()) {
+            throw new ShauniException(600, "No arguments provided.");
         }
-        String cmd = args[0];
 
-        CommandLineSupporter cliSupporter = new CommandLineSupporter(args);
+        args = this.integrateParfile(args);
+        String cmd = getCommandName(args);
 
-        String command = cliSupporter.getCommand();
-        Integer cluster = cliSupporter.getValue("cluster", Integer.class, 1);
-        Integer parallel = cliSupporter.getValue("parallel", Integer.class, 1);
+        String command = getCommand(args);
+        Integer cluster = getValue(args, "cluster", Integer.class, 1);
+        Integer parallel = getValue(args, "parallel", Integer.class, 1);
 
         log.info("Command -->\n  {}\n", command);
 
-        this.clazz = this.nameToClass(cmd);
-        if (this.clazz == null) {
+        Class<? extends CommandAction> clazz = this.toClass(cmd);
+        if (clazz == null) {
             throw new ShauniException(1, "Command '" + cmd + "' is unknown.\nTask has been aborted!");
         }
 
-        Class<? extends CommandParser> parser = parsers.get(clazz);
+        Class<? extends CommandParser> parser = COMMANDS.get(cmd).getParser();
         if (parser != null) {
-            clazz = (Class<? extends Command>) parser.getDeclaredMethod("parse", String[].class).invoke(parser.newInstance(), cliSupporter, new Object[]{ args });
+            clazz = (Class<? extends CommandAction>) parser
+                    .getDeclaredMethod("parse", List.class)
+                    .invoke(parser.newInstance(), new Object[]{ args });
         }
 
         try {
             Map<Integer, List<String>> workset;
-            if (clazz.isAssignableFrom(DatabaseCommandControl.class)) {
-                List<String> urls = propertiesFileManager.readAll(DatabaseConfiguration.MULTIDB_CONN);
-                int urlsSize = urls.size();
-                int cores = availableProcessors();
-                int maxCluster = Math.min(urlsSize, cores);
-                if (cluster > maxCluster) {
-                    cluster = maxCluster;
-                    String coresMex = urlsSize < cores ? "based on configuration" : "max cores available";
-                    log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
-                }
-                workset = new DefaultWorkSplitter<>().splitWork(cluster, urls);
-            } else {
-                throw new ShauniException(600, "Command not supported.");
+//            if (clazz.isAssignableFrom(DatabaseCommandControl.class)) { FIXME
+            List<String> urls = propertiesFileManager.readAll(DatabaseConfiguration.MULTIDB_CONN);
+            int urlsSize = urls.size();
+            int cores = availableProcessors();
+            int maxCluster = Math.min(urlsSize, cores);
+            if (cluster > maxCluster) {
+                cluster = maxCluster;
+                String coresMex = urlsSize < cores ? "based on configuration" : "max cores available";
+                log.info("Cluster parameter adjusted to {} ({})\n", cluster, coresMex);
             }
-            
+            workset = new DefaultWorkSplitter<>().splitWork(cluster, urls);
+//            } else {
+//                throw new ShauniException(600, "Command not supported.");
+//            }
+
             if (workset == null || workset.isEmpty()) {
                 throw new ShauniException(600, "Could not split the workload.");
             }
@@ -118,18 +120,15 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
             for (int i = 0; i < cluster; i++) {
                 final int thread = i;
-                Command c = (Command) Main.beanFactory.getBean(clazz);
-                CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), parallel, thread);
+                CommandAction c = (CommandAction) Main.beanFactory.getBean(clazz);
+                CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), parallel, thread, i == 0);
                 c.setConfiguration(conf);
                 try {
                     jc = new JCommander(c);
-                    jc.parse(args);
+                    integrate(args);
+                    jc.parse(args.toArray(new String[args.size()]));
 
-                    int ndparams = cliSupporter.countNoDashedParameters();
-                    if (ndparams > 0) {
-                        throw new ParameterException("Options without a dash in front are not supported");
-                    }
-
+                    checkForNoDashParameters(args);
                     int mparams = c.getCmd().size();
                     if (mparams > 1) {
                         throw new ParameterException("Main parameters cannot be more than one");
@@ -146,7 +145,9 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 threads[i] = pool.submit(() -> {
                     log.info("Session {} started at {}\n", thread, Sysdate.now(Sysdate.TIMEONLY));
                     long et = c.execute();
-                    log.info("\nSession {} finished at {}\nElapsed time: {} s", thread, Sysdate.now(Sysdate.TIMEONLY), et / 1e3);
+                    final CommandStatus.State s = c.getStatus().getState();
+                    log.info("\nSession {} finished at {}\nElapsed time: {} s", thread,
+                            Sysdate.now(Sysdate.TIMEONLY), et / 1e3);
                     return et;
                 });
             }
@@ -164,13 +165,13 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 }
             }
             ThreadPoolManager.shutdownPool();
+//            if (ca != null && ca.getStatus().getState() == CommandStatus.State.COMPLETED) {
             LongSummaryStatistics stats = Arrays.stream(results).collect(summarizingLong(d -> d));
             log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)",
                     cmd, stats.getCount(), stats.getMax(), stats.getMin(), stats.getAverage());
+//            }
         } catch (NoSuchBeanDefinitionException b) {
             throw new ShauniException(600, "Command not found.\n" + b.getMessage());
-        } finally {
-            printFooter();
         }
     }
 
@@ -191,7 +192,20 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         log.info("{}\n", banner);
     }
 
-    private void printFooter() {
-        log.info("\nClosing {}..", project.get("name"));
+    private List<String> loadParfile(final String filename) {
+        return new ParFileManager().readAll(filename);
+    }
+
+    private List<String> integrateParfile(List<String> args) {
+        String parfile = getValue(args, "parfile", String.class, null);
+        if (parfile == null) {
+            return args;
+        }
+
+        List<String> params = this.loadParfile(parfile);
+        return new ArrayList<String>() {{
+            addAll(args);
+            addAll(params);
+        }};
     }
 }

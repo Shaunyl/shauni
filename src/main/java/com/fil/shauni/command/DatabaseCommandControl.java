@@ -22,11 +22,9 @@ import org.springframework.stereotype.Component;
  * @author Shaunyl
  */
 @Log4j2 @Component
-public abstract class DatabaseCommandControl extends Command {
+public abstract class DatabaseCommandControl extends Command.CommandAction {
     @Inject
     protected CommandLinePresentation cli;
-
-    protected boolean firstThread = false;
 
     protected String state = "completed";
 
@@ -48,7 +46,6 @@ public abstract class DatabaseCommandControl extends Command {
     @Override
     public void run(int sid) {
         this.setConnections(configuration.getWorkset());
-        this.firstThread = configuration.getTid() == 0;
         DbConnection dbc = dbcs.get(sid);
         databasePoolManager.configure(dbc.getUrl(), dbc.getUser(), dbc.getPasswd(), dbc.getHost(), dbc.getSid());
         this.dataSource = databasePoolManager.getDataSource();

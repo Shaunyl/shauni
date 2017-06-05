@@ -32,14 +32,15 @@ public class JDBCPoolManager implements DatabasePoolManager {
     @Override
     public void configure(String url, String user, String passwd, String host, String sid) {
 //        this.url = url;
-//        this.user = user;
+        this.username = user;
 //        this.passwd = passwd;
         this.host = host;
         this.sid = sid;
         this.configure(url, user, passwd, host, sid, POOL_SIZE);
     }
 
-    private String host, sid;
+    @Getter
+    private String host, sid, username;
 
     private String timeout = null;
 
@@ -138,15 +139,5 @@ public class JDBCPoolManager implements DatabasePoolManager {
         } catch (Exception e) {
             throw new RuntimeException("Could not close DBCP pool", e);
         }
-    }
-
-    @Override
-    public String getSid() {
-        return sid;
-    }
-
-    @Override
-    public String getHost() {
-        return host;
     }
 }

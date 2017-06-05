@@ -1,6 +1,8 @@
 package com.fil.shauni.command;
 
+import com.beust.jcommander.ParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,19 +16,24 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CommandLineSupporter {
 
-    private final String[] args;
-
-    public CommandLineSupporter(final @NonNull String[] args) {
-        this.args = args;
-    }
-    
-    public String isThere(final @NonNull String option) {
+    public static String isThere(List<String> args, final @NonNull String option) {
+        noArguments(args);
         for (String arg : args) {
             if (arg.matches("-" + option + "=.+")) {
                 return option;
             }
         }
         return null;
+    }
+
+    public static void integrate(List<String> args) {
+        noArguments(args);
+        for (int i = 0; i < args.size(); i++) {
+            String s = args.get(i);
+            if (s.matches("@.+")) {
+                throw new ParameterException("@ syntax is not supported. Use -parfile instead.");
+            }
+        }
     }
 
     /**
@@ -36,15 +43,9 @@ public class CommandLineSupporter {
      * @param clazz
      * @return the value of the parameter researched. Null if no one could be
      * found.
-     * @throws com.fil.shauni.exception.ShauniException
      */
-    public <T> T getValue(String parameter, Class<T> clazz, T def) {
-        if (args == null || args.length == 0) {
-            return null;
-        }
-        if (parameter == null || parameter.length() == 0) {
-            return null;
-        }
+    public static <T> T getValue(List<String> args, String parameter, Class<T> clazz, T def) {
+        noArguments(args);
         T value = def;
         for (String arg : args) {
             if (arg.matches("-" + parameter + "=.+")) {
@@ -69,35 +70,45 @@ public class CommandLineSupporter {
 
     /**
      *
-     * @return the command name [it is always the first parameter]
+     * @param args list of arguments
+     * @return command name [it is always the first parameter]
      */
-    public String getCommandName() {
-        if (args == null || args.length == 0) {
-            return null;
-        }
-        return args[0];
+    public static String getCommandName(List<String> args) {
+        noArguments(args);
+        return args.get(0);
     }
 
-    public String getCommand() {
-        if (args == null || args.length == 0) {
-            return null;
-        }
-        String cmd = getCommandName();
-        for (int i = 1; i < args.length; i++) {
-            cmd += " " + args[i];
+    public static String getCommand(List<String> args) {
+        String cmd = getCommandName(args);
+        for (int i = 1; i < args.size(); i++) {
+            cmd += " " + args.get(i);
         }
         return cmd;
     }
 
-    public int countNoDashedParameters() {
-        List<String> list = new ArrayList<>();
-        Matcher m = Pattern.compile("([-a-zA-Z0-9]+=[^\"]\\S*|[-a-zA-Z0-9]+=\".+?\")\\s*").matcher(getCommand());
+    public static void checkForNoDashParameters(List<String> args) {
+        noArguments(args);
+        int count = 0;
+        Matcher m = Pattern.compile("([-a-zA-Z0-9]+=[^\"]\\S*|[-a-zA-Z0-9]+=\".+?\")\\s*").matcher(getCommand(args));
         while (m.find()) {
             String ms = m.group(1);
             if (!ms.startsWith("-")) {
-                list.add(ms); // Add .replace("\"", "") to remove surrounding quotes.
+                count++;
             }
         }
-        return list.size();
+        if (count > 0) {
+            throw new ParameterException("Options without a dash in front are not supported");
+        }
     }
+
+    private static boolean isNullOrEmpty(final Collection<?> c) {
+        return c == null || c.isEmpty();
+    }
+
+    private static void noArguments(List<String> args) {
+        if (isNullOrEmpty(args)) {
+            throw new ParameterException("No command found.");
+        }
+    }
+
 }

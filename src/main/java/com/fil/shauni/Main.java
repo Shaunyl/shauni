@@ -1,6 +1,7 @@
 package com.fil.shauni;
 
 import com.fil.shauni.mainframe.ui.CommandLinePresentationControl;
+import java.util.Arrays;
 import java.util.Locale;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.BeanFactory;
@@ -24,10 +25,14 @@ public class Main {
 
         CommandLinePresentationControl cliControl = beanFactory.getBean(CommandLinePresentationControl.class);
         try {
-            cliControl.executeCommand(args);
+            if (args == null) {
+                log.error("No arguments provided.\nAborting..");
+                return;
+            }
+            cliControl.executeCommand(Arrays.asList(args));
         } catch (Exception e) {
             log.error(e.getMessage());
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
