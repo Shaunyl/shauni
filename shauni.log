@@ -1,4 +1,4 @@
-Shauni 1.0.2.42a - Built at 2017-06-05 23:19
+Shauni 1.0.2.43a - Built at 2017-06-06 00:18
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
@@ -6,5 +6,25 @@ Command -->
 
 Cluster parameter adjusted to 1 (based on configuration)
 
-SHA-00600: Unknown option: -queries=dba_users(user_id,username):WHERE profile = 'DEFAULT'; dba_registry(comp_id,comp_name):; dual:;
-   v$session(sid,event):WHERE type != 'BACKGROUND'
+Session 0 started at 00:25:54.15
+
+ . . (worker 1) exporting DUAL..
+ . . (worker 0) exporting DBA_USERS..
+Dump out/DBA_USERS-060617-0025-00.txt created successfully.
+  -> exported DBA_USERS                                                      12 rows
+Dump out/DUAL-060617-0025-10.txt created successfully.
+  -> exported DUAL                                                            1 rows
+ . . (worker 1) exporting V$SESSION..
+ . . (worker 0) exporting DBA_REGISTRY..
+Dump out/DBA_REGISTRY-060617-0025-01.txt created successfully.
+  -> exported DBA_REGISTRY                                                    5 rows
+Dump out/V$SESSION-060617-0025-11.txt created successfully.
+  -> exported V$SESSION                                                       2 rows
+Task #0 of session 0 finished in 3.226 ms
+
+Session 0 finished at 00:25:57.39
+Elapsed time: 3.229 s
+
+Summary:
+ -> [exp]	count: 1
+		max: 3229	min: 3229	avg: 3229.0	(ms)

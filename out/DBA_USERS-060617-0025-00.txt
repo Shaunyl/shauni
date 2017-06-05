@@ -1,0 +1,14 @@
+USER_ID                   USERNAME                 
+------------------------- -------------------------
+43.0                      HR                       
+35.0                      ANONYMOUS                
+44.0                      FLOWS_FILES              
+47.0                      APEX_040000              
+42.0                      MDSYS                    
+32.0                      CTXSYS                   
+34.0                      XDB                      
+0.0                       SYS                      
+5.0                       SYSTEM                   
+45.0                      APEX_PUBLIC_USER         
+2.147483638E9             XS$NULL                  
+9.0                       OUTLN                    

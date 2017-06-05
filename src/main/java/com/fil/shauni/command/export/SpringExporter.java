@@ -11,6 +11,7 @@ import com.fil.shauni.command.export.support.Parallelizable;
 import com.fil.shauni.command.support.SemicolonParameterSplitter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
+import com.fil.shauni.util.GeneralUtil;
 import com.fil.shauni.util.Processor;
 import com.fil.shauni.util.Sysdate;
 import com.fil.shauni.util.file.DefaultFilepath;
@@ -101,6 +102,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         if (queries != null) {
             e = new DatabaseQuery();
         }
+        GeneralUtil.addAllIfNotNull(sqlObjects, tables, queries);
         if (parallel < 1) {
             log.error("({}) Parallel degree must be greater than zero", tid);
             return result;
