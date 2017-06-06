@@ -87,7 +87,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
             return result;
         }
         if (tables != null && queries != null) {
-            log.error("(Cannot use multiple modes together");
             cli.print(() -> firstThread, (l, p) -> log.error(l, p), "Cannot use multiple modes together");
             return result;
         }
