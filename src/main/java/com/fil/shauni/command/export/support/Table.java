@@ -1,21 +1,24 @@
 package com.fil.shauni.command.export.support;
 
-import com.fil.shauni.command.support.Exportable;
 import java.util.function.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
-public class DatabaseTable implements Exportable {
+public class Table extends Entity {
 
-    private final static Pattern pattern  = Pattern.compile("(\\w+\\.\\w+)");
+    private final static Pattern PATTERN = Pattern.compile("(\\w+\\.\\w+)");
 
+    public Table(String s) {
+        super(s);
+    }
+    
     @Override
     public String convert(String s) {
-        return convert(pattern.matcher(s), (i) -> String.format("SELECT * FROM %s", (Object[]) i));
+        return convert(PATTERN.matcher(s), (i) -> String.format("SELECT * FROM %s", (Object[]) i));
     }
 
     private String convert(Matcher m, Function<String[], String> op) {
@@ -28,7 +31,7 @@ public class DatabaseTable implements Exportable {
     
     @Override
     public String display(String s) {
-        Matcher m = pattern.matcher(s);
+        Matcher m = PATTERN.matcher(s);
         if (m.find()) {
             return m.group(1).toUpperCase();
         }

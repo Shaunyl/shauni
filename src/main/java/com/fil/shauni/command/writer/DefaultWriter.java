@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 /**
  *
- * @author Chiara
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public abstract class DefaultWriter implements WriterManager {
 

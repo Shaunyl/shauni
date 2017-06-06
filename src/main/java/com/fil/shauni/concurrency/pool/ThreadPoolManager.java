@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class ThreadPoolManager {
 

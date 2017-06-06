@@ -5,7 +5,7 @@ import lombok.Getter;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @AllArgsConstructor
 public class DbConnection {

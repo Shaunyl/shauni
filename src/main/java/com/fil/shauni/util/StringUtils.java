@@ -4,7 +4,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author FTestino
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class StringUtils {
 

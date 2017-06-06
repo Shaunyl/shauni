@@ -7,7 +7,7 @@ import java.util.function.BiPredicate;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class BooleanUtils {
 

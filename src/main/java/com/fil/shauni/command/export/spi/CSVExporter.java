@@ -7,7 +7,6 @@ import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.command.writer.spi.CSVWriter;
 import com.fil.shauni.command.writer.WriterManager;
-import com.fil.shauni.command.CommandConfiguration;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2 
 @Component(value = "expcsv")

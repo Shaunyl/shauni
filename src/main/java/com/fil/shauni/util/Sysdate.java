@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class Sysdate {
     public final static String MINIMAL = "ddMMyy-HHmm";

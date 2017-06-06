@@ -5,7 +5,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class ShauniException extends RuntimeException {
 

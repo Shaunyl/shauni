@@ -10,7 +10,7 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2
 public class SpringExporterParser implements CommandParser {

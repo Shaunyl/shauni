@@ -5,7 +5,7 @@ import lombok.Setter;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class CommandStatus {
 

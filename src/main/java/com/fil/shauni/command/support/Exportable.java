@@ -5,7 +5,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface Exportable extends Convertable, Displayable {
     default <T> T export(String obj, JdbcTemplate jdbc, ResultSetExtractor<T> rse) {

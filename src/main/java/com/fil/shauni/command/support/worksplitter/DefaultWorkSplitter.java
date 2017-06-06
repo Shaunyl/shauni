@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class DefaultWorkSplitter<T> implements WorkSplitter<T> {
     

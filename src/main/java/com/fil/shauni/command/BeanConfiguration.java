@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Scope;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @org.springframework.context.annotation.Configuration @ComponentScan(basePackages = { "com.fil.shauni" })
 @ImportResource("file:src/main/resources/beans/Beans.xml")
@@ -46,10 +46,9 @@ public class BeanConfiguration {
     }
 
     @Bean @Scope("prototype")
-    public CommandConfiguration commandConfiguration(List<String> sessions, int parallel, int thread, boolean firstThread) {
+    public CommandConfiguration commandConfiguration(List<String> sessions, int thread, boolean firstThread) {
         return new CommandConfiguration.CommandConfigurationBuilder()
                 .sessions(sessions.size())
-                .parallel(parallel)
                 .firstThread(firstThread)
                 .tid(thread).tname("thread-" + thread)
                 .workset(sessions)

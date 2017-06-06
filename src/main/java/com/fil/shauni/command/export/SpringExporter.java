@@ -2,18 +2,13 @@ package com.fil.shauni.command.export;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
-import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.support.Exportable;
-import com.fil.shauni.command.export.support.DatabaseQuery;
-import com.fil.shauni.command.export.support.DatabaseTable;
-import com.fil.shauni.command.export.support.Parallelizable;
+import com.fil.shauni.command.export.support.*;
 import com.fil.shauni.command.support.SemicolonParameterSplitter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
-import com.fil.shauni.util.GeneralUtil;
-import com.fil.shauni.util.Processor;
-import com.fil.shauni.util.Sysdate;
+import com.fil.shauni.exception.ShauniException;
+import com.fil.shauni.util.*;
 import com.fil.shauni.util.file.DefaultFilepath;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -24,60 +19,61 @@ import java.util.Map;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import com.fil.shauni.util.file.Filepath;
+import java.util.HashMap;
+import java.util.Objects;
 import lombok.Getter;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2
 public abstract class SpringExporter extends DatabaseCommandControl implements Parallelizable {
 
-    @Setter @Parameter(names = "-parallel", description = "parallelism Shauni will try to use to export data")
-    protected int parallel = 1;
+    @Setter @Parameter(names = "-parallel", description = "number of worker used to split the workload")
+    private int parallel = 1;
 
-    @Setter @Parameter(names = "-tables", description = "list of tables to export from", splitter = CommaParameterSplitter.class, variableArity = true)
-    protected List<String> tables;
+    @Setter @Parameter(names = "-tables", description = "list of tables to export",
+            splitter = CommaParameterSplitter.class, variableArity = true,
+            converter = TableConverter.class)
+    private List<Entity> tables;
 
-    @Setter @Parameter(names = "-queries", description = "list of queries to fetch data from", splitter = SemicolonParameterSplitter.class, variableArity = true)
-    protected List<String> queries;
-    
-    @Setter @Parameter(names = "-directory", description = "directory object to be used for dumpfiles")
-    protected String directory = ".";
+    @Setter @Parameter(names = "-queries", description = "list of queries to fetch data",
+            splitter = SemicolonParameterSplitter.class, variableArity = true,
+            converter = QueryConverter.class)
+    private List<Entity> queries;
 
-    @Setter @Parameter(names = "-filename", description = "destination dump files. Must use wildchar when multiple objects are exported")
-    protected String filename = "%t-%d-%n[%w%u]";
+    @Setter @Parameter(names = "-directory", description = "destination of dumpfiles")
+    private String directory = ".";
 
-    @Setter @Parameter(names = "-format", description = "format of dump files (tab|csv)", required = false)
-    protected String format = "tab";
+    @Setter @Parameter(names = "-filename", description = "name of dumpfiles")
+    private String filename = "%t-%d-%n[%w%u]";
 
-    @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
-    protected Integer cluster = 1;
+    @Setter @Parameter(names = "-format", description = "format of dumpfiles")
+    private String format = "tab";
 
-    private final List<String> sqlObjects = new ArrayList<>();
+    private List<? extends Entity> sqlObjects;
+
+    private final static Map<Class<? extends Entity>, List<? extends Entity>> OBJECTS = new HashMap<>();
 
     @Getter
     private final WorkSplitter<String> workSplitter;
 
-    private Exportable e;
-
     @Getter
     private final List<Processor<Filepath, WildcardContext>> replacers;
 
-    private Map<Integer, List<String>> workSet;
+    private Map<Integer, ? extends List<? extends Entity>> workSet;
 
     private final List<FutureTask<Void>> futures = new ArrayList<>();
 
-    private int tid;
-
     private final ExecutorService executorService = ThreadPoolManager.getInstance();
 
+    @SuppressWarnings("unchecked")
     public SpringExporter(List<Processor<Filepath, WildcardContext>> replacers, WorkSplitter<String> workSplitter) {
         this.replacers = replacers;
         this.workSplitter = workSplitter;
@@ -85,26 +81,18 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @Override
     public boolean validate() {
-        this.tid = configuration.getTid();
         boolean result = false;
         if (tables == null && queries == null) {
             cli.print(() -> firstThread, (l, p) -> log.error(l, p), "At least one parameters between queries and tables must be specified");
             return result;
         }
         if (tables != null && queries != null) {
-            log.error("({}) Cannot use multiple modes together", tid);
-            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "({}) Cannot use multiple modes together", tid);
+            log.error("(Cannot use multiple modes together");
+            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "Cannot use multiple modes together");
             return result;
         }
-        if (tables != null) {
-            e = new DatabaseTable();
-        }
-        if (queries != null) {
-            e = new DatabaseQuery();
-        }
-        GeneralUtil.addAllIfNotNull(sqlObjects, tables, queries);
         if (parallel < 1) {
-            log.error("({}) Parallel degree must be greater than zero", tid);
+            log.error("Parallel degree must be greater than zero");
             return result;
         }
         return true;
@@ -113,30 +101,35 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     @Override
     public void setup() {
         super.setup();
-        if (parallel > sqlObjects.size()) {
-            parallel = sqlObjects.size();
-            cli.print(() -> firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}\n", parallel);
+        OBJECTS.put(Table.class, tables);
+        OBJECTS.put(Query.class, queries);
+        sqlObjects = OBJECTS.values().stream().filter(Objects::nonNull).flatMap(List::stream).collect(Collectors.toList());
+        int size = sqlObjects.size();
+        log.info("* Found {} object(s) to export.", size);
+        log.info("* Format used: {}", format);
+        if (parallel > size) {
+            parallel = size;
+            cli.print(() -> firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}", parallel);
         }
-        this.workSet = workSplitter.splitWork(parallel, sqlObjects);
+        workSet = workSplitter.splitWork(parallel, sqlObjects);
     }
-
+    
     @Override
     public void run(int sid) {
         super.run(sid);
-        runWorker();
+        runWorker(parallel);
         get();
     }
 
     @Override
     public void get() {
-        for (int worker = 0; worker < configuration.getParallel(); worker++) {
+        for (int worker = 0; worker < parallel; worker++) {
             FutureTask<Void> future = futures.get(worker);
             try {
                 future.get();
                 log.debug("getResult worker {}", worker);
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                throw new RuntimeException(String.format("Worker %d interrupted abnormally..\n --> %s", worker, e.getMessage()));
+                throw new ShauniException(String.format("Worker %d interrupted abnormally..\n --> %s", worker, e.getMessage()));
             }
         }
     }
@@ -145,7 +138,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     public void runJob(int worker) {
         FutureTask<Void> future = new FutureTask<>(() -> {
             log.debug("worker {} is preparing for the export", worker);
-            List<String> jobSet = workSet.get(worker);
+            List<? extends Entity> jobSet = workSet.get(worker);
             for (int i = 0; i < jobSet.size(); i++) {
                 this.export(worker, i, jobSet);
             }
@@ -155,15 +148,16 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         this.executorService.execute(future);
     }
 
-    void export(int w, int t, List<String> set) {
-        String obj = set.get(t);
+    void export(int w, int t, List<? extends Entity> set) {
+        Entity entity = set.get(t);
+        String obj = entity.getObj();
 
-        final String sql = e.convert(obj);
+        final String sql = entity.convert(obj);
         if (sql == null) {
             log.error(" -> '{}' has been skipped.", obj);
             return;
         }
-        final String out = e.display(obj).trim();
+        final String out = entity.display(obj).trim();
 
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
         WildcardContext ctx = new WildcardContext(w, t, Sysdate.now(Sysdate.MINIMAL), out, configuration.getTname());
@@ -171,7 +165,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         cli.print((l, p) -> log.info(l), " . . (worker %d) exporting %s..", w, out);
 
         try {
-            e.export(sql, jdbc, (ResultSetExtractor<Void>) rs -> {
+            entity.export(sql, jdbc, (ResultSetExtractor<Void>) rs -> {
                 try {
                     final int r = write(rs, filepath);
                     if (r > 0) {
@@ -201,18 +195,13 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @RequiredArgsConstructor @Getter
     public class WildcardContext {
-
         final int workerId, objectId;
-
         final String timestamp;
-
         final String table;
-
         final String threadName;
-
     }
 
-    interface WildcardReplacer {
+    private interface WildcardReplacer {
 
         void replace(Filepath in, WildcardContext context);
     }

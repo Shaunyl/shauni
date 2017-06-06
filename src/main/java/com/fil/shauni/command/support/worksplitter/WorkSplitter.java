@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface WorkSplitter<T> {
     <T> Map<Integer, T[]> splitWork(Class<T> clazz, int adjustedParallel, List<T> objects);

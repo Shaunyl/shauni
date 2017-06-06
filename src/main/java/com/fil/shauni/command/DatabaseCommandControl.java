@@ -19,14 +19,12 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2 @Component
 public abstract class DatabaseCommandControl extends Command.CommandAction {
     @Inject
     protected CommandLinePresentation cli;
-
-    protected String state = "completed";
 
     protected JdbcTemplate jdbc;
 

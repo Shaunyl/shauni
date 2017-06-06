@@ -2,7 +2,7 @@ package com.fil.shauni.command.support;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public final class Query {
 

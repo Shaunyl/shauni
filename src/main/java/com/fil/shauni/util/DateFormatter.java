@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @FunctionalInterface
 public interface DateFormatter {

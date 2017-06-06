@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface CommandLinePresentationControl {   
     void executeCommand(final List<String> args) throws Exception;

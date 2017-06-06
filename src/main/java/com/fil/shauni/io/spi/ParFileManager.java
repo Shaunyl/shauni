@@ -12,7 +12,7 @@ import java.util.Map;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class ParFileManager implements FileManager {
 

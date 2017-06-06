@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2 @Component
 public class CommandLine implements CommandLinePresentation {

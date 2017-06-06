@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @FunctionalInterface
 public interface SupplierPredicate {

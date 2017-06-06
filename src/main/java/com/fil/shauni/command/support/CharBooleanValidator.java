@@ -5,7 +5,7 @@ import com.beust.jcommander.ParameterException;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class CharBooleanValidator implements IParameterValidator {
 

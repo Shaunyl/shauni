@@ -18,7 +18,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class MonTbsWriter implements WriterManager {
 

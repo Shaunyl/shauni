@@ -1,5 +1,6 @@
 package com.fil.shauni.util;
 
+import com.fil.shauni.command.export.support.Entity;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import java.math.RoundingMode;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +28,7 @@ import lombok.Cleanup;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class GeneralUtil {
 
@@ -169,13 +171,23 @@ public class GeneralUtil {
         return bd.doubleValue();
     }
 
-    public static <E> void addAllIfNotNull(List<E> list, Collection<? extends E>... c) {
-        for (Collection<? extends E> x : c) {
-            if (x != null) {
-                list.addAll(x);
-            }
-        }
-    }
+//    public static <E> void addAllIfNotNull(List<E> list, Collection<? extends E>... c) {
+//        for (Collection<? extends E> x : c) {
+//            if (x != null) {
+//                list.addAll(x);
+//            }
+//        }
+//    }
+    
+//    @SuppressWarnings("unchecked")
+//    public static List<Entity> addAll(List<Entity>... list) {
+//        ArrayList<Entity> entities = new ArrayList<>();
+//        for (ArrayList<Entity> s : list) {
+//            if (s != null) {
+//                entities.addAll(s);
+//            }
+//        }
+//    }
     
     public static int availableProcessors() {
         return Runtime.getRuntime().availableProcessors();

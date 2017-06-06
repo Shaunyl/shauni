@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  *
- * @author FTestino
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class FixedThreadPoolManager {
 

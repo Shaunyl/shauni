@@ -2,7 +2,7 @@ package com.fil.shauni.command.support;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @FunctionalInterface
 public interface Displayable {

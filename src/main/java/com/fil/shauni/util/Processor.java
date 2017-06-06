@@ -4,7 +4,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @FunctionalInterface
 public interface Processor<T, R> {

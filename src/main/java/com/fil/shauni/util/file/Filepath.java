@@ -2,7 +2,7 @@ package com.fil.shauni.util.file;
 
 /**
  *
- * @author Chiara
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface Filepath {
     String getFilepath();

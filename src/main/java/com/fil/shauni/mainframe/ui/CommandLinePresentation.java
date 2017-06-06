@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface CommandLinePresentation {
 

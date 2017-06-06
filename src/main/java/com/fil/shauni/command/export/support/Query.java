@@ -1,7 +1,5 @@
 package com.fil.shauni.command.export.support;
 
-import com.fil.shauni.command.support.Exportable;
-import com.fil.shauni.exception.ShauniException;
 import java.util.function.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,16 +7,20 @@ import lombok.extern.log4j.Log4j2;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2
-public class DatabaseQuery implements Exportable {
+public class Query extends Entity {
 
-    private final static Pattern pattern = Pattern.compile("([^;].*?)(?:\\((.*?)\\))?:([^;]*)");
+    private final static Pattern PATTERN = Pattern.compile("([^;].*?)(?:\\((.*?)\\))?:([^;]*)");
 
+    public Query(String s) {
+        super(s);
+    }
+    
     @Override
     public String convert(String s) {
-        return convert(pattern.matcher(s), (i) -> String.format("SELECT %s FROM %s %s", (Object[]) i));
+        return convert(PATTERN.matcher(s), (i) -> String.format("SELECT %s FROM %s %s", (Object[]) i));
     }
 
     private String convert(Matcher m, Function<String[], String> op) {
@@ -32,7 +34,7 @@ public class DatabaseQuery implements Exportable {
 
     @Override
     public String display(String s) {
-        Matcher m = pattern.matcher(s);
+        Matcher m = PATTERN.matcher(s);
         if (m.find()) {
             return m.group(1).toUpperCase();
         }

@@ -2,7 +2,7 @@ package com.fil.shauni.exception;
 
 /**
  *
- * @author Filippo Testino
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class ValidationException extends RuntimeException {
 

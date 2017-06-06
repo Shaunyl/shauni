@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class MonTbsQuery {
 

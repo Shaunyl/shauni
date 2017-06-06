@@ -8,7 +8,6 @@ import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.CharBooleanValidator;
 import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.command.CommandConfiguration;
 import com.fil.shauni.mainframe.ui.CommandLinePresentation;
 import com.fil.shauni.util.file.DefaultFilepath;
 import com.fil.shauni.util.StringUtils;
@@ -19,13 +18,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import javax.inject.Inject;
-import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
@@ -44,9 +42,6 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class, variableArity = true)
     protected List<String> exclude = Lists.newArrayList();
-
-    @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class)
-    public Integer cluster = 1;
 
     @Inject
     private CommandLinePresentation commandLinePresentation;
@@ -91,6 +86,12 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         this.query = Query.getTablespacesAllocation(inexclude, "'UNDO'", warning, commentTBS, commentUNDO);
 
         commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "> query to execute:\n" + this.query.replaceAll("(?m)^", "  ") + "\n");
+    }
+
+    @Override
+    public void run(int sid) {
+        super.run(sid);
+        runWorker(1);
     }
 
     @Override

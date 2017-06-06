@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface FileManager {
 

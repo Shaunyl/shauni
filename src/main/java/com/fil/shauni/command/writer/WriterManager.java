@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface WriterManager extends AutoCloseable {
 

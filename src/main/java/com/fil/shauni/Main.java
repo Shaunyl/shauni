@@ -9,7 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j2
 public class Main {
@@ -32,7 +32,7 @@ public class Main {
             cliControl.executeCommand(Arrays.asList(args));
         } catch (Exception e) {
             log.error(e.getMessage());
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

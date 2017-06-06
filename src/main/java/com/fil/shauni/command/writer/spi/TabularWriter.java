@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class TabularWriter extends DefaultWriter {
 

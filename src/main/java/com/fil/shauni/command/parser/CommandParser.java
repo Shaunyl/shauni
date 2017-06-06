@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface CommandParser {
     Class<? extends Command.CommandAction> parse(List<String> args);

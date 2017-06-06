@@ -15,7 +15,7 @@ import org.apache.commons.dbcp.BasicDataSourceFactory;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  * @version v0.1 basic hardcoded pool
  */
 @Log4j2

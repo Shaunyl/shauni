@@ -27,7 +27,7 @@
 ////import static org.powermock.api.easymock.PowerMock.createMock;
 ///**
 // *
-// * @author Chiara
+// * @author Filippo Testino (filippo.testino@gmail.com)
 // */
 //@RunWith(MockitoJUnitRunner.class)
 //public class ExportTestMock extends TestCase {

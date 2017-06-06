@@ -17,7 +17,7 @@
 //
 ///**
 // *
-// * @author Filippo
+// * @author Filippo Testino (filippo.testino@gmail.com)
 // */
 //@RunWith(MockitoJUnitRunner.class)
 //public class SpringExporterTest {

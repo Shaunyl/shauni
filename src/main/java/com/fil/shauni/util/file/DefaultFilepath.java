@@ -6,7 +6,7 @@ import lombok.NonNull;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public class DefaultFilepath implements Filepath {
     @Getter

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Log4j @Component(value = "montbs") @Parameters(separators = "=") @Scope("prototype")
 public class SimpleMonTbs extends DefaultMonTbs {

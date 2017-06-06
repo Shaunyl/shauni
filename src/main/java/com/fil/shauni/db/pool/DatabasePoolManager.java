@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 
 /**
  *
- * @author Shaunyl
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 public interface DatabasePoolManager extends AutoCloseable {
     DataSource getDataSource();

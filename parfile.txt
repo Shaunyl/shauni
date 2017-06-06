@@ -1,8 +1,8 @@
 filename=%t-%d-%w%u
 queries=dba_users(user_id,username):WHERE profile = 'DEFAULT';
-         dba_registry(comp_id,comp_name):;
-         dual:;
-         v$session(sid,event):WHERE type != 'BACKGROUND'
+        dba_registry(comp_id,comp_name):;
+        dual:;
+        v$session(sid,event):WHERE type != 'BACKGROUND'
 directory=out
 parallel=2
 cluster=2

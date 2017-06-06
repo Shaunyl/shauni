@@ -32,7 +32,7 @@ import com.fil.shauni.io.spi.ParFileManager;
 
 /**
  *
- * @author Filippo Testino
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @Component @Log4j2 @NoArgsConstructor
 public class DefaultCommandLinePresentationControl implements CommandLinePresentationControl {
@@ -78,7 +78,6 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
         String command = getCommand(args);
         Integer cluster = getValue(args, "cluster", Integer.class, 1);
-        Integer parallel = getValue(args, "parallel", Integer.class, 1);
 
         log.info("Command -->\n  {}\n", command);
 
@@ -121,8 +120,8 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             for (int i = 0; i < cluster; i++) {
                 final int thread = i;
                 CommandAction c = (CommandAction) Main.beanFactory.getBean(clazz);
-                CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), parallel, thread, i == 0);
-                c.setConfiguration(conf);
+                CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), thread, i == 0);
+                c.setConfiguration(conf); // FIXME: parallel is not a global parameter, shouldn't be here..
                 try {
                     jc = new JCommander(c);
                     integrate(args);

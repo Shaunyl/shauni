@@ -23,7 +23,7 @@ import static com.fil.shauni.util.StringUtils.*;
 
 /**
  *
- * @author Filippo
+ * @author Filippo Testino (filippo.testino@gmail.com)
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TabularWriterTest {
