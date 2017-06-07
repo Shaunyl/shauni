@@ -62,7 +62,8 @@ public class TestSpringExporter {
 
         List<Entity> tables = new ArrayList<>();
         tables.add(new Table("SYS.DBA_USERS"));
-        exporter.setTables(tables);
+        ExportMode mode = exporter.getMode();
+        mode.setTables(tables);
         exporter.setDirectory("test");
         DatabasePoolManager pool = new JDBCPoolManager();
         pool.configure("jdbc:oracle:thin:system/ciao@FILIPPO-PC:1521:XE", "system", "ciao", "FILIPPO-PC", "XE");

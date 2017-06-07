@@ -1,14 +1,14 @@
-Shauni 1.0.2.47a - Built at 2017-06-06 21:42
+Shauni 1.0.2.50a - Built at 2017-06-07 14:33
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  exp -queries=dba_registry(comp_id):;dba_users(user_id):WHERE profile = 'DEFAULT' -parallel=10 -tables=SYS.USERS
+  exp -queries=dba_registry(comp_id):;dba_users(user_id):WHERE profile = 'DEFAULT' -parallel=2 -tables=sys.dba_users
 
-Session 0 started at 14:07:01.28
+Session 0 started at 18:23:55.62
 
 Cannot use multiple modes together
 
-Session 0 finished at 14:07:01.30
+Session 0 finished at 18:23:55.63
 Elapsed time: 0.0 s
 
 Summary:
