@@ -2,24 +2,15 @@ Shauni 1.0.2.47a - Built at 2017-06-06 21:42
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  exp -queries=dba_registry(comp_id):;dba_users(user_id):WHERE profile = 'DEFAULT' -parallel=10
+  exp -queries=dba_registry(comp_id):;dba_users(user_id):WHERE profile = 'DEFAULT' -parallel=10 -tables=SYS.USERS
 
-Session 0 started at 22:25:17.19
+Session 0 started at 14:07:01.28
 
-* Found 2 object(s) to export.
-* Format used: tab
-* Parallelism adjusted to 2
- . . (worker 1) exporting DBA_USERS..
- . . (worker 0) exporting DBA_REGISTRY..
-Error while fetching data:
- -> Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could not establish the connection)
-Error while fetching data:
- -> Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (IO Error: The Network Adapter could not establish the connection)
-Task #0 of session 0 finished in 4.823 ms
+Cannot use multiple modes together
 
-Session 0 finished at 22:25:22.04
-Elapsed time: 4.844 s
+Session 0 finished at 14:07:01.30
+Elapsed time: 0.0 s
 
 Summary:
  -> [exp]	count: 1
-		max: 4844	min: 4844	avg: 4844.0	(ms)
+		max: 0	min: 0	avg: 0.0	(ms)

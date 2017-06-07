@@ -1,7 +1,0 @@
-COMP_ID                   COMP_NAME                
-------------------------- -------------------------
-APEX                      Oracle Application Express
-XDB                       Oracle XML Database      
-CONTEXT                   Oracle Text              
-CATALOG                   Oracle Database Catalog Views
-CATPROC                   Oracle Database Packages and Types

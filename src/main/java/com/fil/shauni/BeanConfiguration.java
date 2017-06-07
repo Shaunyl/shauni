@@ -1,5 +1,6 @@
-package com.fil.shauni.command;
+package com.fil.shauni;
 
+import com.fil.shauni.command.CommandConfiguration;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.DefaultWorkSplitter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;

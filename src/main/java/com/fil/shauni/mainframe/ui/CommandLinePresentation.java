@@ -17,6 +17,7 @@ public interface CommandLinePresentation {
      * @param msg the message to be printed
      * @param parameters wildcard replacements
      */
+    @Deprecated
     void print(LogLevel level, String msg, Object... parameters);
 
     /**
@@ -27,6 +28,7 @@ public interface CommandLinePresentation {
      * @param msg the message to be printed
      * @param parameters wildcard replacements
      */
+    @Deprecated
     void printIf(boolean condition, LogLevel level, String msg, Object... parameters);
 
     void print(Logger logger, String message, Object... parameters);

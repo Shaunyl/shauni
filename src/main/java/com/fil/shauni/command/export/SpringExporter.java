@@ -25,8 +25,9 @@ import lombok.Getter;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import static java.util.stream.Collectors.*;
+import java.util.stream.Stream;
 
 /**
  *
@@ -81,18 +82,23 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @Override
     public boolean validate() {
-        boolean result = false;
-        if (tables == null && queries == null) {
-            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "At least one parameters between queries and tables must be specified");
-            return result;
-        }
-        if (tables != null && queries != null) {
+        OBJECTS.put(Table.class, tables);
+        OBJECTS.put(Query.class, queries);
+        
+        Stream<List<? extends Entity>> filter = OBJECTS.values().stream().filter(Objects::nonNull);
+        long size = filter.count();
+        if (size > 1) {
             cli.print(() -> firstThread, (l, p) -> log.error(l, p), "Cannot use multiple modes together");
-            return result;
+            return false;
+        }
+        if (size == 0) {
+            sqlObjects = filter.flatMap(List::stream).collect(toList());
+            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "At least one mode must be specified");
+            return false;
         }
         if (parallel < 1) {
             log.error("Parallel degree must be greater than zero");
-            return result;
+            return false;
         }
         return true;
     }
@@ -100,9 +106,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     @Override
     public void setup() {
         super.setup();
-        OBJECTS.put(Table.class, tables);
-        OBJECTS.put(Query.class, queries);
-        sqlObjects = OBJECTS.values().stream().filter(Objects::nonNull).flatMap(List::stream).collect(Collectors.toList());
         int size = sqlObjects.size();
         log.info("* Found {} object(s) to export.", size);
         log.info("* Format used: {}", format);
@@ -112,7 +115,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         }
         workSet = workSplitter.splitWork(parallel, sqlObjects);
     }
-    
+
     @Override
     public void run(int sid) {
         super.run(sid);
@@ -201,7 +204,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     }
 
     private interface WildcardReplacer {
-
         void replace(Filepath in, WildcardContext context);
     }
 }

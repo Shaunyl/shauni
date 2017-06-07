@@ -1,4 +1,0 @@
-SID                       EVENT                    
-------------------------- -------------------------
-17.0                      SQL*Net message from client
-99.0                      SQL*Net message to client
