@@ -40,13 +40,11 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     private int parallel = 1;
 
     @Setter @Parameter(names = "-tables", description = "list of tables to export",
-            splitter = CommaParameterSplitter.class, variableArity = true,
-            converter = TableConverter.class)
+            splitter = CommaParameterSplitter.class, variableArity = true, converter = TableConverter.class)
     private List<Entity> tables;
 
     @Setter @Parameter(names = "-queries", description = "list of queries to fetch data",
-            splitter = SemicolonParameterSplitter.class, variableArity = true,
-            converter = QueryConverter.class)
+            splitter = SemicolonParameterSplitter.class, variableArity = true, converter = QueryConverter.class)
     private List<Entity> queries;
 
     @Setter @Parameter(names = "-directory", description = "destination of dumpfiles")
@@ -92,7 +90,6 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
             return false;
         }
         if (size == 0) {
-            sqlObjects = filter.flatMap(List::stream).collect(toList());
             cli.print(firstThread, (l, p) -> log.error(l, p), "At least one mode must be specified");
             return false;
         }
@@ -100,6 +97,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
             log.error("Parallel degree must be greater than zero");
             return false;
         }
+        sqlObjects = filter.flatMap(List::stream).collect(toList());
         return true;
     }
 
