@@ -88,12 +88,12 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         Stream<List<? extends Entity>> filter = OBJECTS.values().stream().filter(Objects::nonNull);
         long size = filter.count();
         if (size > 1) {
-            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "Cannot use multiple modes together");
+            cli.print(firstThread, (l, p) -> log.error(l, p), "Cannot use multiple modes together");
             return false;
         }
         if (size == 0) {
             sqlObjects = filter.flatMap(List::stream).collect(toList());
-            cli.print(() -> firstThread, (l, p) -> log.error(l, p), "At least one mode must be specified");
+            cli.print(firstThread, (l, p) -> log.error(l, p), "At least one mode must be specified");
             return false;
         }
         if (parallel < 1) {
@@ -111,7 +111,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         log.info("* Format used: {}", format);
         if (parallel > size) {
             parallel = size;
-            cli.print(() -> firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}", parallel);
+            cli.print(firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}", parallel);
         }
         workSet = workSplitter.splitWork(parallel, sqlObjects);
     }

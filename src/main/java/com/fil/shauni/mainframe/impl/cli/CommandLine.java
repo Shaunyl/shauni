@@ -48,8 +48,8 @@ public class CommandLine implements CommandLinePresentation {
     }
 
     @Override
-    public void print(Supplier<Boolean> p, Logger logger, String message, Object... parameters) {
-        if (p.get()) {
+    public void print(boolean condition, Logger logger, String message, Object... parameters) {
+        if (condition) {
             this.print(logger, message, parameters);
         }
     }

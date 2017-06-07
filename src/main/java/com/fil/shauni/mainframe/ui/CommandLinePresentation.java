@@ -33,5 +33,5 @@ public interface CommandLinePresentation {
 
     void print(Logger logger, String message, Object... parameters);
 
-    void print(Supplier<Boolean> p, Logger logger, String message, Object... parameters);
+    void print(boolean condition, Logger logger, String message, Object... parameters);
 }
