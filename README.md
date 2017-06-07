@@ -30,9 +30,12 @@ cluster=2
 ```
  
 **1.0.1**  
- Used Chain of Responsability design pattern to cope with the filename building through wildcards.  
- Introduced a way to run jobs simultaneously on different servers/instances.  
- Added further parallelism to the Export Command.  
+ Used Chain of Responsability design pattern to cope with the filename building through wildcards. 
+ Enhanced parallelism:
+ * Introduced a way to run jobs simultaneously on different servers/instances through the parameter **cluster**
+ * Added further parallelism to the Export Command through the parameter **parallel**. 
+ ![exp-shauni-diagram](https://github.com/Shaunyl/shauni/blob/master/exp-shauni.PNG)
+ 
  Added the property **database.timeout** to specify the timeout of database connections.<br/>
  Up bounded the parameter **cluster**.<br/>
  
