@@ -14,6 +14,8 @@ For further information surf to Wiki!
  Used Template design pattern to write a CommandAction to represent the base workflow of a command    
  Code refactored multiple times  
  Fixed some bugs.  
+ Added option _-auto_ to **montbs**
+ Added option _-unit_ to **montbs**
  Added parfile option. Usage:  
 ```java
 exp -parfile=/exp/shauni.par -format=csv -delimiter=;
@@ -52,5 +54,5 @@ Example Usage:<br/>
 exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] \  
    -Cusername=30 -Cuser_id=9 -directory=export<br/>
    
-montbs -directory=tbs -undo -exclude=users,stat -cluster=2 -warning=60  
+montbs -directory=tbs -undo -exclude=users,stat -cluster=2 -warning=60 -auto
 ```
