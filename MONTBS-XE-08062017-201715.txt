@@ -1,0 +1,12 @@
+Tablespace Report
+
+Starting MonTbs on instance XE at 08-Jun-2017 20:17:16
+Other tablespaces to ignore -> 'DBA_TBS', 'STAT', 'SYSAUX'
+Thresholds used -> 20 (warning), 50 (critical)
+
+Retrieving tablespaces info..
+
+Check for criticals:
+  XE        SYSTEM[352.00/460.00/600.00]                           AUTOEXTEND[WARN(1)]            59.00%
+
+Job completed successfully at 08-Jun-2017 20:17:16

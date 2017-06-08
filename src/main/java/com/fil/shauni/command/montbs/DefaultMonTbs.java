@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.internal.Lists;
 import com.fil.shauni.command.DatabaseCommandControl;
+import com.fil.shauni.command.support.CharConverter;
 import com.fil.shauni.command.support.UpperCaseConverter;
 import com.fil.shauni.command.support.montbs.AbstractDatabaseQueryFactory;
 import com.fil.shauni.command.support.montbs.DatabaseQueryFactory;
@@ -45,7 +46,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     @Getter @Parameter(names = "-auto")
     protected boolean autoextend;
     
-    @Getter @Parameter(names = "-unit")
+    @Getter @Parameter(names = "-unit", converter = CharConverter.class)
     protected char unit = 'h';
 
     @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class
