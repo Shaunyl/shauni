@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
-import com.fil.shauni.command.writer.spi.CSVWriter;
+import com.fil.shauni.command.writer.spi.export.CSVWriter;
 import com.fil.shauni.command.writer.WriterManager;
 import com.fil.shauni.util.Processor;
 import java.io.FileWriter;
@@ -25,10 +25,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Log4j2 
-@Component(value = "expcsv")
-@Parameters(separators = "=")
-@Scope("prototype")
+@Log4j2 @Component(value = "expcsv") @Parameters(separators = "=") @Scope("prototype")
 public class CSVExporter extends SpringExporter {
 
     @Parameter(names = "-start", arity = 1, validateWith = PositiveInteger.class, description = "Line at which starting to export")

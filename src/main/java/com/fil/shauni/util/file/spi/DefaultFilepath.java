@@ -1,5 +1,6 @@
-package com.fil.shauni.util.file;
+package com.fil.shauni.util.file.spi;
 
+import com.fil.shauni.util.file.Filepath;
 import java.io.File;
 import lombok.Getter;
 import lombok.NonNull;

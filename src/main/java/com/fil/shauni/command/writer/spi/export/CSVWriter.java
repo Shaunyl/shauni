@@ -1,4 +1,4 @@
-package com.fil.shauni.command.writer.spi;
+package com.fil.shauni.command.writer.spi.export;
 
 import com.fil.shauni.command.writer.WriterManager;
 import com.fil.shauni.util.DatabaseUtil;
@@ -149,7 +149,7 @@ public class CSVWriter implements WriterManager {
      * @param quotechar the character to use for quoted elements
      * @param escapechar the character to use for escaping quotechars or
      * escapechars
-     * @param lineEnd the line feed terminator to use
+     * @param endline the line feed terminator to use
      */
     public CSVWriter(Writer writer, String delimiter, char quotechar, char escapechar, String endline, int start, int end) {
         this.rawWriter = writer;

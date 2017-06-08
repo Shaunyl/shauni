@@ -1,6 +1,5 @@
 package com.fil.shauni.util;
 
-import com.fil.shauni.command.export.support.Entity;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,10 +15,7 @@ import java.math.RoundingMode;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -171,24 +167,26 @@ public class GeneralUtil {
         return bd.doubleValue();
     }
 
-//    public static <E> void addAllIfNotNull(List<E> list, Collection<? extends E>... c) {
-//        for (Collection<? extends E> x : c) {
-//            if (x != null) {
-//                list.addAll(x);
-//            }
-//        }
-//    }
+    public static String byteToHuman(long bytes, boolean si) {
+        int unit = si ? 1000 : 1024;
+        if (bytes < unit) {
+            return bytes + " B";
+        }
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
     
-//    @SuppressWarnings("unchecked")
-//    public static List<Entity> addAll(List<Entity>... list) {
-//        ArrayList<Entity> entities = new ArrayList<>();
-//        for (ArrayList<Entity> s : list) {
-//            if (s != null) {
-//                entities.addAll(s);
-//            }
-//        }
-//    }
-    
+    public static String byteToHuman(long bytes) {
+        int unit = 1024;
+        if (bytes < unit) {
+            return bytes + "B";
+        }
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        char pre = ("KMGTPE").charAt(exp - 1);
+        return String.format("%.1f%s", bytes / Math.pow(unit, exp), pre);
+    }
+
     public static int availableProcessors() {
         return Runtime.getRuntime().availableProcessors();
     }

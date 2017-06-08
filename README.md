@@ -42,7 +42,6 @@ cluster=2
 ### **Future Improvements**<br/>
 Add the possibility to use a custom configuration file (not just multidb.cfg)<br/>
 Add the support for MySQLs databases<br/>
-Improve boolean command inputs (i.e., from this -log=y to this -log)<br/>
 
 ### **Commands**  
 * exp
@@ -53,5 +52,5 @@ Example Usage:<br/>
 exp -tables=dba_users,dba_registry -cluster=3 -parallel=2 -filename=%d-%t_[%n-%w%u] \  
    -Cusername=30 -Cuser_id=9 -directory=export<br/>
    
-montbs -directory=tbs -undo=n -exclude=users,stat -cluster=2 -warning=60  
+montbs -directory=tbs -undo -exclude=users,stat -cluster=2 -warning=60  
 ```

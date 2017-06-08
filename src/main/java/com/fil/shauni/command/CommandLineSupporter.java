@@ -1,7 +1,6 @@
 package com.fil.shauni.command;
 
 import com.beust.jcommander.ParameterException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -16,14 +15,14 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CommandLineSupporter {
 
-    public static String isThere(List<String> args, final @NonNull String option) {
+    public static boolean isThere(List<String> args, final @NonNull String option) {
         noArguments(args);
         for (String arg : args) {
-            if (arg.matches("-" + option + "=.+")) {
-                return option;
+            if (arg.matches("-" + option + ".*")) {
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     public static void integrate(List<String> args) {

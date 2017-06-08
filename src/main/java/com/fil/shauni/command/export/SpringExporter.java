@@ -2,13 +2,15 @@ package com.fil.shauni.command.export;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
+import com.beust.jcommander.validators.PositiveInteger;
+import com.fil.shauni.command.CommandStatus;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.export.support.*;
 import com.fil.shauni.command.support.worksplitter.WorkSplitter;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.util.*;
-import com.fil.shauni.util.file.DefaultFilepath;
+import com.fil.shauni.util.file.spi.DefaultFilepath;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +43,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @Setter @Parameter(names = "-format", description = "format of dumpfiles")
     private String format = "tab";
-    
+
     @ParametersDelegate @Getter
     private final ExportMode mode = new ExportMode();
 
@@ -67,8 +69,12 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     public boolean validate() {
         boolean result = mode.validate(firstThread);
         if (parallel < 1) {
-            log.error("Parallel degree must be greater than zero");
+            status.error();
+            log.error("Parallelism degree must be greater than zero");
             return false;
+        }
+        if (!result) {
+            status.error();
         }
         return result;
     }
@@ -78,7 +84,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         super.setup();
         List<? extends Entity> sqlObjects = mode.getSqlObjects();
         int size = sqlObjects.size();
-        log.info("* Found {} object(s) to export.", size);
+        log.info("* Found {} object(s) to export", size);
         log.info("* Format used: {}", format);
         if (parallel > size) {
             parallel = size;
@@ -102,6 +108,8 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
                 future.get();
                 log.debug("getResult worker {}", worker);
             } catch (InterruptedException | ExecutionException e) {
+                status.error();
+                status.setState(CommandStatus.State.ABORTED);
                 throw new ShauniException(String.format("Worker %d interrupted abnormally..\n --> %s", worker, e.getMessage()));
             }
         }
@@ -128,6 +136,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         final String sql = entity.convert(obj);
         if (sql == null) {
             log.error(" -> '{}' has been skipped.", obj);
+            status.error();
             return;
         }
         final String out = entity.display(obj).trim();
@@ -141,11 +150,8 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
             entity.export(sql, jdbc, (ResultSetExtractor<Void>) rs -> {
                 try {
                     final int r = write(rs, filepath);
-                    if (r > 0) {
-                        cli.print((l, p) -> log.info(l), "  -> exported %-55s%10d rows", out, r);
-                    } else if (r == 0) {
-                        cli.print((l, p) -> log.info(l), "  -> %s skipped because it is empty", out);
-                    }
+                    cli.print(r > 0, (l, p) -> log.info(l), "  -> exported %-55s%10d rows", out, r);
+                    cli.print(r == 0, (l, p) -> log.info(l), "  -> %s skipped because it is empty", out);
                 } catch (IOException | SQLException e) {
                     status.error();
                     log.error("Error while exporting to file {}\n -> {}", filepath.getFilepath(), e.getMessage());
@@ -169,8 +175,11 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
     @RequiredArgsConstructor @Getter
     public static class WildcardContext {
         final int workerId, objectId;
+
         final String timestamp;
+
         final String table;
+
         final String threadName;
     }
 

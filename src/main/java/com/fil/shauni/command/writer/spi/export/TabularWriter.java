@@ -1,4 +1,4 @@
-package com.fil.shauni.command.writer.spi;
+package com.fil.shauni.command.writer.spi.export;
 
 import com.fil.shauni.command.writer.DefaultWriter;
 import com.fil.shauni.util.StringUtils;

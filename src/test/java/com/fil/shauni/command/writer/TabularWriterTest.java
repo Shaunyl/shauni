@@ -1,6 +1,6 @@
 package com.fil.shauni.command.writer;
 
-import com.fil.shauni.command.writer.spi.TabularWriter;
+import com.fil.shauni.command.writer.spi.export.TabularWriter;
 import com.fil.shauni.util.StringUtils;
 import java.io.IOException;
 import java.io.StringWriter;

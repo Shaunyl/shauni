@@ -1,23 +1,25 @@
 package com.fil.shauni.command.montbs;
 
-import com.fil.shauni.command.support.Query;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.internal.Lists;
-import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.DatabaseCommandControl;
-import com.fil.shauni.command.support.CharBooleanValidator;
-import com.fil.shauni.log.LogLevel;
-import com.fil.shauni.mainframe.ui.CommandLinePresentation;
-import com.fil.shauni.util.file.DefaultFilepath;
-import com.fil.shauni.util.StringUtils;
+import com.fil.shauni.command.support.UpperCaseConverter;
+import com.fil.shauni.command.support.montbs.AbstractDatabaseQueryFactory;
+import com.fil.shauni.command.support.montbs.DatabaseQueryFactory;
+import com.fil.shauni.command.support.montbs.MonAutoTablespaceQuery;
+import com.fil.shauni.command.support.montbs.MonTablespaceQuery;
+import com.fil.shauni.command.support.montbs.TablespaceQuery;
+import com.fil.shauni.util.file.spi.DefaultFilepath;
 import com.fil.shauni.util.Sysdate;
 import com.fil.shauni.util.file.Filepath;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
-import javax.inject.Inject;
+import java.util.Map;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -28,42 +30,43 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 @Log4j2
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
-    @Parameter(names = "-directory", arity = 1)
-    protected String directory = ".";
+    @Getter @Parameter(names = "-directory", arity = 1)
+    private final String directory = ".";
 
-    @Parameter(names = "-critical", arity = 1, validateWith = PositiveInteger.class)
-    public Integer critical = 95;
+    @Getter @Parameter(names = "-critical", arity = 1)
+    protected Integer critical = 95;
 
-    @Parameter(names = "-warning", arity = 1, validateWith = PositiveInteger.class)
-    public Integer warning = 85;
+    @Getter @Parameter(names = "-warning", arity = 1)
+    protected Integer warning = 85;
 
-    @Parameter(names = "-undo", validateWith = CharBooleanValidator.class)
-    public String undo = "y";
+    @Getter @Parameter(names = "-undo")
+    protected boolean undo;
 
-    @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class, variableArity = true)
-    protected List<String> exclude = Lists.newArrayList();
+    @Getter @Parameter(names = "-auto")
+    protected boolean autoextend;
+    
+    @Getter @Parameter(names = "-unit")
+    protected char unit = 'h';
 
-    @Inject
-    private CommandLinePresentation commandLinePresentation;
+    @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class
+            , variableArity = true, converter = UpperCaseConverter.class)
+    protected final List<String> exclude = Lists.newArrayList();
 
-    private final String COMMENT = "--";
-
+    private final static Map<Boolean, Class<? extends TablespaceQuery>> QUERIES = new HashMap<>();
+    
+    private final AbstractDatabaseQueryFactory factory = new DatabaseQueryFactory();
+    
     private String query;
 
     @Override
     public boolean validate() {
-        boolean result = false;
-        if ((warning | critical) < 1 || (warning | critical) > 99) {
-            log.error("Threshold parameters must be between 1 to 99.");
-            return result;
-        } else {
-            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check threshold between [1,99] -> OK"); // FIXME
+        if ((warning < 1 || critical < 1) || (warning > 99 || critical > 99)) {
+            cli.print((l, p) -> log.error(l), "Threshold parameters must be between 1 to 99.");
+            return false;
         }
         if (warning >= critical) {
-            log.error("Critical threshold must be greater than warning one.");
+            cli.print((l, p) -> log.error(l), "Critical threshold must be greater than warning one.");
             return false;
-        } else {
-            commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "  check warning < critical -> OK");
         }
         return true;
     }
@@ -71,21 +74,19 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     @Override
     public void setup() {
         super.setup();
+        QUERIES.put(true, MonAutoTablespaceQuery.class); // FIXME: 1. move out; 2. only two keys would be possible (limit)
+        QUERIES.put(false, MonTablespaceQuery.class);
+        TablespaceQuery q = factory.create(QUERIES.get(autoextend));
 
-        String commentUNDO = COMMENT, commentTBS = COMMENT;
+        query = q.prepare(exclude, undo, warning);
+        cli.print(undo, (l, p) -> log.info(l), "* UNDO tablespaces included");
+        cli.print(autoextend, (l, p) -> log.info(l), "* Autoextend mode enabled: autoextend datafiles taken into account");
+        int size = exclude.size();
+        cli.print(size > 0, (l, p) -> log.info(l, p), "* List of tablespaces to exclude:\n  -> {}", String.join(", ", exclude));
+        cli.print(size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
+        cli.print((l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
 
-        if ("n".equals(undo)) {
-            commentUNDO = "";
-        }
-
-        String inexclude = StringUtils.replace(exclude.toString(), "[", "(", "]", ")");
-        if (inexclude.length() > 2) {
-            commentTBS = "";
-        }
-
-        this.query = Query.getTablespacesAllocation(inexclude, "'UNDO'", warning, commentTBS, commentUNDO);
-
-        commandLinePresentation.printIf(firstThread, LogLevel.DEBUG, "> query to execute:\n" + this.query.replaceAll("(?m)^", "  ") + "\n");
+        cli.print(firstThread, (l, p) -> log.debug(l), "> query to execute:\n{}\n", query.replaceAll("(?m)^", "  "));
     }
 
     @Override
@@ -96,21 +97,19 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Override
     public void runJob(int w) {
-        String filename = String.format("%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
-        String path = String.format("%s/%s", directory, filename);
-        Filepath filepath = new DefaultFilepath(path);
-        log.info("Output file is:\n   " + filepath.getFilepath());
-        jdbc.query(query, (ResultSetExtractor<Integer>) rs -> {
+        String filename = String.format("MONTBS-%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
+        Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
+        log.info("\nOutput file is:\n   {}\n", filepath.getFilepath());
+        jdbc.query(query, (ResultSetExtractor<Void>) rs -> {
             try {
-                return write(rs, filepath);
-            } catch (IOException e) {
-                log.error("Error while writing to file {}\n -> {}", filepath.getFilepath(), e.getMessage());
-            } catch (SQLException e) {
-                commandLinePresentation.print(LogLevel.ERROR, "Error while fetching data\n  -> %s", e.getMessage());
+                log.info("Working on...");
+                write(rs, filepath);
+            } catch (IOException | SQLException e) {
+                cli.print((l, p) -> log.error(l, p), "  -> Error while writing to file {}\n{}", filepath.getFilepath(), e.getMessage());
             }
-            return -1;
+            return null;
         });
-        commandLinePresentation.print(LogLevel.DEBUG, "  -> data written to the file %s", path);
+        cli.print((l, p) -> log.info(l), "  -> Report generated successfully\n");
     }
 
     protected abstract int write(final ResultSet rs, Filepath filename) throws SQLException, IOException;

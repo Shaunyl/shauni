@@ -28,6 +28,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.stereotype.Component;
 import static com.fil.shauni.command.Command.CommandAction;
 import static com.fil.shauni.command.CommandLineSupporter.*;
+import com.fil.shauni.command.parser.spi.DefaultMonTbsParser;
 import com.fil.shauni.io.spi.ParFileManager;
 
 /**
@@ -50,7 +51,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     static {
         addCommand(new Command(SpringExporter.class, "exp", SpringExporterParser.class)
                 .withDescription("Export data to dumpfiles"));
-        addCommand(new Command(DefaultMonTbs.class, "montbs")
+        addCommand(new Command(DefaultMonTbs.class, "montbs", DefaultMonTbsParser.class)
                 .withDescription("Check tablespace status"));
     }
 
