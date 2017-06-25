@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import javax.sql.DataSource;
+import lombok.extern.log4j.Log4j2;
 import org.apache.derby.tools.ij;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.DatabaseConnection;
@@ -16,6 +17,7 @@ import org.dbunit.dataset.DataSetException;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,31 +33,44 @@ import org.junit.Before;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
+@Log4j2
 public class TestMontbsSpring {
 
+    private final static String SQLFILE = "/test/shaunidb.sql";
+    
+    private final static String DATASET = "dataset.xml";
+    
     @Autowired @Qualifier("montbs-dao")
     private GenericDao<MontbsData, MontbsDataKey> repository;
 
     @Autowired
     private DataSource dataSource;
 
+    private static boolean initialized = false;
+
+    private static IDatabaseConnection databaseConnection;
+        
+    private static IDataSet dataSet;
+    
     @Before
     public void setUp() throws SQLException, UnsupportedEncodingException, DataSetException, DatabaseUnitException {
-        Connection c = dataSource.getConnection();
-        ij.runScript(c, TestMontbsSpring.class.getResourceAsStream("/test/shaunidb.sql"), "UTF-8",
-                System.out, "UTF-8");
-        IDataSet dataSet = new FlatXmlDataSetBuilder().build(Thread
-                .currentThread().getContextClassLoader()
-                .getResourceAsStream("dataset.xml"));
+        if (!initialized) {
+            Connection connection = dataSource.getConnection();
+            ij.runScript(connection, TestMontbsSpring.class.getResourceAsStream(SQLFILE), "UTF-8", System.out, "UTF-8");
+            dataSet = new FlatXmlDataSetBuilder()
+                    .build(Thread.currentThread().getContextClassLoader().getResourceAsStream(DATASET));
 
-        IDatabaseConnection databaseConnection = new DatabaseConnection(c);
-        DatabaseOperation.CLEAN_INSERT.execute(databaseConnection, dataSet);
+            databaseConnection = new DatabaseConnection(connection);
+            DatabaseOperation.CLEAN_INSERT.execute(databaseConnection, dataSet);
+            initialized = true;
+            log.info("Database initialized!");
+        }
     }
 
     @Test
     public void list() throws ParseException {
         List<MontbsData> data = repository.list();
-        
+
         Assert.assertEquals(4, data.size());
 
         MontbsData m = new MontbsData(3, 2, new MontbsDataKey("filippo-pc", "TESTDB", "SYSTEM"));
@@ -64,5 +79,23 @@ public class TestMontbsSpring {
         m.setTotalUsedPercentage(86.0d);
 
         Assert.assertEquals(m.toString(), data.get(2).toString());
+    }
+
+    @Test
+    public void findWhen() throws ParseException {
+        List<MontbsData> data = repository.findWhen(new MontbsDataKey("filippo-pc", "TESTDB", "SYSTEM"));
+
+        Assert.assertEquals(3, data.size());
+
+        MontbsData m = data.get(0);
+        double pct = m.getTotalUsedPercentage();
+
+        Assert.assertEquals(80, pct, 0);
+    }
+    
+    @AfterClass
+    public static void tearDown() throws DatabaseUnitException, SQLException {
+        DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL).execute(databaseConnection, dataSet);
+        log.info("Database erased!");
     }
 }

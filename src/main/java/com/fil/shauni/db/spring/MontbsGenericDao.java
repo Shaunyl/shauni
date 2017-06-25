@@ -33,7 +33,11 @@ public class MontbsGenericDao implements GenericDao<MontbsData, MontbsDataKey> {
 
     @Override
     public List<MontbsData> findWhen(MontbsDataKey key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return jdbcTemplate.query("SELECT * FROM MontbsRuns WHERE"
+                + " host_name = ?"
+                + " AND db_name = ?"
+                + " AND tablespace_name = ?", new Object[] { key.getHost(), key.getDatabase(), key.getTablespace() },
+                new MontbsDataRowMapper());
     }
 
     @Override
