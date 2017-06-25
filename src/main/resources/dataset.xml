@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dataset>
+    <MontbsRuns run_id = "1" tbs_run_id = "1" host_name = "filippo-pc"
+                db_name = "TESTDB" tablespace_name = "SYSTEM" 
+                total_used_pct = "80" sample_time = "2017-06-22 19:58:19.814" />
+    <MontbsRuns run_id = "2" tbs_run_id = "1" host_name = "filippo-pc"
+                db_name = "TESTDB" tablespace_name = "SYSAUX"
+                total_used_pct = "41" sample_time = "2017-06-22 19:58:29.124" />
+    <MontbsRuns run_id = "3" tbs_run_id = "2" host_name = "filippo-pc"
+                db_name = "TESTDB" tablespace_name = "SYSTEM"
+                total_used_pct = "86" sample_time = "2017-06-23 19:58:11.224" />
+    <MontbsRuns run_id = "4" tbs_run_id = "3" host_name = "filippo-pc"
+                db_name = "TESTDB" tablespace_name = "SYSTEM"
+                total_used_pct = "89" sample_time = "2017-06-24 19:58:19.616" />
+</dataset>

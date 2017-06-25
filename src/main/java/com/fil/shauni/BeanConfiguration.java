@@ -10,17 +10,27 @@ import com.fil.shauni.util.Processor;
 import com.fil.shauni.util.file.Filepath;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@org.springframework.context.annotation.Configuration @ComponentScan(basePackages = { "com.fil.shauni" })
+@Configuration @ComponentScan(basePackages = {"com.fil.shauni"})
 @ImportResource("file:src/main/resources/beans/Beans.xml")
+@EnableTransactionManagement @PropertySource("classpath:/jdbc-derby.properties")
 public class BeanConfiguration {
 
     @Bean
@@ -46,7 +56,8 @@ public class BeanConfiguration {
         return new JDBCPoolManager();
     }
 
-    @Bean @Scope("prototype")
+    @Bean
+    @Scope("prototype")
     public CommandConfiguration commandConfiguration(List<String> sessions, int thread, boolean firstThread) {
         return new CommandConfiguration.CommandConfigurationBuilder()
                 .sessions(sessions.size())
@@ -54,5 +65,43 @@ public class BeanConfiguration {
                 .tid(thread).tname("thread-" + thread)
                 .workset(sessions)
                 .build();
+    }
+
+    @Value("#{ environment['jdbc.url'] }")
+    protected String databaseUrl;
+
+    @Value("#{ environment['jdbc.username'] }")
+    protected String databaseUserName = "";
+
+    @Value("#{ environment['jdbc.password'] }")
+    protected String databasePassword = "";
+
+    @Value("#{ environment['database.driverClassName'] }")
+    protected String driverClassName = "org.apache.derby.jdbc.EmbeddedDriver";
+
+    @Bean(destroyMethod = "close")
+    public DataSource dataSource() {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(driverClassName);
+        dataSource.setUrl(databaseUrl);
+        dataSource.setUsername(databaseUserName);
+        dataSource.setPassword(databasePassword);
+        dataSource.setTestOnBorrow(true);
+        dataSource.setTestOnReturn(true);
+        dataSource.setTestWhileIdle(true);
+        dataSource.setTimeBetweenEvictionRunsMillis(1800000);
+        dataSource.setNumTestsPerEvictionRun(3);
+        dataSource.setMinEvictableIdleTimeMillis(1800000);
+        return dataSource;
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(dataSource());
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());
     }
 }
