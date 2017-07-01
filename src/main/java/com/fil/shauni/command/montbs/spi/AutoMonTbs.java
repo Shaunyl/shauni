@@ -24,8 +24,8 @@ public class AutoMonTbs extends DefaultMonTbs {
     protected int write(final ResultSet rs, final Filepath filename) throws SQLException, IOException {
         int rows;
         try (WriterManager writer = new AutoMonTbsWriter (
-                new FileWriter(filename.getFilepath()), databasePoolManager.getSid()
-                , warning, critical, undo, unit, exclude)) {
+                new FileWriter(filename.getFilepath()), databasePoolManager.getHost(), databasePoolManager.getSid()
+                , warning, critical, undo, unit, exclude, growing)) {
             rows = writer.writeAll(rs, true);
         }
         return rows;

@@ -11,7 +11,6 @@ import com.fil.shauni.command.support.montbs.DatabaseQueryFactory;
 import com.fil.shauni.command.support.montbs.MonAutoTablespaceQuery;
 import com.fil.shauni.command.support.montbs.MonTablespaceQuery;
 import com.fil.shauni.command.support.montbs.TablespaceQuery;
-import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.util.file.spi.DefaultFilepath;
 import com.fil.shauni.util.Sysdate;
 import com.fil.shauni.util.file.Filepath;
@@ -33,7 +32,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Getter @Parameter(names = "-directory", arity = 1)
-    private final String directory = ".";
+    protected String directory = ".";
 
     @Getter @Parameter(names = "-critical", arity = 1)
     protected Integer critical = 95;
@@ -49,6 +48,9 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Getter @Parameter(names = "-unit", converter = CharConverter.class)
     protected char unit = 'h';
+
+    @Getter @Parameter(names = "-growing")
+    protected boolean growing;
 
     @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class,
             variableArity = true, converter = UpperCaseConverter.class)
@@ -87,6 +89,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         cli.print(size > 0, (l, p) -> log.info(l, p), "* List of tablespaces to exclude:\n  -> {}", String.join(", ", exclude));
         cli.print(size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
         cli.print((l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
+        cli.print(growing, (l, p) -> log.info(l, p), "* Growing check enabled");
 
         cli.print(firstThread, (l, p) -> log.debug(l, p), "> query to execute:\n{}", query.replaceAll("(?m)^", "  "));
     }
@@ -102,6 +105,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         String host = databasePoolManager.getHost();
         String sid = databasePoolManager.getSid();
         String filename = String.format("MONTBS-%s-%s.txt", sid, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
+
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
         log.info("\n[{}@{}] Output file will be:\n   {}\n", sid, host, filepath.getFilepath());
         jdbc.query(query, (ResultSetExtractor<Void>) rs -> {

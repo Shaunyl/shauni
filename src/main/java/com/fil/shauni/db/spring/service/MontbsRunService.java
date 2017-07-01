@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Filippo
  */
 @Service @Transactional(readOnly = true)
-public class MontbsRunService {
+public class MontbsRunService implements ShauniService {
     @Autowired
     private MontbsRunRepository montbsRepository;
     
@@ -21,11 +21,19 @@ public class MontbsRunService {
         return montbsRepository.findAll();
     }
     
-    public List<MontbsRun> findByUsage(double usage) {
-        return montbsRepository.findByUsage(usage);
+    public List<MontbsRun> findGreaterOrEqualThanUsage(double usage) {
+        return montbsRepository.findGreaterOrEqualThanUsage(usage);
     }
     
-    public List<MontbsRun> findByDate(Date date) {
-        return montbsRepository.findByDate(date);
+    public List<MontbsRun> findEarlierOrEqualThanDate(Date date) {
+        return montbsRepository.findEarlierOrEqualThanDate(date);
+    }
+    
+    public MontbsRun findFirstByOrderBySampleTimeDesc() {
+        return montbsRepository.findFirstByOrderBySampleTimeDesc();
+    }
+    
+    public List<MontbsRun> findAllByHostDbTbsOrderBySampleTimeDesc(String host, String db, String tbs) {
+        return montbsRepository.findAllByHostDbTbsOrderBySampleTimeDesc(host, db, tbs);
     }
 }

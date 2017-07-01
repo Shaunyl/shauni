@@ -3,11 +3,13 @@
     <persistence-unit name="hibernate-punit" transaction-type="RESOURCE_LOCAL">
         <class>com.fil.shauni.db.spring.model.MontbsRun</class>
         <class>com.fil.shauni.db.spring.model.MontbsTablespace</class>
+        <class>com.fil.shauni.db.spring.model.MontbsDatabase</class>
+        <class>com.fil.shauni.db.spring.model.MontbsHostname</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name = "hibernate.dialect" value = "org.hibernate.dialect.DerbyDialect"/>
-            <property name = "hibernate.show_sql" value = "true"/>  
-            <property name = "hibernate.format_sql" value = "true"/>
+            <property name = "hibernate.show_sql" value = "false"/>  
+            <property name = "hibernate.format_sql" value = "falsee"/>
         </properties>
     </persistence-unit>
 </persistence>

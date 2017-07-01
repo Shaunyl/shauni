@@ -1,0 +1,9 @@
+1) Fix conversion from db to java of Date fields.
+    -> time is lost, i.e., 2017-02-05 23:15:00 becomes --> 2017-02-05 00:00:00
+FIXED!
+
+2) Montbs creates the report file also if the job fails
+
+3) Bad perfromances SimpleMonTbs when growing option is enabled
+
+4) AutoMontbs lacks of a growing option implementation

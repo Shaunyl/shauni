@@ -1,0 +1,4 @@
+exclude=DBA_TBS,STAT
+warning=20
+critical=50
+directory=logs

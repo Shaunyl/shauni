@@ -1,7 +1,6 @@
 package com.fil.shauni.db.spring.service;
 
 import com.fil.shauni.db.spring.TestConfig;
-import com.fil.shauni.db.spring.deprecated.TestMontbsSpring;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
@@ -37,7 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Log4j2
 public class TestMontbs {
 
-    private final static String SQLFILE = "/test/shaunidb.sql", DATASET = "dataset.xml";
+    private final static String SQLFILE = "/sql/shaunidb.sql", DATASET = "dataset.xml";
         
     @Autowired
     private MontbsRunService service;
@@ -55,7 +54,7 @@ public class TestMontbs {
     public void setUp() throws SQLException, UnsupportedEncodingException, DataSetException, DatabaseUnitException {
         if (!initialized) {
             Connection connection = dataSource.getConnection();
-            ij.runScript(connection, TestMontbsSpring.class.getResourceAsStream(SQLFILE), "UTF-8", System.out, "UTF-8");
+            ij.runScript(connection, TestMontbs.class.getResourceAsStream(SQLFILE), "UTF-8", System.out, "UTF-8");
             dataSet = new FlatXmlDataSetBuilder()
                     .build(Thread.currentThread().getContextClassLoader().getResourceAsStream(DATASET));
 
@@ -67,20 +66,31 @@ public class TestMontbs {
     }
     
     @Test
-    public void list() throws ParseException {
+    public void find() throws ParseException {
         List<MontbsRun> data = service.findAll();
         Assert.assertEquals(4, data.size());
         
-        List<MontbsRun> criticals = service.findByUsage(85d);
+        String s = data.get(0).toString();
+        Assert.assertEquals("1,filippo-pc,TESTDB,SYSTEM,80.0,2017-06-21 19:58:19.814", s);
+        
+        List<MontbsRun> criticals = service.findGreaterOrEqualThanUsage(81d);
         Assert.assertEquals(2, criticals.size());
         
-        List<MontbsRun> earlier = service.findByDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-06-22"));
-        Assert.assertEquals(3, earlier.size());
+        List<MontbsRun> earlier = service.findEarlierOrEqualThanDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-06-22"));
+        Assert.assertEquals(2, earlier.size());
+        
+        MontbsRun last = service.findFirstByOrderBySampleTimeDesc();
+        Assert.assertEquals("3,filippo-pc,TESTDB,SYSTEM,86.0,2017-06-23 19:58:11.224", last.toString());
+        
+        List<MontbsRun> records = service.findAllByHostDbTbsOrderBySampleTimeDesc
+            ("filippo-pc", "TESTDB", "SYSTEM");
+        
+        records.forEach(f -> log.info(f.toString()));
     }
     
     @AfterClass
     public static void tearDown() throws DatabaseUnitException, SQLException {
-        DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL).execute(databaseConnection, dataSet);
+        DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.NONE).execute(databaseConnection, dataSet);
         log.debug("Database erased!");
     }
 }

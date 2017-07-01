@@ -1,4 +1,0 @@
-exclude=DBA_TBS,STAT,SYSAUX
-warning=20
-critical=50
-unit=m

@@ -6,21 +6,16 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  *
  * @author Filippo
  */
-@Data @Entity @Table(name = "MontbsTablespaces")
+@Data @Entity @Table(name = "MontbsTablespaces") @NoArgsConstructor
 public class MontbsTablespace implements Serializable {
-    @Id @Column(name = "tbs_key_id")
-    private long tbsRunId;
-    
-    @Column(name = "host_name")
-    private String hostName;
-    
-    @Column(name = "db_name")
-    private String dbName;
+    @Id @Column(name = "tablespace_id")
+    private int tablespaceId;
     
     @Column(name = "tablespace_name")
     private String tablespaceName;

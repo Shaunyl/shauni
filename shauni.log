@@ -1,34 +1,28 @@
-Shauni 1.0.2.60a - Built at 2017-07-01 15:10
+Shauni 1.0.2.60a - Built at 2017-07-02 00:22
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Command -->
-  montbs -undo -auto -parfile=tbs.txt -exclude=DBA_TBS,STAT,SYSAUX -warning=20 -critical=50 -unit=m
+  montbs -undo -parfile=montbs.par -growing -exclude=DBA_TBS,STAT -warning=20 -critical=50 -directory=logs
 
-Session 0 started at 15:10:58.98
+Session 0 started at 00:25:03.73
 
 * UNDO tablespaces included
-* Autoextend mode enabled: autoextend datafiles taken into account
 * List of tablespaces to exclude:
-  -> DBA_TBS, STAT, SYSAUX
+  -> DBA_TBS, STAT
 * Thresholds are: warning (20), critical (50)
+* Growing check enabled
 
 [XE@FILIPPO-PC] Output file will be:
-   ./MONTBS-XE-01072017-151059.txt
+   logs/MONTBS-XE-02072017-002503.txt
 
-  -> Output file not created due to errors: 
-Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Errore di I/O: The Network Adapter could not establish the connection)
-Task #0 of session 0 finished in 5.112 ms
+Working on...
+  -> Report generated successfully
 
-[XE@LOCALHOST] Output file will be:
-   ./MONTBS-XE-01072017-151104.txt
+Task #0 of session 0 finished in 0.985 ms
 
-  -> Output file not created due to errors: 
-Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Errore di I/O: The Network Adapter could not establish the connection)
-Task #1 of session 0 finished in 2.09 ms
-
-Session 0 finished at 15:11:06.19
-Elapsed time: 7.212 s
+Session 0 finished at 00:25:04.73
+Elapsed time: 0.991 s
 
 Summary:
  -> [montbs]	count: 1
-		max: 7212	min: 7212	avg: 7212.0	(ms)
+		max: 991	min: 991	avg: 991.0	(ms)

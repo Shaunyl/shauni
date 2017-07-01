@@ -2,12 +2,18 @@
 
 <dataset>
     
-    <MontbsTablespaces tbs_key_id = "1" host_name = "filippo-pc" db_name = "TESTDB" tablespace_name = "SYSTEM" />
-    <MontbsTablespaces tbs_key_id = "2" host_name = "filippo-pc" db_name = "TESTDB" tablespace_name = "SYSAUX" />
+    <MontbsHostnames host_id = "1" host_name = "filippo-pc" />
+    <MontbsHostnames host_id = "2" host_name = "localhost" />
     
-    <MontbsRuns tbs_run_id = "1" tbs_key_id = "1" total_used_pct = "80" sample_time = "2017-06-21 19:58:19.814" />
-    <MontbsRuns tbs_run_id = "2" tbs_key_id = "2" total_used_pct = "41" sample_time = "2017-06-22 19:58:29.124" />
-    <MontbsRuns tbs_run_id = "3" tbs_key_id = "1" total_used_pct = "86" sample_time = "2017-06-23 19:58:11.224" />
-    <MontbsRuns tbs_run_id = "4" tbs_key_id = "1" total_used_pct = "89" sample_time = "2017-06-24 19:58:19.616" />
+    <MontbsDatabases db_id = "1" db_name = "TESTDB" />
+    <MontbsDatabases db_id = "2" db_name = "ERMDB" />
+    
+    <MontbsTablespaces tablespace_id = "1" tablespace_name = "SYSTEM" />
+    <MontbsTablespaces tablespace_id = "2" tablespace_name = "SYSAUX" />
+    
+    <MontbsRuns run_id = "1" host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "80" sample_time = "2017-06-21 19:58:19.814" />
+    <MontbsRuns run_id = "2" host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "81" sample_time = "2017-06-22 19:58:29.124" />
+    <MontbsRuns run_id = "3" host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "86" sample_time = "2017-06-23 19:58:11.224" />
+    <MontbsRuns run_id = "4" host_id = "2" db_id = "1" tablespace_id = "1" total_used_pct = "49" sample_time = "2017-06-21 19:58:19.616" />
    
 </dataset>

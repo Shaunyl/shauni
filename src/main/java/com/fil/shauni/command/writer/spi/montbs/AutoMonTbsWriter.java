@@ -9,13 +9,14 @@ import java.util.List;
  */
 public class AutoMonTbsWriter extends DefaultMonTbsWriter {
 
+    @Deprecated
     public AutoMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
         super(writer, wthreshold, cthreshold);
     }
 
-    public AutoMonTbsWriter(Writer writer, String instance, int wthreshold, int cthreshold
-            , boolean undo, char unit, List<String> exclude) {
-        super(writer, instance, wthreshold, cthreshold, undo, unit, exclude);
+    public AutoMonTbsWriter(Writer writer, String host, String instance, int wthreshold, int cthreshold
+            , boolean undo, char unit, List<String> exclude, boolean growing) {
+        super(writer, host, instance, wthreshold, cthreshold, undo, unit, exclude, growing);
     }
 
     @Override

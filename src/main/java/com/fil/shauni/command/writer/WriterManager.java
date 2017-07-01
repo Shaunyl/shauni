@@ -1,5 +1,6 @@
 package com.fil.shauni.command.writer;
 
+import com.fil.shauni.db.spring.service.ShauniService;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,5 +19,6 @@ public interface WriterManager extends AutoCloseable {
     public int writeAll(final ResultSet rs, final boolean includeColumnNames)
             throws SQLException, IOException;
     
+    @Override
     public void close() throws IOException;
 }
