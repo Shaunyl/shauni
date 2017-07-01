@@ -3,7 +3,7 @@ Command line based tool useful to DBAs to perform automated actions on different
 
 Exeternal dependencies used are:  
 ```java
-Spring 4.3
+-Spring 4.3
 -JPA/Hibernate 5
 -Spring Data JPA
 -JDBC
