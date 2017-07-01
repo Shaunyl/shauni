@@ -8,12 +8,12 @@
     
     <name>Shauni</name>
     
-    <scm>
+<!--    <scm>
         <connection>scm:svn:file:///C:/Users/Shaunyl/Desktop/svn/test/shauni</connection>
         <developerConnection>scm:svn:file:///C:/Users/Shaunyl/Desktop/svn/test/shauni</developerConnection>
         <tag>HEAD</tag>
         <url>file:///C:/Users/Shaunyl/Desktop/svn/test/shauni</url>
-    </scm>
+    </scm>-->
     <build>
         <resources>
             <resource>
@@ -103,7 +103,7 @@
                 </configuration>
             </plugin>
         </plugins>-->
-        <plugins>
+        <!--        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -137,7 +137,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId> <!-- or maven-jar-plugin -->
+                <artifactId>maven-war-plugin</artifactId>  or maven-jar-plugin 
                 <version>2.2</version>
                 <configuration>
                     <archive>
@@ -175,37 +175,28 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
+        <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>-->
     </build>
    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <spring.version>4.2.4.RELEASE</spring.version>
+        <spring.version>4.3.8.RELEASE</spring.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <version.spring-data-jpa>1.10.5.RELEASE</version.spring-data-jpa>
         <tft.mainClass>com.fil.shauni.Main</tft.mainClass>
-        <!--<powermock.version>1.6.6</powermock.version>-->
-        <!--<aspectj.version>1.8.8</aspectj.version>-->
     </properties>
     
-    <dependencies>
+    <dependencies>    
+        
+        <!-- Testing -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-            <version>4.2.4.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>2.0.2-beta</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -217,41 +208,16 @@
             <groupId>org.dbunit</groupId>
             <artifactId>dbunit</artifactId>
             <version>2.5.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>2.0.2-beta</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
-            <version>10.13.1.1</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derbytools</artifactId>
-            <version>10.13.1.1</version>
-        </dependency>
-        <!--        <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermock.version}</version>-->
-        <!--<scope>test</scope>-->
-        <!--        </dependency>-->
-        <!--        <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-easymock</artifactId>
-        <version>${powermock.version}</version>-->
-        <!--<scope>test</scope>-->
-        <!--</dependency>-->
-        <dependency> 
-            <groupId>org.projectlombok</groupId> 
-            <artifactId>lombok</artifactId> 
-            <version>1.16.10</version> 
-            <scope>provided</scope> 
-        </dependency>
+          
+        <!-- Database -->  
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -263,15 +229,25 @@
             <version>11.2.0</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.13.1.1</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derbytools</artifactId>
+            <version>10.13.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Logging -->  
+        
+        <dependency> <!-- should be removed.. -->
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+        
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
@@ -282,15 +258,66 @@
             <artifactId>log4j-core</artifactId>
             <version>2.8.2</version>
         </dependency>
+        
+        <!-- Other Utilities -->
+        
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
             <version>1</version>
         </dependency>
+        <dependency> 
+            <groupId>org.projectlombok</groupId> 
+            <artifactId>lombok</artifactId> 
+            <version>1.16.10</version> 
+            <scope>provided</scope> 
+        </dependency>
+        
+        <!-- Commons -->
+        
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.0</version>
+        </dependency>
+        
+        <!-- JCommander -->  
+        
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.48</version>
+        </dependency>
+        
+        <!-- Hibernate ORM -->  
+        
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.2.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.1-api</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
+        
+        <!-- Spring Framework -->  
+        
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -307,15 +334,14 @@
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
-        <dependency> 
-            <groupId>org.springframework</groupId> 
-            <artifactId>spring-aop</artifactId> 
-            <version>${spring.version}</version> 
-        </dependency>
+        
+        <!-- Spring Data JPA -->
+        
         <dependency>
-            <groupId>com.beust</groupId>
-            <artifactId>jcommander</artifactId>
-            <version>1.48</version>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>1.11.3.RELEASE</version>
         </dependency>
+        
     </dependencies>
 </project>

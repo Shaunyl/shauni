@@ -1,9 +1,7 @@
 /**
  * Author:  Filippo
- * Created: 25-giu-2017
+ * Created: 29-giu-2017
  */
-
-CREATE SCHEMA sha;
 
 CREATE TABLE MontbsTablespaces (
     tbs_key_id INT PRIMARY KEY,
@@ -20,3 +18,11 @@ CREATE TABLE MontbsRuns (
     CONSTRAINT montbs_runs_key PRIMARY KEY (tbs_run_id, tbs_key_id),
     CONSTRAINT tbs_key_id_fk FOREIGN KEY (tbs_key_id) REFERENCES MontbsTablespaces (tbs_key_id)
 );
+
+/*
+
+MANY TO ONE
+
+multiple tbs_key_id in MontbsRuns which reference one tbs_key_id in MontbsTablespaces
+
+*/

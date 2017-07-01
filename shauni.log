@@ -1,4 +1,16 @@
-Shauni 1.0.2.60a - Built at 2017-06-26 00:02
+HHH000204: Processing PersistenceUnitInfo [
+	name: hibernate-punit
+	...]
+HHH000412: Hibernate Core {5.2.10.Final}
+HHH000206: hibernate.properties not found
+HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
+HHH000400: Using dialect: org.hibernate.dialect.DerbyDialect
+HHH000430: The DerbyDialect dialect has been deprecated; use one of the version-specific dialects instead
+HHH000397: Using ASTQueryTranslatorFactory
+Shauni 1.0.2.60a - Built at 2017-07-01 02:08
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
 Database initialized!
+SQL Warning Code: 10000, SQLState: 01J01
+Database 'shaunidb' not created, connection made to existing database instead.
+Database erased!

@@ -1,4 +1,4 @@
-package com.fil.shauni.db.spring;
+package com.fil.shauni.db.spring.deprecated;
 
 import java.util.List;
 

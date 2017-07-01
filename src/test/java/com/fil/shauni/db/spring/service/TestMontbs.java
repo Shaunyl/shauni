@@ -1,11 +1,13 @@
-package com.fil.shauni.db.spring;
+package com.fil.shauni.db.spring.service;
 
+import com.fil.shauni.db.spring.TestConfig;
+import com.fil.shauni.db.spring.deprecated.TestMontbsSpring;
+import com.fil.shauni.db.spring.service.MontbsRunService;
+import com.fil.shauni.db.spring.model.MontbsRun;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import javax.sql.DataSource;
 import lombok.extern.log4j.Log4j2;
@@ -19,29 +21,28 @@ import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.junit.Before;
 
 /**
  *
- * @author Filippo Testino (filippo.testino@gmail.com)
+ * @author Filippo
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
 @Log4j2
-public class TestMontbsSpring {
+public class TestMontbs {
 
     private final static String SQLFILE = "/test/shaunidb.sql";
     
     private final static String DATASET = "dataset.xml";
     
-    @Autowired @Qualifier("montbs-dao")
-    private GenericDao<MontbsData, MontbsDataKey> repository;
+    @Autowired
+    private MontbsRunService service;
 
     @Autowired
     private DataSource dataSource;
@@ -66,31 +67,19 @@ public class TestMontbsSpring {
             log.info("Database initialized!");
         }
     }
-
+    
     @Test
     public void list() throws ParseException {
-        List<MontbsData> data = repository.list();
-
+        List<MontbsRun> data = service.findAll();
+//
         Assert.assertEquals(4, data.size());
 
-        MontbsData m = new MontbsData(3, 2, new MontbsDataKey("filippo-pc", "TESTDB", "SYSTEM"));
-        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2017-06-23 19:58:11.224");
-        m.setSampleTime(date);
-        m.setTotalUsedPercentage(86.0d);
-
-        Assert.assertEquals(m.toString(), data.get(2).toString());
-    }
-
-    @Test
-    public void findWhen() throws ParseException {
-        List<MontbsData> data = repository.findWhen(new MontbsDataKey("filippo-pc", "TESTDB", "SYSTEM"));
-
-        Assert.assertEquals(3, data.size());
-
-        MontbsData m = data.get(0);
-        double pct = m.getTotalUsedPercentage();
-
-        Assert.assertEquals(80, pct, 0);
+//        MontbsRun m = new MontbsRun(3, 2, new MontbsRunKey("filippo-pc", "TESTDB", "SYSTEM"));
+//        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2017-06-23 19:58:11.224");
+//        m.setSampleTime(date);
+//        m.setTotalUsedPercentage(86.0d);
+//
+//        Assert.assertEquals(m.toString(), data.get(2).toString());
     }
     
     @AfterClass
@@ -98,4 +87,5 @@ public class TestMontbsSpring {
         DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL).execute(databaseConnection, dataSet);
         log.info("Database erased!");
     }
+
 }
