@@ -1,7 +1,7 @@
 # **Shauni**
 Command line based tool useful to DBAs to perform automated actions on different Oracle databases on multiple servers simultaneously.
 
-Exeternal dependencies used are:  
+External dependencies used are:  
 ```java
 -Spring 4.3
 -JPA/Hibernate 5
