@@ -1,13 +1,14 @@
 # **Shauni**
 Command line based tool useful to DBAs to perform automated actions on different Oracle databases on multiple servers simultaneously.
 
+**For further information surf to Wiki!**
+
 Exeternal dependencies used are JCommander, Spring 4, JDBC, Log4J2, Lombok, Mockito, JUnit, Java 8  
 
 It is a Spring version of enver (see my other repositories).  It also takes advantage of Threads (ExecutorService so far) to parallelize some tasks and to perform the same task on different nodes/databases at the same time.  
 
 Current version is **1.0.2 Alpha**  
-
-For further information surf to Wiki!
+Current version on branch is **1.0.3 Alpha**  
 
 ### **Changelog**  
 **1.0.2**  
