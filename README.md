@@ -28,6 +28,10 @@ Current version is **1.0.2 Alpha**
 For further information surf to Wiki!
 
 ### **Changelog**  
+**1.0.3**  
+ Added option _-growing_ to **montbs**  
+ Fixed some bugs and code refactored  
+ Added local database Apache Derby to store Montbs data (JPA/Hibernate 5 - Spring Data JPA)  
 **1.0.2**  
  Used Template design pattern to write a CommandAction to represent the base workflow of a command    
  Code refactored multiple times  
@@ -48,6 +52,7 @@ directory=out
 parallel=4
 cluster=2
 ```
+ The parfile does not support boolean options (_must be added inline_)!  
  
 **1.0.1**  
  Used Chain of Responsability design pattern to cope with the filename building through wildcards. 
