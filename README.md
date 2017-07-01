@@ -3,7 +3,7 @@ Command line based tool useful to DBAs to perform automated actions on different
 
 For further information about available commands surf to [Wiki](https://github.com/Shaunyl/shauni/wiki/Commands)!
 
-Exeternal dependencies used are JCommander, Spring 4, JDBC, Log4J2, Lombok, Mockito, JUnit, Java 8  
+External dependencies used are JCommander, Spring 4, JDBC, Log4J2, Lombok, Mockito, JUnit, Java 8  
 
 It is a Spring version of enver (see my other repositories).  It also takes advantage of Threads (ExecutorService so far) to parallelize some tasks and to perform the same task on different nodes/databases at the same time.  
 
