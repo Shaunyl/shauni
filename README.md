@@ -24,6 +24,7 @@ Tested on Oracle 11gR2
 It is a Spring version of enver (see my other repositories).  It also takes advantage of Threads (ExecutorService so far) to parallelize some tasks and to perform the same task on different nodes/databases at the same time.  
 
 Current version is **1.0.2 Alpha**  
+Current version on branch is **1.0.3 Alpha**  
 Current version under development is **1.0.3 Alpha**  
 
 For further information about available commands surf to [Wiki](https://github.com/Shaunyl/shauni/wiki/Commands)!  
