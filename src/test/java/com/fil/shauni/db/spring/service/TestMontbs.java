@@ -2,12 +2,12 @@ package com.fil.shauni.db.spring.service;
 
 import com.fil.shauni.db.spring.TestConfig;
 import com.fil.shauni.db.spring.deprecated.TestMontbsSpring;
-import com.fil.shauni.db.spring.service.MontbsRunService;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.sql.DataSource;
 import lombok.extern.log4j.Log4j2;
@@ -37,10 +37,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @Log4j2
 public class TestMontbs {
 
-    private final static String SQLFILE = "/test/shaunidb.sql";
-    
-    private final static String DATASET = "dataset.xml";
-    
+    private final static String SQLFILE = "/test/shaunidb.sql", DATASET = "dataset.xml";
+        
     @Autowired
     private MontbsRunService service;
 
@@ -64,28 +62,25 @@ public class TestMontbs {
             databaseConnection = new DatabaseConnection(connection);
             DatabaseOperation.CLEAN_INSERT.execute(databaseConnection, dataSet);
             initialized = true;
-            log.info("Database initialized!");
+            log.debug("Database initialized!");
         }
     }
     
     @Test
     public void list() throws ParseException {
         List<MontbsRun> data = service.findAll();
-//
         Assert.assertEquals(4, data.size());
-
-//        MontbsRun m = new MontbsRun(3, 2, new MontbsRunKey("filippo-pc", "TESTDB", "SYSTEM"));
-//        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse("2017-06-23 19:58:11.224");
-//        m.setSampleTime(date);
-//        m.setTotalUsedPercentage(86.0d);
-//
-//        Assert.assertEquals(m.toString(), data.get(2).toString());
+        
+        List<MontbsRun> criticals = service.findByUsage(85d);
+        Assert.assertEquals(2, criticals.size());
+        
+        List<MontbsRun> earlier = service.findByDate(new SimpleDateFormat("yyyy-MM-dd").parse("2017-06-22"));
+        Assert.assertEquals(3, earlier.size());
     }
     
     @AfterClass
     public static void tearDown() throws DatabaseUnitException, SQLException {
         DatabaseOperation.CLOSE_CONNECTION(DatabaseOperation.DELETE_ALL).execute(databaseConnection, dataSet);
-        log.info("Database erased!");
+        log.debug("Database erased!");
     }
-
 }

@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Log4j @Component(value = "montbs") @Parameters(separators = "=") @Scope("prototype")
+@Log4j2 @Component(value = "montbs") @Parameters(separators = "=") @Scope("prototype")
 public class SimpleMonTbs extends DefaultMonTbs {
 
     @Override

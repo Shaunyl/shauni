@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.parser.CommandParser;
+import com.fil.shauni.exception.ShauniException;
 import java.util.List;
 import lombok.Getter;
 import lombok.NonNull;
@@ -27,12 +28,12 @@ public class Command {
     private Class<? extends CommandParser> parser;
 
     public Command(final @NonNull Class<? extends CommandAction> cmdClass,
-             final @NonNull String name) {
+            final @NonNull String name) {
         this(cmdClass, name, null);
     }
 
     public Command(final @NonNull Class<? extends CommandAction> cmdClass, final @NonNull String name,
-             final Class<? extends CommandParser> parser) {
+            final Class<? extends CommandParser> parser) {
         this.name = name;
         this.cmdClass = cmdClass;
         this.parser = parser;
@@ -63,7 +64,7 @@ public class Command {
         protected CommandStatus status;
 
         protected boolean firstThread;
-        
+
         public CommandAction() {
             this.status = new CommandStatus();
         }
@@ -110,13 +111,17 @@ public class Command {
         }
 
         public abstract void run(int sid);
-        
-        public void runWorker(int parallel) {          
+
+        public void runWorker(int parallel) {
             for (int i = 0; i < parallel; i++) {
-                runJob(i);
+                try {
+                    runJob(i);
+                } catch (Exception e) {
+                    log.error("  -> Output file not created due to errors: \n{}", e.getMessage());
+                }
             }
         }
-        
-        public abstract void runJob(int w);
+
+        public abstract void runJob(int w) throws Exception;
     }
 }

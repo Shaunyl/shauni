@@ -1,16 +1,34 @@
-HHH000204: Processing PersistenceUnitInfo [
-	name: hibernate-punit
-	...]
-HHH000412: Hibernate Core {5.2.10.Final}
-HHH000206: hibernate.properties not found
-HCANN000001: Hibernate Commons Annotations {5.0.1.Final}
-HHH000400: Using dialect: org.hibernate.dialect.DerbyDialect
-HHH000430: The DerbyDialect dialect has been deprecated; use one of the version-specific dialects instead
-HHH000397: Using ASTQueryTranslatorFactory
-Shauni 1.0.2.60a - Built at 2017-07-01 02:08
+Shauni 1.0.2.60a - Built at 2017-07-01 15:10
 Copyright (c) 2017, 2016, Filippo Testino. All rights reserved.
 
-Database initialized!
-SQL Warning Code: 10000, SQLState: 01J01
-Database 'shaunidb' not created, connection made to existing database instead.
-Database erased!
+Command -->
+  montbs -undo -auto -parfile=tbs.txt -exclude=DBA_TBS,STAT,SYSAUX -warning=20 -critical=50 -unit=m
+
+Session 0 started at 15:10:58.98
+
+* UNDO tablespaces included
+* Autoextend mode enabled: autoextend datafiles taken into account
+* List of tablespaces to exclude:
+  -> DBA_TBS, STAT, SYSAUX
+* Thresholds are: warning (20), critical (50)
+
+[XE@FILIPPO-PC] Output file will be:
+   ./MONTBS-XE-01072017-151059.txt
+
+  -> Output file not created due to errors: 
+Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Errore di I/O: The Network Adapter could not establish the connection)
+Task #0 of session 0 finished in 5.112 ms
+
+[XE@LOCALHOST] Output file will be:
+   ./MONTBS-XE-01072017-151104.txt
+
+  -> Output file not created due to errors: 
+Could not get JDBC Connection; nested exception is org.apache.commons.dbcp.SQLNestedException: Cannot create PoolableConnectionFactory (Errore di I/O: The Network Adapter could not establish the connection)
+Task #1 of session 0 finished in 2.09 ms
+
+Session 0 finished at 15:11:06.19
+Elapsed time: 7.212 s
+
+Summary:
+ -> [montbs]	count: 1
+		max: 7212	min: 7212	avg: 7212.0	(ms)

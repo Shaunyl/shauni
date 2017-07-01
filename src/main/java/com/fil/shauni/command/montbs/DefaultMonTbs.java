@@ -11,6 +11,7 @@ import com.fil.shauni.command.support.montbs.DatabaseQueryFactory;
 import com.fil.shauni.command.support.montbs.MonAutoTablespaceQuery;
 import com.fil.shauni.command.support.montbs.MonTablespaceQuery;
 import com.fil.shauni.command.support.montbs.TablespaceQuery;
+import com.fil.shauni.exception.ShauniException;
 import com.fil.shauni.util.file.spi.DefaultFilepath;
 import com.fil.shauni.util.Sysdate;
 import com.fil.shauni.util.file.Filepath;
@@ -45,18 +46,18 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Getter @Parameter(names = "-auto")
     protected boolean autoextend;
-    
+
     @Getter @Parameter(names = "-unit", converter = CharConverter.class)
     protected char unit = 'h';
 
-    @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class
-            , variableArity = true, converter = UpperCaseConverter.class)
+    @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class,
+            variableArity = true, converter = UpperCaseConverter.class)
     protected final List<String> exclude = Lists.newArrayList();
 
     private final static Map<Boolean, Class<? extends TablespaceQuery>> QUERIES = new HashMap<>();
-    
+
     private final AbstractDatabaseQueryFactory factory = new DatabaseQueryFactory();
-    
+
     private String query;
 
     @Override
@@ -87,7 +88,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         cli.print(size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
         cli.print((l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
 
-        cli.print(firstThread, (l, p) -> log.debug(l), "> query to execute:\n{}\n", query.replaceAll("(?m)^", "  "));
+        cli.print(firstThread, (l, p) -> log.debug(l, p), "> query to execute:\n{}", query.replaceAll("(?m)^", "  "));
     }
 
     @Override
@@ -97,10 +98,12 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     }
 
     @Override
-    public void runJob(int w) {
-        String filename = String.format("MONTBS-%s-%s.txt", databasePoolManager.getSid(), Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
+    public void runJob(int w) throws Exception {
+        String host = databasePoolManager.getHost();
+        String sid = databasePoolManager.getSid();
+        String filename = String.format("MONTBS-%s-%s.txt", sid, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
-        log.info("\nOutput file is:\n   {}\n", filepath.getFilepath());
+        log.info("\n[{}@{}] Output file will be:\n   {}\n", sid, host, filepath.getFilepath());
         jdbc.query(query, (ResultSetExtractor<Void>) rs -> {
             try {
                 log.info("Working on...");

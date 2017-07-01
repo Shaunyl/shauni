@@ -38,7 +38,7 @@ public class TestConfig {
 
         return factory.getObject();
     }
-    
+
     @Value("#{ environment['jdbc.url'] }")
     protected String databaseUrl;
 
@@ -71,15 +71,17 @@ public class TestConfig {
 //    public JdbcTemplate jdbcTemplate() {
 //        return new JdbcTemplate(dataSource());
 //    }
-
 //    @Bean
 //    public PlatformTransactionManager transactionManager() {
 //        return new JpaTransactionManager(entityManagerFactory());
 //    }
-
+    
     private Map<String, Object> additionalProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.dialect", "org.hibernate.dialect.DerbyDialect");
+        properties.put("hibernate.format_sql", "true");
+        properties.put("hibernate.use_sql_comments", "true");
+        properties.put("hibernate.show_sql", "true");
         return properties;
     }
 }

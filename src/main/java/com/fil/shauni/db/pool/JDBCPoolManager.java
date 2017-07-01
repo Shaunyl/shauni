@@ -17,6 +17,9 @@ import org.apache.commons.dbcp.BasicDataSourceFactory;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  * @version v0.1 basic hardcoded pool
+ * 
+ * Should handle different databases...
+ * 
  */
 @Log4j2
 public class JDBCPoolManager implements DatabasePoolManager {

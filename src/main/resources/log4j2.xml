@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status = "WARN">
+    <Appenders>
+        <Console name = "Console" target = "SYSTEM_OUT">
+            <PatternLayout pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <File name="File" fileName="shauni.log" append="false">
+            <PatternLayout pattern="%msg%n"/>
+        </File>  
+    </Appenders>
+    <Loggers>
+        <Logger name = "org.hibernate" level = "OFF" additivity = "false" />
+        <Logger name = "com.fil.shauni" level = "INFO" additivity = "true">
+            <appender-ref ref = "File"/>
+        </Logger>
+        <Logger name = "org.springframework" level = "OFF" additivity = "false" />
+        <Root level = "INFO">
+            <AppenderRef ref = "Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
+
+<!-- 
+  Comments
+    -> to activate Hibernate logging, change level to the desired and set additivity to true
+    -> the same for Spring Framework
+    -> you can also change Shauni logging to DEBUG to retrieve further info
+-->

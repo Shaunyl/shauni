@@ -2,7 +2,7 @@ package com.fil.shauni.db.spring.service;
 
 import com.fil.shauni.db.spring.dao.MontbsRunRepository;
 import com.fil.shauni.db.spring.model.MontbsRun;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
