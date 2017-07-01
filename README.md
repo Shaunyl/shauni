@@ -1,7 +1,7 @@
 # **Shauni**
 Command line based tool useful to DBAs to perform automated actions on different Oracle databases on multiple servers simultaneously.
 
-**For further information surf to [Wiki](Commands)!**
+**For further information surf to [Wiki](https://github.com/Shaunyl/shauni/wiki/Commands)!**
 
 Exeternal dependencies used are JCommander, Spring 4, JDBC, Log4J2, Lombok, Mockito, JUnit, Java 8  
 
