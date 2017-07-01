@@ -11,36 +11,7 @@ Current version is **1.0.2 Alpha**
 Current version on branch is **1.0.3 Alpha**  
 
 ### **Changelog**  
-**1.0.2**  
- Used Template design pattern to write a CommandAction to represent the base workflow of a command    
- Code refactored multiple times  
- Fixed some bugs.  
- Added option _-auto_ to **montbs**  
- Added option _-unit_ to **montbs**  
- Added parfile option. Usage:  
-```java
-exp -parfile=/exp/shauni.par -format=csv -delimiter=;
- 
- ### shauni.par ###
-filename=%t-%d-%w%u
-queries=dba_users(user_id,username):WHERE profile = 'DEFAULT';
-        dba_registry(comp_id,comp_name):;
-        dual:;
-        v$session(sid,event):WHERE type != 'BACKGROUND'
-directory=out
-parallel=4
-cluster=2
-```
- 
-**1.0.1**  
- Used Chain of Responsability design pattern to cope with the filename building through wildcards. 
- Enhanced parallelism:
- * Introduced a way to run jobs simultaneously on different servers/instances through the parameter **cluster**
- * Added further parallelism to the Export Command through the parameter **parallel**. 
- ![exp-shauni-diagram](https://github.com/Shaunyl/shauni/blob/master/exp-shauni.PNG)
- 
- Added the property **database.timeout** to specify the timeout of database connections.<br/>
- Up bounded the parameter **cluster**.<br/>
+Take a look at the Wiki page 'Changelog' [here](https://github.com/Shaunyl/shauni/wiki/Change-Log)! 
  
 ### **Future Improvements**<br/>
 Add the possibility to use a custom configuration file (not just multidb.cfg)<br/>
