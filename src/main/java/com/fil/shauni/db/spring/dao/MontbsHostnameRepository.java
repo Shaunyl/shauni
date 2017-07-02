@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MontbsHostnameRepository extends JpaRepository<MontbsHostname, Integer> {
+    MontbsHostname findByHostName(String hostname);
 }

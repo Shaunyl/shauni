@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -34,8 +35,8 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Configuration @ComponentScan(basePackages = {"com.fil.shauni"})
-//@ImportResource("file:src/main/resources/beans/Beans.xml")
+@Configuration @ComponentScan(basePackages = {"com.fil.shauni"}) @Profile({ "production" })
+@ImportResource("file:src/main/resources/beans/Beans.xml")
 @EnableTransactionManagement @PropertySource("classpath:/jdbc-derby.properties")
 @EnableJpaRepositories(basePackages = { "com.fil.shauni.db.spring.dao" })
 public class BeanConfiguration {

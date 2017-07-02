@@ -17,6 +17,10 @@
         <Root level = "INFO">
             <AppenderRef ref = "Console"/>
         </Root>
+        <Logger name = "org.hibernate.type" additivity = "false" >
+            <level value = "OFF" />
+            <appender-ref ref = "Console" />
+        </Logger>
     </Loggers>
 </Configuration>
 

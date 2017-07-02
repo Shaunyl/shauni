@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dataset>
+    
+    <MontbsHostnames host_name = "FILIPPO-PC" />
+    <MontbsHostnames host_name = "localhost" />
+    
+    <MontbsDatabases db_name = "XE" />
+    <MontbsDatabases db_name = "ERMDB" />
+    <MontbsDatabases db_name = "TESTDB" />
+    
+    <MontbsTablespaces tablespace_name = "SYSTEM" />
+    <MontbsTablespaces tablespace_name = "SYSAUX" />
+    <MontbsTablespaces tablespace_name = "TEMP" />
+    <MontbsTablespaces tablespace_name = "UNDOTBS1" />
+    
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "80" sample_time = "2017-06-21 19:58:19.814" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "81" sample_time = "2017-06-22 19:58:29.124" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "86" sample_time = "2017-06-23 19:58:11.224" />
+    <MontbsRuns host_id = "2" db_id = "1" tablespace_id = "1" total_used_pct = "49" sample_time = "2017-06-21 19:58:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "40" sample_time = "2017-06-01 19:50:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "49" sample_time = "2017-06-04 19:10:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "42" sample_time = "2017-06-02 19:40:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "44" sample_time = "2017-06-03 19:30:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "3" total_used_pct = "99" sample_time = "2017-06-03 19:31:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "4" total_used_pct = "4" sample_time = "2017-06-03 19:32:19.616" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "4" total_used_pct = "3" sample_time = "2017-06-03 19:33:19.616" />
+    
+</dataset>

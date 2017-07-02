@@ -3,6 +3,8 @@ package com.fil.shauni.db.spring.model;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Data;
@@ -15,9 +17,13 @@ import lombok.NoArgsConstructor;
 @Data @Entity @Table(name = "MontbsHostnames") @NoArgsConstructor
 public class MontbsHostname implements Serializable {
 
-    @Id @Column(name = "host_id")
+    @Id @Column(name = "host_id") @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int hostId;
-
+    
     @Column(name = "host_name")
     private String hostName;
+    
+    public MontbsHostname(String hostname) {
+        this.hostName = hostname;
+    }
 }

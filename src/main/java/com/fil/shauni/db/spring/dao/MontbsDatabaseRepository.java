@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MontbsDatabaseRepository extends JpaRepository<MontbsDatabase, Integer> {
+        MontbsDatabase findByDbName(String dbname);
 }

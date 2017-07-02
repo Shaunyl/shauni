@@ -5,11 +5,12 @@
         <class>com.fil.shauni.db.spring.model.MontbsTablespace</class>
         <class>com.fil.shauni.db.spring.model.MontbsDatabase</class>
         <class>com.fil.shauni.db.spring.model.MontbsHostname</class>
+        <class>com.fil.shauni.db.spring.model.MontbsRunView</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name = "hibernate.dialect" value = "org.hibernate.dialect.DerbyDialect"/>
-            <property name = "hibernate.show_sql" value = "false"/>  
-            <property name = "hibernate.format_sql" value = "falsee"/>
+<!--            <property name = "hibernate.show_sql" value = "false"/>  
+            <property name = "hibernate.format_sql" value = "false"/>-->
         </properties>
     </persistence-unit>
 </persistence>
