@@ -3,7 +3,7 @@ package com.fil.shauni.command.montbs.spi;
 import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
 import com.fil.shauni.command.writer.spi.montbs.DefaultMonTbsWriter;
-import com.fil.shauni.db.spring.service.MontbsRunService;
+import com.fil.shauni.db.spring.service.MontbsRunViewService;
 import com.fil.shauni.util.file.Filepath;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class SimpleMonTbs extends DefaultMonTbs {
     
     @Autowired
-    private MontbsRunService service;
+    private MontbsRunViewService service;
     
     @Override
     protected int write(final ResultSet rs, final Filepath filename) throws SQLException, IOException {

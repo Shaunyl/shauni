@@ -31,7 +31,7 @@ public class MontbsHostnameService implements ShauniService {
     
     @Transactional
     public MontbsHostname persistIfNotExists(MontbsHostname host) {
-        if (findByHostname(host.getHostName()) != null) {
+        if (findByHostname(host.getHostName()) == null) {
             return montbsRepository.saveAndFlush(host);
         }
         return null;

@@ -16,7 +16,7 @@
     
     <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "80" sample_time = "2017-06-21 19:58:19.814" />
     <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "81" sample_time = "2017-06-22 19:58:29.124" />
-    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "86" sample_time = "2017-06-23 19:58:11.224" />
+    <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "1" total_used_pct = "86.21" sample_time = "2017-06-23 19:58:11.224" />
     <MontbsRuns host_id = "2" db_id = "1" tablespace_id = "1" total_used_pct = "49" sample_time = "2017-06-21 19:58:19.616" />
     <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "40" sample_time = "2017-06-01 19:50:19.616" />
     <MontbsRuns host_id = "1" db_id = "1" tablespace_id = "2" total_used_pct = "49" sample_time = "2017-06-04 19:10:19.616" />

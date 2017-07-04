@@ -3,6 +3,7 @@
 FIXED!
 
 2) Montbs creates the report file also if the job fails
+2.1) Montbs report is just truncated if even tasks raise an exception
 
 3) Bad perfromances SimpleMonTbs when growing option is enabled
 FIXING...! Using a view..

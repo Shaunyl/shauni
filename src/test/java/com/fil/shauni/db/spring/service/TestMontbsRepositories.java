@@ -3,6 +3,8 @@ package com.fil.shauni.db.spring.service;
 import com.fil.shauni.db.spring.TestConfig;
 import com.fil.shauni.db.spring.model.MontbsHostname;
 import com.fil.shauni.db.spring.model.MontbsRun;
+import com.fil.shauni.db.spring.model.MontbsRunView;
+import com.fil.shauni.util.SpringContext;
 import com.fil.shauni.util.Sysdate;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -35,6 +37,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -185,17 +188,26 @@ public class TestMontbsRepositories {
         MontbsHostname persisted = montbsHostnameService.persistIfNotExists(new MontbsHostname("host-test5"));
         Assert.assertNull(persisted);
     }
+    
+    @Test
+    public void findFirstMontbsRunViewRecordOrderByDesc() {
+        MontbsRunView row = montbsRunViewService
+                .findFirstOrderBySampleTimeDesc("FILIPPO-PC", "XE", "SYSTEM");
+        double pct = row.getTotalUsedPercentage();
+        Assert.assertEquals(86.21, pct, 0);
+    }
 
     @Test(expected = PersistenceException.class) @Ignore
     public void persistRunThrowPersistenceException() throws ParseException {
         java.util.Date sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
         service.persist("localhost", "TESTDB", "TEMP", 65.40, new Timestamp(sampleTime.getTime()));
     }
-        
-    @Test
+    
+    @Test @Ignore
     public void persistRun() throws ParseException {
         java.util.Date sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
-        service.persist("localhost", "ERMDB", "TEMP", 65.40, new Timestamp(sampleTime.getTime()));
+//        SpringContext.getApplicationContext().getBean(MontbsRunService.class).persist("localhost", "ERMDB", "TEMP", 45.12, new Timestamp(sampleTime.getTime()));
+        service.persist("localhost", "ERMDB", "TEMP", 45.12, new Timestamp(sampleTime.getTime()));
     }
 
     @AfterClass

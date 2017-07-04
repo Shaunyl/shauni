@@ -31,7 +31,7 @@ public class MontbsTablespaceService implements ShauniService {
     
     @Transactional
     public MontbsTablespace persistIfNotExists(MontbsTablespace tbs) {
-        if (findByTablespaceName(tbs.getTablespaceName()) != null) {
+        if (findByTablespaceName(tbs.getTablespaceName()) == null) {
             return montbsRepository.saveAndFlush(tbs);
         }
         return null;

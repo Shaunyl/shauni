@@ -27,4 +27,9 @@ public class MontbsRunViewService implements ShauniService {
     public List<MontbsRunView> findByHostNameAndDbNameAndTablespaceName(String host, String db, String tbs) {
         return montbsRepository.findByHostNameAndDbNameAndTablespaceName(host, db, tbs);
     }
+    
+    public MontbsRunView findFirstOrderBySampleTimeDesc(String host, String db, String tbs) {
+        List<MontbsRunView> rs = montbsRepository.findFirstOrderBySampleTimeDesc(host, db, tbs);
+        return rs.stream().findFirst().orElse(null);
+    }
 }

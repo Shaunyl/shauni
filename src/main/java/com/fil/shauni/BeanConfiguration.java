@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -35,7 +36,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Configuration @ComponentScan(basePackages = {"com.fil.shauni"}) @Profile({ "production" })
+@Configuration @ComponentScan(basePackages = { "com.fil.shauni" }) @Profile({ "production" })
 @ImportResource("file:src/main/resources/beans/Beans.xml")
 @EnableTransactionManagement @PropertySource("classpath:/jdbc-derby.properties")
 @EnableJpaRepositories(basePackages = { "com.fil.shauni.db.spring.dao" })
@@ -53,7 +54,7 @@ public class BeanConfiguration {
 
         return factory.getObject();
     }
-    
+
     @Bean
     public <T> WorkSplitter<T> workSplitter() {
         return new DefaultWorkSplitter<>();
@@ -118,14 +119,14 @@ public class BeanConfiguration {
 
     @Bean
     public PlatformTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(dataSource());
+        return new JpaTransactionManager(entityManagerFactory());
     }
 
     @Bean
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
     }
-    
+
     private Map<String, Object> additionalProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.dialect", "org.hibernate.dialect.DerbyDialect");

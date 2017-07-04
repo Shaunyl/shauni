@@ -1,4 +1,4 @@
 exclude=DBA_TBS,STAT
-warning=20
-critical=50
+warning=1
+critical=20
 directory=logs

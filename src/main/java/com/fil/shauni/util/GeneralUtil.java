@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -176,7 +177,7 @@ public class GeneralUtil {
         String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
-    
+
     public static String byteToHuman(long bytes) {
         int unit = 1024;
         if (bytes < unit) {
@@ -189,5 +190,18 @@ public class GeneralUtil {
 
     public static int availableProcessors() {
         return Runtime.getRuntime().availableProcessors();
+    }
+
+    public static String compareTwoTimeStamps(Timestamp current, Timestamp old) {
+        long milliseconds1 = old.getTime();
+        long milliseconds2 = current.getTime();
+
+        long diff = milliseconds2 - milliseconds1;
+        long diffSeconds = diff / 1000 % 60;
+        long diffMinutes = (diff / (60 * 1000)) % 60;
+        long diffHours = diff / (60 * 60 * 1000) % 60;
+        long diffDays = diff / (24 * 60 * 60 * 1000) % 24;
+
+        return String.format("%d.%d:%d:%d", diffDays, diffHours, diffMinutes, diffSeconds);
     }
 }

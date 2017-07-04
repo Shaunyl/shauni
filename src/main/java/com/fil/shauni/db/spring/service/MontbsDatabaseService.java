@@ -32,7 +32,7 @@ public class MontbsDatabaseService implements ShauniService {
 
     @Transactional
     public MontbsDatabase persistIfNotExists(MontbsDatabase db) {
-        if (findByDatabaseName(db.getDbName()) != null) {
+        if (findByDatabaseName(db.getDbName()) == null) {
             return montbsRepository.saveAndFlush(db);
         }
         return null;

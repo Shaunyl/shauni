@@ -54,13 +54,11 @@ public class MontbsRunService implements ShauniService {
     
     @Transactional
     public MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
-        
-        MontbsRun run = new MontbsRun();
-        
         MontbsDatabase db = montbsDatabaseService.findByDatabaseName(database);
         MontbsHostname hostname = montbsHostnameService.findByHostname(host);
         MontbsTablespace tbs = montbsTablespaceService.findByTablespaceName(tablespace);
         
+        MontbsRun run = new MontbsRun();
         run.setMontbsDatabase(db);
         run.setMontbsHostname(hostname);
         run.setMontbsTablespace(tbs);

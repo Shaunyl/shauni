@@ -1,9 +1,9 @@
 package com.fil.shauni.command.writer.spi.montbs;
 
 import com.fil.shauni.command.writer.WriterManager;
+import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.db.spring.model.MontbsDatabase;
 import com.fil.shauni.db.spring.model.MontbsHostname;
-import com.fil.shauni.db.spring.model.MontbsRun;
 import com.fil.shauni.db.spring.model.MontbsRunView;
 import com.fil.shauni.db.spring.model.MontbsTablespace;
 import com.fil.shauni.db.spring.service.MontbsDatabaseService;
@@ -14,6 +14,7 @@ import com.fil.shauni.db.spring.service.MontbsTablespaceService;
 import com.fil.shauni.db.spring.service.ShauniService;
 import com.fil.shauni.util.DatabaseUtil;
 import com.fil.shauni.util.GeneralUtil;
+import com.fil.shauni.util.SpringContext;
 import com.fil.shauni.util.Sysdate;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,8 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutorService;
 import lombok.NonNull;
 
 /**
@@ -41,12 +41,10 @@ public class DefaultMonTbsWriter implements WriterManager {
     private MontbsRunViewService service;
 
     private MontbsHostnameService hostService;
-    
+
     private MontbsDatabaseService dbService;
-    
+
     private MontbsTablespaceService tbsService;
-    
-    private MontbsRunService runService;
 
     private Writer rawWriter;
 
@@ -73,10 +71,12 @@ public class DefaultMonTbsWriter implements WriterManager {
     private final DecimalFormat formatter = new DecimalFormat("#,###.00");
 
     private MontbsHostname persistedHostname;
-    
+
     private MontbsDatabase persistedDatabase;
-    
+
     private MontbsTablespace persistedTablespace;
+
+    private final ExecutorService executorService = ThreadPoolManager.getInstance();
 
     @Deprecated
     public DefaultMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
@@ -96,6 +96,7 @@ public class DefaultMonTbsWriter implements WriterManager {
         this.growing = growing;
         this.rawWriter = writer;
         this.printer = new PrintWriter(writer);
+        tbsService = SpringContext.getApplicationContext().getBean(MontbsTablespaceService.class);
     }
 
     public void writeHeader() {
@@ -127,18 +128,20 @@ public class DefaultMonTbsWriter implements WriterManager {
         this.writeHeader();
         int rows = 0;
 
-        // Check if the hostname already exists in the local database
+        hostService = SpringContext.getApplicationContext().getBean(MontbsHostnameService.class);
         persistedHostname = hostService.persistIfNotExists(new MontbsHostname(host));
         if (persistedHostname == null) {
-            writeNext("Host '" + persistedHostname.getHostName() + "' was already stored");
             persistedHostname = hostService.findByHostname(host);
+        } else {
+            writeNext("> Host '" + host + "' newly added\n");
         }
-        //
-        // Same for the database
+
+        dbService = SpringContext.getApplicationContext().getBean(MontbsDatabaseService.class);
         persistedDatabase = dbService.persistIfNotExists(new MontbsDatabase(instance));
         if (persistedDatabase == null) {
-            writeNext("Database '" + persistedDatabase.getDbName() + "' was already stored");
             persistedDatabase = dbService.findByDatabaseName(instance);
+        } else {
+            writeNext("> Database '" + instance + "' newly add\n");
         }
 
         if (!rs.next()) {
@@ -201,11 +204,24 @@ public class DefaultMonTbsWriter implements WriterManager {
         float pct = Float.valueOf(record[5]);
         String tablespace = record[1];
 
+        String format = "yyyy-MM-dd HH:mm:ss..SS";
+        
+        Date sampleTime;
+        try {
+            sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
+        } catch (ParseException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        
         // Pay close attention to performance here.
         if (growing) {
             MontbsRunView lastRun = getLastRun(host, instance, tablespace);
             if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
-                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##").format(pct - lastRun.getTotalUsedPercentage()));
+                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
+                        .format(pct - lastRun.getTotalUsedPercentage()))
+                        + " [" + GeneralUtil.compareTwoTimeStamps(
+                                new Timestamp(sampleTime.getTime())
+                                , lastRun.getSampleTime()) + "]";
             }
         }
 
@@ -215,40 +231,27 @@ public class DefaultMonTbsWriter implements WriterManager {
                 pct,
                 "(" + free + ")");
         writeNext(new String[]{ buffer });
-        
-        // Write to the database if persist option is set to true
-        // do this in async: can't now beacuse not thread safe.. due to storing variables
-        /*
-        
-        // autogenerated runId ...
-        montbsRunService.persist(new MontbsRun(...));
-        
-        */
+
         persistedTablespace = tbsService.persistIfNotExists(new MontbsTablespace(tablespace));
         if (persistedTablespace == null) {
             persistedTablespace = tbsService.findByTablespaceName(tablespace);
         }
-        
-        // Not thread safe.....
-        // should not bind format of dates here...
-        String format = "yyyy-MM-dd HH:mm:ss..SS";
-        Date sampleTime;
+
+        Date sampleTime2;
         try {
-            sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
+            sampleTime2 = new SimpleDateFormat(format).parse(Sysdate.now(format));
         } catch (ParseException e) {
             throw new RuntimeException(e.getMessage());
         }
-        
-        runService.persist(host, instance, tablespace, pct, new Timestamp(sampleTime.getTime()));
+
+        executorService.execute(() -> {
+            SpringContext.getApplicationContext().getBean(MontbsRunService.class).persist(host, instance, tablespace, pct, new Timestamp(sampleTime2.getTime()));
+        });
     }
 
     private MontbsRunView getLastRun(String host, String db, String tbs) {
         if (this.service != null) {
-            List<MontbsRunView> record = this.service.findByHostNameAndDbNameAndTablespaceName(host, db, tbs);
-            if (record.isEmpty()) {
-                return null;
-            }
-            return record.stream().findFirst().orElse(null);
+            return this.service.findFirstOrderBySampleTimeDesc(host, db, tbs);
         }
         return null;
     }

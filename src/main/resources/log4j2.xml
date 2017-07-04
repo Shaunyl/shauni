@@ -5,21 +5,20 @@
             <PatternLayout pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
         <File name="File" fileName="shauni.log" append="false">
-            <PatternLayout pattern="%msg%n"/>
+            <PatternLayout pattern = "%msg%n"/>
         </File>  
     </Appenders>
     <Loggers>
         <Logger name = "org.hibernate" level = "OFF" additivity = "false" />
-        <Logger name = "com.fil.shauni" level = "INFO" additivity = "true">
-            <appender-ref ref = "File"/>
+        <Logger name = "com.fil.shauni" level = "INFO" additivity = "true" >
+            <AppenderRef ref = "File" />
         </Logger>
         <Logger name = "org.springframework" level = "OFF" additivity = "false" />
         <Root level = "INFO">
-            <AppenderRef ref = "Console"/>
+            <AppenderRef ref = "Console" />
         </Root>
-        <Logger name = "org.hibernate.type" additivity = "false" >
-            <level value = "OFF" />
-            <appender-ref ref = "Console" />
+        <Logger name = "org.hibernate.type" level = "OFF" additivity = "false" >
+            <AppenderRef ref = "Console" />
         </Logger>
     </Loggers>
 </Configuration>

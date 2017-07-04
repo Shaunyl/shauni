@@ -4,4 +4,5 @@ Support for Hibernate v5.2 was added only in Spring v4.3.
 Therefore, you must upgrade the Spring dependencies to v4.3.
 
 
-use CascadeType.PERSIST!!!!!!!
+SELECT tablespacE_name, sample_time, total_used_pct FROM SHA.MONTBSRUNSVIEW ù
+where tablespacE_name='SYSAUX' order by sample_time desc;
