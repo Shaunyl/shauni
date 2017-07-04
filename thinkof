@@ -2,7 +2,3 @@ Spring Data JPA v1.10.6 depends on Spring v4.2 (v4.2.9 to be precise)
 and Spring v4.2 does not support Hibernate v5.2.
 Support for Hibernate v5.2 was added only in Spring v4.3.
 Therefore, you must upgrade the Spring dependencies to v4.3.
-
-
-SELECT tablespacE_name, sample_time, total_used_pct FROM SHA.MONTBSRUNSVIEW ù
-where tablespacE_name='SYSAUX' order by sample_time desc;
