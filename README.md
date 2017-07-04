@@ -16,6 +16,7 @@ External dependencies used are:
 Testing
 -Mockito
 -JUnit
+-Spring Text
 
 Requires Java 8  
 Tested on Oracle 11gR2  
