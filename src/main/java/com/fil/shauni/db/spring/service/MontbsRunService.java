@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service @Transactional(readOnly = true)
 public class MontbsRunService implements ShauniService {
-
+    
     @Autowired
     private MontbsRunRepository montbsRepository;
     
@@ -54,6 +54,11 @@ public class MontbsRunService implements ShauniService {
     
     @Transactional
     public MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
+        
+        montbsHostnameService.persistIfNotExists(new MontbsHostname(host));
+        montbsDatabaseService.persistIfNotExists(new MontbsDatabase(database));
+        montbsTablespaceService.persistIfNotExists(new MontbsTablespace(tablespace));
+        
         MontbsDatabase db = montbsDatabaseService.findByDatabaseName(database);
         MontbsHostname hostname = montbsHostnameService.findByHostname(host);
         MontbsTablespace tbs = montbsTablespaceService.findByTablespaceName(tablespace);

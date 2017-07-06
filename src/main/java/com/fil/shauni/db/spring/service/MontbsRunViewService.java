@@ -32,4 +32,8 @@ public class MontbsRunViewService implements ShauniService {
         List<MontbsRunView> rs = montbsRepository.findFirstOrderBySampleTimeDesc(host, db, tbs);
         return rs.stream().findFirst().orElse(null);
     }
+    
+    public List<MontbsRunView> findLastRun(String host, String db) {
+        return montbsRepository.findLastRun(host, db);
+    }
 }

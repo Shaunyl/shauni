@@ -1,7 +1,6 @@
 package com.fil.shauni.command.writer.spi.montbs;
 
-import java.io.Writer;
-import java.util.List;
+import com.fil.shauni.command.writer.WriterConfiguration;
 
 /**
  *
@@ -9,15 +8,19 @@ import java.util.List;
  */
 public class AutoMonTbsWriter extends DefaultMonTbsWriter {
 
-    @Deprecated
-    public AutoMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
-        super(writer, wthreshold, cthreshold);
+    public AutoMonTbsWriter(WriterConfiguration configuration) {
+        super(configuration);
     }
 
-    public AutoMonTbsWriter(Writer writer, String host, String instance, int wthreshold, int cthreshold
-            , boolean undo, char unit, List<String> exclude, boolean growing) {
-        super(writer, host, instance, wthreshold, cthreshold, undo, unit, exclude, growing);
-    }
+//    @Deprecated
+//    public AutoMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
+//        super(writer, wthreshold, cthreshold);
+//    }
+//
+//    public AutoMonTbsWriter(Writer writer, String host, String instance, int wthreshold, int cthreshold
+//            , boolean undo, char unit, List<String> exclude, boolean growing) {
+//        super(writer, host, instance, wthreshold, cthreshold, undo, unit, exclude, growing);
+//    }
 
     @Override
     protected void retrieveTbsInfo(String[] record) {
@@ -35,7 +38,7 @@ public class AutoMonTbsWriter extends DefaultMonTbsWriter {
 //        String free = convertToUnit(free_b);
 
         String buffer = String.format("  %-10s%-55s%-25s%11.2f%%",
-                instance,
+                c.getInstance(),
                 record[1] + "[" + used + "/" + size + "/" + max + "]",
                 "AUTOEXTEND" + message,
                 //                "[" + used + "/" + free + "]",

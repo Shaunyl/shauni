@@ -17,6 +17,13 @@ public interface MontbsRunViewRepository extends JpaRepository<MontbsRunView, In
     
     List<MontbsRunView> findByHostNameAndDbNameAndTablespaceName(String host, String db, String tbs);
     
-    @Query("SELECT m FROM MontbsRunsView m WHERE m.hostName = :host AND m.dbName = :db AND m.tablespaceName = :tbs ORDER BY m.sampleTime DESC")
+    @Query("SELECT m FROM MontbsRunsView m WHERE m.hostName = :host AND m.dbName = :db "
+            + "AND m.tablespaceName = :tbs "
+            + "ORDER BY m.sampleTime DESC")
     List<MontbsRunView> findFirstOrderBySampleTimeDesc(@Param("host") String host, @Param("db") String db, @Param("tbs") String tbs);
+    
+    @Query("SELECT m FROM MontbsRunsView m " +
+            "WHERE m.sampleTime in (SELECT MAX(n.sampleTime) FROM MontbsRunsView n GROUP BY n.tablespaceName) "
+            + " AND m.hostName = :host AND m.dbName = :db")
+    List<MontbsRunView> findLastRun(@Param("host")  String hostname, @Param("db") String dbname);
 }

@@ -1,0 +1,17 @@
+Tablespace Report
+
+Starting MonTbs on instance XE at 06-Jul-2017 01:39:50
+Other tablespaces to ignore -> 'DBA_TBS', 'STAT'
+Thresholds used -> 1 (warning), 20 (critical)
+
+Retrieving tablespaces info..
+
+Check for criticals:
+  XE        UNDOTBS1[25.0M]                             98.00%         (512.0K)
+  XE        SYSAUX[670.0M]                              94.65%          (35.8M)
+  XE        SYSTEM[460.0M]                              77.74%         (102.4M)
+  XE        MY_TBS[10.0M]                               46.88%           (5.3M)
+Check for warnings:
+  XE        USERS[100.0M]                                2.56%          (97.4M)
+
+Job completed successfully at 06-Jul-2017 01:39:50

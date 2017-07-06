@@ -1,35 +1,20 @@
 package com.fil.shauni.command.writer.spi.montbs;
 
+import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
+import com.fil.shauni.command.writer.WriterConfiguration;
 import com.fil.shauni.command.writer.WriterManager;
 import com.fil.shauni.concurrency.pool.ThreadPoolManager;
-import com.fil.shauni.db.spring.model.MontbsDatabase;
-import com.fil.shauni.db.spring.model.MontbsHostname;
 import com.fil.shauni.db.spring.model.MontbsRunView;
-import com.fil.shauni.db.spring.model.MontbsTablespace;
-import com.fil.shauni.db.spring.service.MontbsDatabaseService;
-import com.fil.shauni.db.spring.service.MontbsHostnameService;
 import com.fil.shauni.db.spring.service.MontbsRunService;
 import com.fil.shauni.db.spring.service.MontbsRunViewService;
-import com.fil.shauni.db.spring.service.MontbsTablespaceService;
-import com.fil.shauni.db.spring.service.ShauniService;
-import com.fil.shauni.util.DatabaseUtil;
-import com.fil.shauni.util.GeneralUtil;
-import com.fil.shauni.util.SpringContext;
-import com.fil.shauni.util.Sysdate;
+import com.fil.shauni.util.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.sql.*;
+import java.text.*;
+import java.util.*;
 import lombok.NonNull;
 
 /**
@@ -38,77 +23,38 @@ import lombok.NonNull;
  */
 public class DefaultMonTbsWriter implements WriterManager {
 
-    private MontbsRunViewService service;
+    private final Writer rawWriter;
 
-    private MontbsHostnameService hostService;
+    private final PrintWriter printer;
 
-    private MontbsDatabaseService dbService;
-
-    private MontbsTablespaceService tbsService;
-
-    private Writer rawWriter;
-
-    private PrintWriter printer;
-
-    protected int cthreshold, wthreshold;
-
-    private static final boolean UNDO = false;
-
-    protected boolean undo;
-
-    protected String host, instance;
-
-    private static final String INSTANCE = "<n.p.>", HOST = "<n.p.>";
-
-    protected List<String> exclude = null;
-
-    private boolean isCritical, isWarning = false, growing = false;
-
-    protected char unit;
-
-    private static final char UNIT = 'h';
+    private boolean isCritical, isWarning = false;
 
     private final DecimalFormat formatter = new DecimalFormat("#,###.00");
 
-    private MontbsHostname persistedHostname;
+    protected MontbsWriterConfiguration c;
 
-    private MontbsDatabase persistedDatabase;
+    private List<MontbsRunView> lastRow;
 
-    private MontbsTablespace persistedTablespace;
-
-    private final ExecutorService executorService = ThreadPoolManager.getInstance();
-
-    @Deprecated
-    public DefaultMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
-        this(writer, HOST, INSTANCE, wthreshold, cthreshold, UNDO, UNIT, new ArrayList<String>(), false);
-    }
-
-    //FIXME: too many arguments.. use Builder..!
-    public DefaultMonTbsWriter(Writer writer, String host, String instance, int wthreshold, int cthreshold,
-            boolean undo, char unit, List<String> exclude, boolean growing) {
-        this.host = host;
-        this.instance = instance;
-        this.wthreshold = wthreshold;
-        this.cthreshold = cthreshold;
-        this.undo = undo;
-        this.exclude = exclude;
-        this.unit = unit;
-        this.growing = growing;
-        this.rawWriter = writer;
-        this.printer = new PrintWriter(writer);
-        tbsService = SpringContext.getApplicationContext().getBean(MontbsTablespaceService.class);
+    public DefaultMonTbsWriter(WriterConfiguration configuration) {
+        this.c = (MontbsWriterConfiguration) configuration; //FIXME: use interfaces...
+        this.rawWriter = configuration.getWriter();
+        this.printer = new PrintWriter(rawWriter);
+//        ThreadPoolManager.getInstance().execute(() -> {
+//        SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
+//                .findByHostName(c.getHost());
+//        });
     }
 
     public void writeHeader() {
         writeNext("Tablespace Report\n");
-        writeNext("Starting MonTbs on instance " + instance + " at " + Sysdate.now(Sysdate.DASH_TIMEDATE));
-        if (!undo) {
+        writeNext("Starting MonTbs on instance " + c.getInstance() + " at " + Sysdate.now(Sysdate.DASH_TIMEDATE));
+        if (!c.isUndo()) {
             writeNext("Ignoring tablespace contents -> UNDO");
         }
-        if (!exclude.isEmpty()) {
-            writeNext("Other tablespaces to ignore -> '" + String.join("', '", exclude) + "'");
+        if (!c.getExclude().isEmpty()) {
+            writeNext("Other tablespaces to ignore -> '" + String.join("', '", c.getExclude()) + "'");
         }
-        writeNext("Thresholds used -> " + wthreshold + " (warning), " + cthreshold + " (critical)");
+        writeNext("Thresholds used -> " + c.getWarning() + " (warning), " + c.getCritical() + " (critical)");
         writeNext("\nRetrieving tablespaces info..\n");
     }
 
@@ -128,21 +74,8 @@ public class DefaultMonTbsWriter implements WriterManager {
         this.writeHeader();
         int rows = 0;
 
-        hostService = SpringContext.getApplicationContext().getBean(MontbsHostnameService.class);
-        persistedHostname = hostService.persistIfNotExists(new MontbsHostname(host));
-        if (persistedHostname == null) {
-            persistedHostname = hostService.findByHostname(host);
-        } else {
-            writeNext("> Host '" + host + "' newly added\n");
-        }
-
-        dbService = SpringContext.getApplicationContext().getBean(MontbsDatabaseService.class);
-        persistedDatabase = dbService.persistIfNotExists(new MontbsDatabase(instance));
-        if (persistedDatabase == null) {
-            persistedDatabase = dbService.findByDatabaseName(instance);
-        } else {
-            writeNext("> Database '" + instance + "' newly add\n");
-        }
+//        this.lastRow = SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
+//                .findLastRun(c.getHost(), c.getInstance());
 
         if (!rs.next()) {
         } else {
@@ -172,7 +105,7 @@ public class DefaultMonTbsWriter implements WriterManager {
     protected void formatLine(String[] record) {
         float csize = getPct(record);
 
-        if (csize > cthreshold) {
+        if (csize > c.getCritical()) {
             if (!isCritical) {
                 writeNext("Check for criticals:");
             }
@@ -181,7 +114,7 @@ public class DefaultMonTbsWriter implements WriterManager {
             return;
         }
 
-        if (csize > wthreshold) {
+        if (csize > c.getWarning()) {
             if (!isWarning) {
                 writeNext("Check for warnings:");
             }
@@ -205,59 +138,58 @@ public class DefaultMonTbsWriter implements WriterManager {
         String tablespace = record[1];
 
         String format = "yyyy-MM-dd HH:mm:ss..SS";
-        
+
         Date sampleTime;
         try {
             sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
         } catch (ParseException e) {
             throw new RuntimeException(e.getMessage());
         }
-        
+
         // Pay close attention to performance here.
-        if (growing) {
-            MontbsRunView lastRun = getLastRun(host, instance, tablespace);
-            if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
-                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
-                        .format(pct - lastRun.getTotalUsedPercentage()))
-                        + " [" + GeneralUtil.compareTwoTimeStamps(
-                                new Timestamp(sampleTime.getTime())
-                                , lastRun.getSampleTime()) + "]";
+        if (c.isGrowing()) {
+            if (lastRow != null) {
+//                MontbsRunView row = lastRow.stream()
+//                        .filter(p -> p.getTablespaceName().equals(tablespace)).findFirst()
+//                        .orElse(null);
+//                if (row != null && row.getTotalUsedPercentage() < pct) {
+//                    pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
+//                            .format(pct - row.getTotalUsedPercentage()))
+//                            + " [" + GeneralUtil.compareTwoTimeStamps(
+//                                    new Timestamp(sampleTime.getTime()),
+//                                    row.getSampleTime()) + "]";
+//                }
+
+//            MontbsRunView lastRun = getLastRun(c.getHost(), c.getInstance(), tablespace);
+//            if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
+//                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
+//                        .format(pct - lastRun.getTotalUsedPercentage()))
+//                        + " [" + GeneralUtil.compareTwoTimeStamps(
+//                                new Timestamp(sampleTime.getTime()),
+//                                lastRun.getSampleTime()) + "]";
+//            }
             }
+
+            String buffer = String.format(pattern, c.getInstance(), tablespace + "[" + size + "]", pct, "(" + free + ")");
+            writeNext(new String[]{ buffer });
+
+            if (c.isPersist()) {
+                ThreadPoolManager.getInstance().execute(() -> {
+                    SpringContext.getApplicationContext().getBean(MontbsRunService.class)
+                            .persist(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()));
+                });
+            }
+            // TRYME: save in a list of MontbsRun objects, than persist in batch for performance..
         }
-
-        String buffer = String.format(pattern,
-                instance,
-                tablespace + "[" + size + "]",
-                pct,
-                "(" + free + ")");
-        writeNext(new String[]{ buffer });
-
-        persistedTablespace = tbsService.persistIfNotExists(new MontbsTablespace(tablespace));
-        if (persistedTablespace == null) {
-            persistedTablespace = tbsService.findByTablespaceName(tablespace);
-        }
-
-        Date sampleTime2;
-        try {
-            sampleTime2 = new SimpleDateFormat(format).parse(Sysdate.now(format));
-        } catch (ParseException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-
-        executorService.execute(() -> {
-            SpringContext.getApplicationContext().getBean(MontbsRunService.class).persist(host, instance, tablespace, pct, new Timestamp(sampleTime2.getTime()));
-        });
     }
 
-    private MontbsRunView getLastRun(String host, String db, String tbs) {
-        if (this.service != null) {
-            return this.service.findFirstOrderBySampleTimeDesc(host, db, tbs);
-        }
-        return null;
-    }
+//    private MontbsRunView getLastRun(String host, String db, String tbs) {
+//        return SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
+//                .findFirstOrderBySampleTimeDesc(host, db, tbs);
+//    }
 
     protected String convertToUnit(long bytes) {
-        switch (unit) {
+        switch (c.getUnit()) {
             case 'h':
                 return GeneralUtil.byteToHuman(bytes);
             case 'm':
@@ -282,9 +214,5 @@ public class DefaultMonTbsWriter implements WriterManager {
         printer.flush();
         printer.close();
         rawWriter.close();
-    }
-
-    public void setService(ShauniService service) {
-        this.service = (MontbsRunViewService) service;
     }
 }

@@ -2,8 +2,9 @@ package com.fil.shauni.command.montbs.spi;
 
 import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
-import com.fil.shauni.command.writer.WriterManager;
-import com.fil.shauni.command.writer.spi.montbs.AutoMonTbsWriter;
+import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
+import com.fil.shauni.command.writer.WriterConfiguration;
+import com.fil.shauni.command.writer.spi.montbs.DefaultMonTbsWriter;
 import com.fil.shauni.util.file.Filepath;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,11 +24,17 @@ public class AutoMonTbs extends DefaultMonTbs {
     @Override
     protected int write(final ResultSet rs, final Filepath filename) throws SQLException, IOException {
         int rows;
-        try (WriterManager writer = new AutoMonTbsWriter (
-                new FileWriter(filename.getFilepath()), databasePoolManager.getHost(), databasePoolManager.getSid()
-                , warning, critical, undo, unit, exclude, growing)) {
+        WriterConfiguration config = new MontbsWriterConfiguration.Builder(hostname, dbname)
+                .writer(new FileWriter(filename.getFilepath()))
+                .critical(critical).warning(warning).growing(growing)
+                .unit(unit).exclude(exclude).undo(undo)
+                .auto(autoextend)
+                .build();
+
+        try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
             rows = writer.writeAll(rs, true);
         }
+        
         return rows;
     }
    

@@ -36,6 +36,8 @@ public abstract class DatabaseCommandControl extends Command.CommandAction {
     
     protected DatabasePoolManager databasePoolManager;
     
+    protected String hostname, dbname;
+    
     @Autowired(required = true)
     public void setDatabasePoolManager(final @NonNull @Value("#{databasePoolManager}") DatabasePoolManager databasePoolManager) {
         this.databasePoolManager = databasePoolManager;
@@ -47,6 +49,8 @@ public abstract class DatabaseCommandControl extends Command.CommandAction {
         DbConnection dbc = dbcs.get(sid);
         databasePoolManager.configure(dbc.getUrl(), dbc.getUser(), dbc.getPasswd(), dbc.getHost(), dbc.getSid());
         this.dataSource = databasePoolManager.getDataSource();
+        this.hostname = databasePoolManager.getHost();
+        this.dbname = databasePoolManager.getSid();
         this.jdbc = new JdbcTemplate(dataSource);
         this.jdbc.setFetchSize(100);
     }

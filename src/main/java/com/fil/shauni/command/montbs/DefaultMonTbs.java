@@ -31,28 +31,32 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 @Log4j2
 public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
-    @Getter @Parameter(names = "-directory", arity = 1)
+    @Getter @Parameter(names = "-directory", description = "working directory", arity = 1)
     protected String directory = ".";
 
-    @Getter @Parameter(names = "-critical", arity = 1)
+    @Getter @Parameter(names = "-critical", description = "critical threshold", arity = 1)
     protected Integer critical = 95;
 
-    @Getter @Parameter(names = "-warning", arity = 1)
+    @Getter @Parameter(names = "-warning", description = "warning threshold", arity = 1)
     protected Integer warning = 85;
 
-    @Getter @Parameter(names = "-undo")
+    @Getter @Parameter(names = "-undo", description = "if enabled, retrieve also UNDO tablespaces")
     protected boolean undo;
 
-    @Getter @Parameter(names = "-auto")
+    @Getter @Parameter(names = "-auto", description = "retrieve info considering also autoextensible datafiles")
     protected boolean autoextend;
 
-    @Getter @Parameter(names = "-unit", converter = CharConverter.class)
+    @Getter @Parameter(names = "-unit", description = "tablespace space unit", converter = CharConverter.class)
     protected char unit = 'h';
 
-    @Getter @Parameter(names = "-growing")
+    @Getter @Parameter(names = "-growing", description = "if enabled, shows growing tablespaces since last run")
     protected boolean growing;
+    
+    @Getter @Parameter(names = "-persist", description = "if enabled, save data to the local database")
+    protected boolean persist;
 
-    @Getter @Parameter(names = "-exclude", splitter = CommaParameterSplitter.class,
+    @Getter @Parameter(names = "-exclude", description = "list of tablespaces to exclude", 
+            splitter = CommaParameterSplitter.class,
             variableArity = true, converter = UpperCaseConverter.class)
     protected final List<String> exclude = Lists.newArrayList();
 
