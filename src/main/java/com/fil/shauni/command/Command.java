@@ -52,7 +52,7 @@ public class Command {
         @Parameter(names = { "-parfile" }, description = "Specifies the name of an export parameter file") @Getter
         protected String parfile = "shauni.par";
 
-        @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class, description = "")
+        @Parameter(names = "-cluster", arity = 1, validateWith = PositiveInteger.class, description = "Specify the number of concurrent threads")
         protected Integer cluster = 1;
 
         @Getter @Parameter(required = true, arity = 1)

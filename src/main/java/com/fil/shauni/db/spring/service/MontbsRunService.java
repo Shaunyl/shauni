@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Filippo
  */
-@Service @Transactional(readOnly = true)
+@Service @Transactional(readOnly = true) @Scope("prototype")
 public class MontbsRunService implements ShauniService {
     
     @Autowired
@@ -53,7 +54,7 @@ public class MontbsRunService implements ShauniService {
     }
     
     @Transactional
-    public MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
+    public synchronized MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
         
         montbsHostnameService.persistIfNotExists(new MontbsHostname(host));
         montbsDatabaseService.persistIfNotExists(new MontbsDatabase(database));

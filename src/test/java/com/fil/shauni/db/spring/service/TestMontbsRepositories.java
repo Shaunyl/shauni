@@ -1,11 +1,15 @@
 package com.fil.shauni.db.spring.service;
 
+import com.fil.shauni.command.writer.WriterConfiguration;
+import com.fil.shauni.command.writer.spi.montbs.DefaultMonTbsWriter;
+import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
 import com.fil.shauni.db.spring.TestConfig;
 import com.fil.shauni.db.spring.model.MontbsHostname;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import com.fil.shauni.db.spring.model.MontbsRunView;
 import com.fil.shauni.util.SpringContext;
 import com.fil.shauni.util.Sysdate;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -65,7 +69,7 @@ public class TestMontbsRepositories {
 
     @Autowired
     private DataSource dataSource;
-    
+
     private final String format = "yyyy-MM-dd HH:mm:ss..SS";
 
     private static boolean initialized = false;
@@ -188,8 +192,8 @@ public class TestMontbsRepositories {
         MontbsHostname persisted = montbsHostnameService.persistIfNotExists(new MontbsHostname("host-test5"));
         Assert.assertNull(persisted);
     }
-    
-    @Test
+
+    @Test @Ignore
     public void findFirstMontbsRunViewRecordOrderByDesc() {
         MontbsRunView row = montbsRunViewService
                 .findFirstOrderBySampleTimeDesc("FILIPPO-PC", "XE", "SYSTEM");
@@ -202,12 +206,34 @@ public class TestMontbsRepositories {
         java.util.Date sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
         service.persist("localhost", "TESTDB", "TEMP", 65.40, new Timestamp(sampleTime.getTime()));
     }
-    
+
     @Test @Ignore
     public void persistRun() throws ParseException {
         java.util.Date sampleTime = new SimpleDateFormat(format).parse(Sysdate.now(format));
 //        SpringContext.getApplicationContext().getBean(MontbsRunService.class).persist("localhost", "ERMDB", "TEMP", 45.12, new Timestamp(sampleTime.getTime()));
         service.persist("localhost", "ERMDB", "TEMP", 45.12, new Timestamp(sampleTime.getTime()));
+    }
+
+    @Test
+    public void findLastRun() {
+        long st = System.currentTimeMillis();
+        SpringContext.getApplicationContext().getBean(MontbsRunViewService.class).findLastRun("FILIPPO-PC", "XE");
+        long end = System.currentTimeMillis() - st;
+        log.debug("Elapsed Average Time: {} ms", end / 100);
+    }
+    
+//    @Test
+    public void testTbsWriter() throws IOException {
+//        WriterConfiguration config = new MontbsWriterConfiguration.Builder("FILIPPO-PC", "XE")
+//                .writer(new FileWriter("./test.log"))
+//                .critical(60).warning(40).growing(true)
+//                .unit('h').exclude(new ArrayList<>()).undo(true)
+//                .persist(true)
+//                .build();
+//        
+//        try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
+//            writer.writeAll(rs, true);
+//        }
     }
 
     @AfterClass

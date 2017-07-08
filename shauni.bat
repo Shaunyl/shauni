@@ -1,0 +1,1 @@
+java -cp lib/*:. -jar lib/shauni-1.0.2.jar %*

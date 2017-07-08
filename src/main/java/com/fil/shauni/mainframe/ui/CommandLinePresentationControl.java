@@ -1,6 +1,7 @@
 package com.fil.shauni.mainframe.ui;
 
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  *

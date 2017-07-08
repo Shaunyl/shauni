@@ -28,7 +28,6 @@ public class Query extends Entity {
         if (p.test(m)) {
             return op.apply(new String[]{ m.group(2) == null ? "*" : m.group(2), m.group(1), m.group(3) });
         }
-        log.error("Syntax not valid for a query");
         return null;
     }
 
@@ -39,6 +38,5 @@ public class Query extends Entity {
             return m.group(1).toUpperCase();
         }
         return null;
-//        throw new ShauniException("not displayable."); // FIXME
     }
 }

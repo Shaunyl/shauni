@@ -65,7 +65,13 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     }
 
     protected Class<? extends CommandAction> toClass(final String name) {
-        return COMMANDS.get(name).getCmdClass();
+        Command cmd = COMMANDS.get(name);
+
+        if (cmd == null && !name.matches("help|version")) {
+            log.info("Command '{}' not supported.", name);
+            throw new ShauniException("Aborting..");
+        }
+        return cmd.getCmdClass();
     }
 
     @Override @SuppressWarnings("unchecked")
@@ -77,11 +83,19 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         args = this.integrateParfile(args);
         String cmd = getCommandName(args);
 
-        String command = getCommand(args);
+        if (cmd.equals("help")) {
+            printCliHelp(COMMANDS);
+            return;
+        }
+        if (cmd.equals("version")) {
+            printVersion();
+            return;
+        }
+
+//        String command = getCommand(args);
         Integer cluster = getValue(args, "cluster", Integer.class, 1);
 
-        log.info("Command -->\n  {}\n", command);
-
+//        log.info("Command -->\n  {}\n", command);
         Class<? extends CommandAction> clazz = this.toClass(cmd);
         if (clazz == null) {
             throw new ShauniException(1, "Command '" + cmd + "' is unknown.\nTask has been aborted!");
@@ -118,11 +132,14 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             Future<Long>[] threads = new Future[cluster];
             ExecutorService pool = FixedThreadPoolManager.getInstance(cluster, new BasicThreadFactory.Builder().namingPattern("thread-%d").daemon(true).build());
 
+            String command = getCommand(args);
+            log.info("Command -->\n  {}\n", command);
             for (int i = 0; i < cluster; i++) {
                 final int thread = i;
                 CommandAction c = (CommandAction) Main.beanFactory.getBean(clazz);
                 CommandConfiguration conf = Main.beanFactory.getBean(CommandConfiguration.class, workset.get(i), thread, i == 0);
                 c.setConfiguration(conf); // FIXME: parallel is not a global parameter, shouldn't be here..
+//                log.info("Thread {}, workset {}", thread, workset.get(i));
                 try {
                     jc = new JCommander(c);
                     integrate(args);
@@ -140,7 +157,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
                 if (c.isHelp()) {
                     printHelp();
-                    break; // for help no need to invoke different threads..
+                    return; // for help no need to invoke different threads..
                 }
                 threads[i] = pool.submit(() -> {
                     log.info("Session {} started at {}\n", thread, Sysdate.now(Sysdate.TIMEONLY));
@@ -160,7 +177,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                         log.debug("Thread is done.");
                     }
                 } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                     throw new ShauniException(600, e.getMessage());
                 }
             }
@@ -178,18 +195,16 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     private void printHelp() {
         StringBuilder sb = new StringBuilder();
         jc.usage(sb);
-        log.info("Printing help..\n{}Task terminated", sb.toString());
+        log.info("{}", sb.toString());
     }
 
     private void printBanner() {
-        project = propertiesFileManager.readAllWithKeys("target/classes/project.properties", "");
-        String version = project.get("version");
-        buildNumber = propertiesFileManager.readAllWithKeys("buildNumber.properties", "");
-        version += "." + buildNumber.get("buildNumber") + buildNumber.get("status");
-        String banner = project.get("name") + " " + version + " - Built at " + project.get("build.date") + "\n";
-        banner += "Copyright (c) " + buildNumber.get("dates") + ", " + buildNumber.get("author") + ". All rights reserved.";
-
-        log.info("{}\n", banner);
+        project = propertiesFileManager.readAllWithKeys("target/classes/build.properties", "");
+        StringBuilder buffer = new StringBuilder(project.get("name"));
+        buffer.append(" Version ").append(project.get("version"))
+                .append("-").append(project.get("buildNumber"))
+                .append(", ").append(Sysdate.now(Sysdate.DASH_TIMEDATE));
+        log.info("{}\n", buffer);
     }
 
     private List<String> loadParfile(final String filename) {
@@ -203,9 +218,11 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
         }
 
         List<String> params = this.loadParfile(parfile);
-        return new ArrayList<String>() {{
-            addAll(args);
-            addAll(params);
-        }};
+        return new ArrayList<String>() {
+            {
+                addAll(args);
+                addAll(params);
+            }
+        };
     }
 }

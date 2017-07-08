@@ -2,3 +2,4 @@ exclude=DBA_TBS,STAT
 warning=1
 critical=20
 directory=logs
+cluster=2

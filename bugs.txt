@@ -24,3 +24,5 @@ I should test a much bigger enviroment
 Another possible implementation could be to retrieve all the data, then, scan on them with Java
 
 4) AutoMontbs lacks of a growing option implementation but the command would not throw any errors if used.
+
+5) FirstThread to avoid other thread printing the same thing does not work if cluster=1 but multiple connections are given.

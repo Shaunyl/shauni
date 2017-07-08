@@ -3,6 +3,7 @@ package com.fil.shauni.command;
 import com.beust.jcommander.ParameterException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.NonNull;
@@ -15,6 +16,17 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CommandLineSupporter {
 
+    public static void printCliHelp(Map<String, Command> commands) {
+        commands.entrySet().forEach((e) -> {
+            log.info("{}:\n\t{}", e.getKey(), e.getValue().getDescription());
+        });
+        log.info("\nEnter '<command> help' for list of supported options for that command.");
+    }
+    
+    public static void printVersion() {
+        log.info("Shauni version 1.0.2-45"); // FIXME
+    }
+    
     public static boolean isThere(List<String> args, final @NonNull String option) {
         noArguments(args);
         for (String arg : args) {

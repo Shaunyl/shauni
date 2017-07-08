@@ -24,6 +24,9 @@ public class SimpleMonTbs extends DefaultMonTbs {
     @Override
     protected int write(final ResultSet rs, final Filepath filename) throws SQLException, IOException {
         int rows;
+        
+//        log.info("Hostname where about to write: {}", hostname);
+        
         WriterConfiguration config = new MontbsWriterConfiguration.Builder(hostname, dbname)
                 .writer(new FileWriter(filename.getFilepath()))
                 .critical(critical).warning(warning).growing(growing)
@@ -31,9 +34,12 @@ public class SimpleMonTbs extends DefaultMonTbs {
                 .persist(persist)
                 .build();
 
+        long st = System.currentTimeMillis();
+        log.debug("writeAll(): run");
         try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
             rows = writer.writeAll(rs, true);
         }
+        log.debug("writeAll(): finished in {} ms", () -> System.currentTimeMillis() - st);
 
         return rows;
     }

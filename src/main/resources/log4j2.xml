@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status = "WARN">
+<Configuration status = "OFF">
     <Appenders>
         <Console name = "Console" target = "SYSTEM_OUT">
-            <PatternLayout pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <!--<PatternLayout pattern = "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>-->
+            <PatternLayout pattern = "%msg%n"/>
         </Console>
         <File name="File" fileName="shauni.log" append="false">
             <PatternLayout pattern = "%msg%n"/>
@@ -14,7 +15,7 @@
             <AppenderRef ref = "File" />
         </Logger>
         <Logger name = "org.springframework" level = "OFF" additivity = "false" />
-        <Root level = "INFO">
+        <Root level = "OFF">
             <AppenderRef ref = "Console" />
         </Root>
         <Logger name = "org.hibernate.type" level = "OFF" additivity = "false" >

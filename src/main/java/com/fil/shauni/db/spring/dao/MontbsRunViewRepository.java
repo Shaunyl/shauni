@@ -26,4 +26,10 @@ public interface MontbsRunViewRepository extends JpaRepository<MontbsRunView, In
             "WHERE m.sampleTime in (SELECT MAX(n.sampleTime) FROM MontbsRunsView n GROUP BY n.tablespaceName) "
             + " AND m.hostName = :host AND m.dbName = :db")
     List<MontbsRunView> findLastRun(@Param("host")  String hostname, @Param("db") String dbname);
+                
+    @Query(value = "SELECT * " +
+            " FROM MontbsRunsView " +
+            " WHERE sample_time IN (SELECT MAX(sample_time) FROM MontbsRunsView GROUP BY tablespace_name) " +
+            " AND host_name = ?1 AND db_name = ?2", nativeQuery = true)
+    List<MontbsRunView> findLastRunNative(String hostname, String dbname);  
 }

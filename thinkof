@@ -13,3 +13,9 @@ montbs -auto -growing -undo -parfile=montbs.par
 exclude=TEMP,DBA_STAT,UNDOTBS
 warning=60
 critical=80
+
+derby session should be shared through threads..
+
+task1 -> derby persist
+task2 -> derby persist
+

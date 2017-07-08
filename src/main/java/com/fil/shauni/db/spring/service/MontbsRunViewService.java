@@ -36,4 +36,8 @@ public class MontbsRunViewService implements ShauniService {
     public List<MontbsRunView> findLastRun(String host, String db) {
         return montbsRepository.findLastRun(host, db);
     }
+    
+    public List<MontbsRunView> findLastRunNative(String host, String db) {
+        return montbsRepository.findLastRunNative(host, db);
+    }
 }

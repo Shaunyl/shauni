@@ -68,12 +68,13 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Override
     public boolean validate() {
+//        log.info("Thread name: {}", configuration.getTname());
         if ((warning < 1 || critical < 1) || (warning > 99 || critical > 99)) {
-            cli.print((l, p) -> log.error(l), "Threshold parameters must be between 1 to 99.");
+            cli.print(firstThread, (l, p) -> log.error(l), "Threshold parameters must be between 1 to 99.");
             return false;
         }
         if (warning >= critical) {
-            cli.print((l, p) -> log.error(l), "Critical threshold must be greater than warning one.");
+            cli.print(firstThread, (l, p) -> log.error(l), "Critical threshold must be greater than warning one.");
             return false;
         }
         return true;
@@ -87,13 +88,13 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
         TablespaceQuery q = factory.create(QUERIES.get(autoextend));
 
         query = q.prepare(exclude, undo, warning);
-        cli.print(undo, (l, p) -> log.info(l), "* UNDO tablespaces included");
-        cli.print(autoextend, (l, p) -> log.info(l), "* Autoextend mode enabled: autoextend datafiles taken into account");
+        cli.print(firstThread && undo, (l, p) -> log.info(l), "* UNDO tablespaces included");
+        cli.print(firstThread && autoextend, (l, p) -> log.info(l), "* Autoextend mode enabled: autoextend datafiles taken into account");
         int size = exclude.size();
-        cli.print(size > 0, (l, p) -> log.info(l, p), "* List of tablespaces to exclude:\n  -> {}", String.join(", ", exclude));
-        cli.print(size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
-        cli.print((l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
-        cli.print(growing, (l, p) -> log.info(l, p), "* Growing check enabled");
+        cli.print(firstThread && size > 0, (l, p) -> log.info(l, p), "* List of tablespaces to exclude:\n  -> {}", String.join(", ", exclude));
+        cli.print(firstThread && size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
+        cli.print(firstThread, (l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
+        cli.print(firstThread && growing, (l, p) -> log.info(l, p), "* Growing check enabled");
 
         cli.print(firstThread, (l, p) -> log.debug(l, p), "> query to execute:\n{}", query.replaceAll("(?m)^", "  "));
     }
@@ -106,22 +107,25 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Override
     public void runJob(int w) throws Exception {
-        String host = databasePoolManager.getHost();
-        String sid = databasePoolManager.getSid();
-        String filename = String.format("MONTBS-%s-%s.txt", sid, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
+//        log.info("Thread name: {}", configuration.getTname());
+//        log.info("Workset: {}", configuration.getWorkset());
+        
+//        String host = databasePoolManager.getHost();
+//        String sid = databasePoolManager.getSid();
+        String filename = String.format("MONTBS-%s-%s-%s.txt", hostname, dbname, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
 
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
-        log.info("\n[{}@{}] Output file will be:\n   {}\n", sid, host, filepath.getFilepath());
+//        log.info("\n[{}@{}] Output file will be:\n   {}\n", sid, host, filepath.getFilepath());
         jdbc.query(query, (ResultSetExtractor<Void>) rs -> {
             try {
-                log.info("Working on...");
+//                cli.print((l, p) -> log.info(l, p), "\nRunning Montbs on {}@{}..", hostname, dbname);
                 write(rs, filepath);
+                cli.print((l, p) -> log.info(l, p), "  -> Report '{}' generated successfully\n", filepath.getFilepath());
             } catch (IOException | SQLException e) {
                 cli.print((l, p) -> log.error(l, p), "  -> Error while writing to file {}\n{}", filepath.getFilepath(), e.getMessage());
             }
             return null;
         });
-        cli.print((l, p) -> log.info(l), "  -> Report generated successfully\n");
     }
 
     protected abstract int write(final ResultSet rs, Filepath filename) throws SQLException, IOException;

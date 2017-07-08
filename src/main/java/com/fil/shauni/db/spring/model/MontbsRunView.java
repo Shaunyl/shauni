@@ -7,13 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Immutable;
 
 /**
  *
  * @author Filippo
  */
-@Data @Entity(name = "MontbsRunsView") @Immutable @NoArgsConstructor
+@Data @Entity(name = "MontbsRunsView") @NoArgsConstructor
 public class MontbsRunView implements Serializable {
 
     @Id @Column(name = "run_id")

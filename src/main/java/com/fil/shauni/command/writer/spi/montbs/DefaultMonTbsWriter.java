@@ -16,11 +16,13 @@ import java.sql.*;
 import java.text.*;
 import java.util.*;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 
 /**
  *
  * @author Filippo
  */
+@Log4j2
 public class DefaultMonTbsWriter implements WriterManager {
 
     private final Writer rawWriter;
@@ -33,8 +35,7 @@ public class DefaultMonTbsWriter implements WriterManager {
 
     protected MontbsWriterConfiguration c;
 
-    private List<MontbsRunView> lastRow;
-
+//    private List<MontbsRunView> lastRow;
     public DefaultMonTbsWriter(WriterConfiguration configuration) {
         this.c = (MontbsWriterConfiguration) configuration; //FIXME: use interfaces...
         this.rawWriter = configuration.getWriter();
@@ -74,9 +75,11 @@ public class DefaultMonTbsWriter implements WriterManager {
         this.writeHeader();
         int rows = 0;
 
+//        long st = System.currentTimeMillis();
+//        log.debug("writeAll(): run query findByHostNameAndDbName");
 //        this.lastRow = SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
 //                .findLastRun(c.getHost(), c.getInstance());
-
+//        log.debug("writeAll(): finished in {} ms", () -> System.currentTimeMillis() - st);
         if (!rs.next()) {
         } else {
             ResultSetMetaData metadata = rs.getMetaData();
@@ -146,9 +149,11 @@ public class DefaultMonTbsWriter implements WriterManager {
             throw new RuntimeException(e.getMessage());
         }
 
+//        long st = System.currentTimeMillis();
+//        log.debug("retrieveTbsInfo(): generate pattern");
         // Pay close attention to performance here.
         if (c.isGrowing()) {
-            if (lastRow != null) {
+//            if (lastRow != null) {
 //                MontbsRunView row = lastRow.stream()
 //                        .filter(p -> p.getTablespaceName().equals(tablespace)).findFirst()
 //                        .orElse(null);
@@ -160,33 +165,34 @@ public class DefaultMonTbsWriter implements WriterManager {
 //                                    row.getSampleTime()) + "]";
 //                }
 
-//            MontbsRunView lastRun = getLastRun(c.getHost(), c.getInstance(), tablespace);
-//            if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
-//                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
-//                        .format(pct - lastRun.getTotalUsedPercentage()))
-//                        + " [" + GeneralUtil.compareTwoTimeStamps(
-//                                new Timestamp(sampleTime.getTime()),
-//                                lastRun.getSampleTime()) + "]";
-//            }
+            MontbsRunView lastRun = getLastRun(c.getHost(), c.getInstance(), tablespace);
+            if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
+                pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
+                        .format(pct - lastRun.getTotalUsedPercentage()))
+                        + " [" + GeneralUtil.compareTwoTimeStamps(
+                                new Timestamp(sampleTime.getTime()),
+                                lastRun.getSampleTime()) + "]";
             }
 
-            String buffer = String.format(pattern, c.getInstance(), tablespace + "[" + size + "]", pct, "(" + free + ")");
-            writeNext(new String[]{ buffer });
-
-            if (c.isPersist()) {
-                ThreadPoolManager.getInstance().execute(() -> {
-                    SpringContext.getApplicationContext().getBean(MontbsRunService.class)
-                            .persist(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()));
-                });
-            }
-            // TRYME: save in a list of MontbsRun objects, than persist in batch for performance..
         }
+//        log.debug("retrieveTbsInfo(): finished in {} ms", () -> System.currentTimeMillis() - st);
+
+        String buffer = String.format(pattern, c.getInstance(), tablespace + "[" + size + "]", pct, "(" + free + ")");
+        writeNext(new String[]{ buffer });
+
+        if (c.isPersist()) {
+            ThreadPoolManager.getInstance().execute(() -> {
+                SpringContext.getApplicationContext().getBean(MontbsRunService.class)
+                        .persist(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()));
+            });
+        }
+        // TRYME: save in a list of MontbsRun objects, than persist in batch for performance..
     }
 
-//    private MontbsRunView getLastRun(String host, String db, String tbs) {
-//        return SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
-//                .findFirstOrderBySampleTimeDesc(host, db, tbs);
-//    }
+    private MontbsRunView getLastRun(String host, String db, String tbs) {
+        return SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
+                .findFirstOrderBySampleTimeDesc(host, db, tbs);
+    }
 
     protected String convertToUnit(long bytes) {
         switch (c.getUnit()) {

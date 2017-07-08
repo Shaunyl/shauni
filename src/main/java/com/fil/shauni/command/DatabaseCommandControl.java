@@ -15,13 +15,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
 /**
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Log4j2 @Component
+@Log4j2
 public abstract class DatabaseCommandControl extends Command.CommandAction {
     @Inject
     protected CommandLinePresentation cli;
@@ -45,12 +44,15 @@ public abstract class DatabaseCommandControl extends Command.CommandAction {
 
     @Override
     public void run(int sid) {
+//        int id = System.identityHashCode(databasePoolManager);
+//        log.info("DatabaseCommandControl ID -> {}", id);
         this.setConnections(configuration.getWorkset());
         DbConnection dbc = dbcs.get(sid);
         databasePoolManager.configure(dbc.getUrl(), dbc.getUser(), dbc.getPasswd(), dbc.getHost(), dbc.getSid());
         this.dataSource = databasePoolManager.getDataSource();
         this.hostname = databasePoolManager.getHost();
         this.dbname = databasePoolManager.getSid();
+//        log.info("Thread {} setting hostname {} and dbname {}", configuration.getTname(), this.hostname, this.dbname);
         this.jdbc = new JdbcTemplate(dataSource);
         this.jdbc.setFetchSize(100);
     }

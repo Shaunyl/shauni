@@ -35,9 +35,9 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @author Filippo Testino (filippo.testino@gmail.com)
  */
-@Configuration @ComponentScan(basePackages = { "com.fil.shauni" }) @Profile({ "production" })
-@ImportResource("file:src/main/resources/beans/Beans.xml")
-@EnableTransactionManagement @PropertySource("classpath:/jdbc-derby.properties")
+@Configuration @ComponentScan("com.fil.shauni") @Profile({ "production" })
+//@ImportResource("file:Beans.xml")
+@EnableTransactionManagement @PropertySource("classpath:jdbc-derby.properties")
 @EnableJpaRepositories(basePackages = { "com.fil.shauni.db.spring.dao" })
 public class BeanConfiguration {
 
@@ -72,7 +72,7 @@ public class BeanConfiguration {
         };
     }
 
-    @Bean
+    @Bean @Scope("prototype")
     public DatabasePoolManager databasePoolManager() {
         return new JDBCPoolManager();
     }

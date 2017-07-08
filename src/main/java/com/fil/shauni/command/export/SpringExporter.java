@@ -2,7 +2,6 @@ package com.fil.shauni.command.export;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 import com.fil.shauni.command.CommandStatus;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.export.support.*;
@@ -135,7 +134,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
         final String sql = entity.convert(obj);
         if (sql == null) {
-            log.error(" -> '{}' has been skipped.", obj);
+            cli.print(firstThread && status.getErrors() == 0, (l, p) -> log.info(l, p), "Bad syntax:\n -> '{}' has been skipped.", obj);
             status.error();
             return;
         }
@@ -174,6 +173,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
     @RequiredArgsConstructor @Getter
     public static class WildcardContext {
+
         final int workerId, objectId;
 
         final String timestamp;
@@ -181,9 +181,11 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         final String table;
 
         final String threadName;
+
     }
 
     private interface WildcardReplacer {
+
         void replace(Filepath in, WildcardContext context);
     }
 }
