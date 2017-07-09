@@ -77,7 +77,7 @@ public class MontbsRunService implements ShauniService {
     
     @Transactional
     public MontbsRun persist(MontbsRun r) {
-        log.debug("Persisting " + r.toString());
+        log.debug("DATABASE (t-{}): persist -> {}", () ->Thread.currentThread().getName(),  () -> r.toString());
         MontbsHostname h = montbsHostnameService.persistIfNotExists(r.getMontbsHostname());
         MontbsDatabase d = montbsDatabaseService.persistIfNotExists(r.getMontbsDatabase());
         MontbsTablespace t = montbsTablespaceService.persistIfNotExists(r.getMontbsTablespace());

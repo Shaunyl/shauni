@@ -3,6 +3,7 @@ package com.fil.shauni.command.montbs;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.CommaParameterSplitter;
 import com.beust.jcommander.internal.Lists;
+import com.fil.shauni.ShauniCache;
 import com.fil.shauni.command.DatabaseCommandControl;
 import com.fil.shauni.command.support.CharConverter;
 import com.fil.shauni.command.support.UpperCaseConverter;
@@ -11,6 +12,9 @@ import com.fil.shauni.command.support.montbs.DatabaseQueryFactory;
 import com.fil.shauni.command.support.montbs.MonAutoTablespaceQuery;
 import com.fil.shauni.command.support.montbs.MonTablespaceQuery;
 import com.fil.shauni.command.support.montbs.TablespaceQuery;
+import com.fil.shauni.db.spring.model.MontbsRun;
+import com.fil.shauni.db.spring.service.MontbsRunService;
+import com.fil.shauni.io.spi.PropertiesFileManager;
 import com.fil.shauni.util.file.spi.DefaultFilepath;
 import com.fil.shauni.util.Sysdate;
 import com.fil.shauni.util.file.Filepath;
@@ -20,8 +24,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 /**
@@ -51,11 +58,11 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Getter @Parameter(names = "-growing", description = "if enabled, shows growing tablespaces since last run")
     protected boolean growing;
-    
+
     @Getter @Parameter(names = "-persist", description = "if enabled, save data to the local database")
     protected boolean persist;
 
-    @Getter @Parameter(names = "-exclude", description = "list of tablespaces to exclude", 
+    @Getter @Parameter(names = "-exclude", description = "list of tablespaces to exclude",
             splitter = CommaParameterSplitter.class,
             variableArity = true, converter = UpperCaseConverter.class)
     protected final List<String> exclude = Lists.newArrayList();
@@ -66,9 +73,16 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     private String query;
 
+    private int cacheflushLimit;
+
+    @Inject
+    private PropertiesFileManager propertiesFileManager;
+    
+    @Inject
+    private MontbsRunService montbsService;
+
     @Override
     public boolean validate() {
-//        log.info("Thread name: {}", configuration.getTname());
         if ((warning < 1 || critical < 1) || (warning > 99 || critical > 99)) {
             cli.print(firstThread, (l, p) -> log.error(l), "Threshold parameters must be between 1 to 99.");
             return false;
@@ -83,6 +97,7 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     @Override
     public void setup() {
         super.setup();
+        cacheflushLimit = Integer.parseInt(propertiesFileManager.read("shauni.properties", "ehcache.flushLimit"));
         QUERIES.put(true, MonAutoTablespaceQuery.class); // FIXME: 1. move out; 2. only two keys would be possible (limit)
         QUERIES.put(false, MonTablespaceQuery.class);
         TablespaceQuery q = factory.create(QUERIES.get(autoextend));
@@ -107,8 +122,8 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Override
     public void runJob(int w) throws Exception {
-        String filename = String.format("MONTBS-%s-%s-%s-%d.txt"
-                , hostname, dbname, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE), configuration.getTid());
+        String filename = String.format("MONTBS-%s-%s-%s-%d.txt",
+                hostname, dbname, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE), configuration.getTid());
 
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
         jdbc.query(query, (ResultSetExtractor<Void>) rs -> {
@@ -127,5 +142,24 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
     @Override
     public void takedown() {
         super.takedown();
+        this.flushCache();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void flushCache() {
+        Cache cache = ShauniCache.getCache("dbcache");
+        if (cache != null) {
+            log.debug("CACHE (t-{}): {} objects to flush..", () -> configuration.getTid(), () -> cache.getSize());
+            if (cache.getSize() > cacheflushLimit) {
+                cache.getKeys().forEach((key) -> {
+                    Element element = cache.get(key);
+                    if (element != null) {
+                        log.debug("CACHE (t-{}): flushing...", () -> configuration.getTid());
+                        montbsService.persist((MontbsRun) element.getObjectValue());
+                        cache.remove(key);
+                    }
+                });
+            }
+        }
     }
 }

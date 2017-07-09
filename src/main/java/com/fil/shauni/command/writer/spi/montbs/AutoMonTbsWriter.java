@@ -12,16 +12,6 @@ public class AutoMonTbsWriter extends DefaultMonTbsWriter {
         super(configuration);
     }
 
-//    @Deprecated
-//    public AutoMonTbsWriter(Writer writer, int wthreshold, int cthreshold) {
-//        super(writer, wthreshold, cthreshold);
-//    }
-//
-//    public AutoMonTbsWriter(Writer writer, String host, String instance, int wthreshold, int cthreshold
-//            , boolean undo, char unit, List<String> exclude, boolean growing) {
-//        super(writer, host, instance, wthreshold, cthreshold, undo, unit, exclude, growing);
-//    }
-
     @Override
     protected void retrieveTbsInfo(String[] record) {
         double autoDatafiles = Double.parseDouble(record[8]);

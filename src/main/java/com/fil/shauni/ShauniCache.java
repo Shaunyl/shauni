@@ -1,5 +1,6 @@
 package com.fil.shauni;
 
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 
 /**
@@ -10,6 +11,7 @@ public class ShauniCache {
 
     private static CacheManager cacheManager;
 
+//    private static final 
     private ShauniCache() {
     }
 
@@ -25,5 +27,10 @@ public class ShauniCache {
             cacheManager.shutdown();
             cacheManager = null;
         }
+    }
+
+    public static Cache getCache(String name) {
+        cacheManager = getInstance();
+        return cacheManager.getCache(name);
     }
 }

@@ -5,7 +5,7 @@ FIXED!
 2) Montbs creates the report file also if the job fails
 2.1) Montbs report is just truncated if even tasks raise an exception
 
-3) Bad perfromances SimpleMonTbs when growing option is enabled
+3) Bad performance SimpleMonTbs when 'growing' option is enabled
 FIXING...! Using a view..
 
 Repetitions -> 100 * 4 tablespaces = 400
@@ -34,3 +34,9 @@ For input string: "ONLINE"
 
 The bug raises when -auto option is used..
 7) Bug if there are two or more identical keys in the multidb.cfg, all of them are merged into only one.
+
+8) Got the following error if no connections strings are provided in multidb.cfg
+  SHA-00600: Could not split the workload.
+  com.fil.shauni.exception.ShauniException:   SHA-00600: Could not split the workload.
+
+Error message should say: no connections found in multidb.cfg.

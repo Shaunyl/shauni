@@ -125,9 +125,6 @@ public class DefaultMonTbsWriter implements WriterManager {
 //        }
     }
 
-    // TEMPME:
-    volatile int i = 0;
-    
     protected void retrieveTbsInfo(String[] record) {
         String pattern = "  %-10s%-38s%11.2f%%  %15s";
 
@@ -170,7 +167,7 @@ public class DefaultMonTbsWriter implements WriterManager {
         long threadId = Thread.currentThread().getId();
         
         if (c.isPersist()) {
-            cache.put(new Element(threadId + new Random(threadId).nextInt(), new MontbsRun(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()))));
+            cache.put(new Element(threadId + new Random().nextInt(), new MontbsRun(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()))));
         }
         // TRYME: save in a list of MontbsRun objects, than persist in batch for performance..
     }

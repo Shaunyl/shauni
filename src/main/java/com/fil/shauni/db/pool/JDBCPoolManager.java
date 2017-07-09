@@ -29,8 +29,8 @@ public class JDBCPoolManager implements DatabasePoolManager {
 
     private static final int POOL_SIZE = 5;
     
-//    @Inject
-    private PropertiesFileManager propertiesFileManager = new PropertiesFileManager();
+    @Inject
+    private PropertiesFileManager propertiesFileManager;
 
     @Override
     public void configure(String url, String user, String passwd, String host, String sid) {

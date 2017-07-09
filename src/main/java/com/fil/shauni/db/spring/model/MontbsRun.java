@@ -59,7 +59,7 @@ public class MontbsRun implements Serializable {
     
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(",");
+        StringJoiner joiner = new StringJoiner(",", "[", "]");
 
         joiner.add(Integer.toString(this.runId));
         joiner.add(this.montbsHostname.getHostName());

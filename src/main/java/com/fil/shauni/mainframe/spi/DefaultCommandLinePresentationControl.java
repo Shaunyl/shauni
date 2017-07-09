@@ -185,7 +185,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                         log.debug("Thread is done.");
                     }
                 } catch (ExecutionException | InterruptedException e) {
-//                    e.printStackTrace();
+                    e.printStackTrace();
                     throw new ShauniException(600, e.getMessage());
                 }
             }
@@ -194,14 +194,17 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             /*
                 FLUSH THE CACHE: FIXME.. not here.. temporary place..
              */
-            Cache cache = ShauniCache.getInstance().getCache("dbcache");
+            Cache cache = ShauniCache.getCache("dbcache");
             if (cache != null) {
-                for (Object key : cache.getKeys()) {
+                log.debug("CACHE (t-{}): {} objects to flush..", () -> Thread.currentThread().getName(), () -> cache.getSize());
+                cache.getKeys().forEach((key) -> {
                     Element element = cache.get(key);
                     if (element != null) {
+                        log.debug("CACHE (t-{}): flushing...", () -> Thread.currentThread().getName());
                         montbsService.persist((MontbsRun) element.getObjectValue());
+                        cache.remove(key);
                     }
-                }
+                });
                 ShauniCache.shutdown();
             }
 //            if (ca != null && ca.getStatus().getState() == CommandStatus.State.COMPLETED) {

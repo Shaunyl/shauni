@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 @Log4j2
 public abstract class DatabaseCommandControl extends Command.CommandAction {
+
     @Inject
     protected CommandLinePresentation cli;
 
@@ -32,11 +33,11 @@ public abstract class DatabaseCommandControl extends Command.CommandAction {
     private final List<DbConnection> dbcs = new ArrayList<>();
 
     private DataSource dataSource;
-    
+
     protected DatabasePoolManager databasePoolManager;
-    
+
     protected String hostname, dbname;
-    
+
     @Autowired(required = true)
     public void setDatabasePoolManager(final @NonNull @Value("#{databasePoolManager}") DatabasePoolManager databasePoolManager) {
         this.databasePoolManager = databasePoolManager;
@@ -44,15 +45,12 @@ public abstract class DatabaseCommandControl extends Command.CommandAction {
 
     @Override
     public void run(int sid) {
-//        int id = System.identityHashCode(databasePoolManager);
-//        log.info("DatabaseCommandControl ID -> {}", id);
         this.setConnections(configuration.getWorkset());
         DbConnection dbc = dbcs.get(sid);
         databasePoolManager.configure(dbc.getUrl(), dbc.getUser(), dbc.getPasswd(), dbc.getHost(), dbc.getSid());
         this.dataSource = databasePoolManager.getDataSource();
         this.hostname = databasePoolManager.getHost();
         this.dbname = databasePoolManager.getSid();
-//        log.info("Thread {} setting hostname {} and dbname {}", configuration.getTname(), this.hostname, this.dbname);
         this.jdbc = new JdbcTemplate(dataSource);
         this.jdbc.setFetchSize(100);
     }

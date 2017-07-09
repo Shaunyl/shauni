@@ -35,11 +35,11 @@ public class SimpleMonTbs extends DefaultMonTbs {
                 .build();
 
         long st = System.currentTimeMillis();
-        log.debug("writeAll(): run");
+        log.debug("WRITER (t-{}): start writing", () -> configuration.getTid());
         try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
             rows = writer.writeAll(rs, true);
         }
-        log.debug("writeAll(): finished in {} ms", () -> System.currentTimeMillis() - st);
+        log.debug("WRITER (t-{}): finished in {} ms", () -> configuration.getTid(), () -> System.currentTimeMillis() - st);
 
         return rows;
     }
