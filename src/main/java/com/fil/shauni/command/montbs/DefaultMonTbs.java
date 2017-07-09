@@ -89,14 +89,14 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
         query = q.prepare(exclude, undo, warning);
         cli.print(firstThread && undo, (l, p) -> log.info(l), "* UNDO tablespaces included");
-        cli.print(firstThread && autoextend, (l, p) -> log.info(l), "* Autoextend mode enabled: autoextend datafiles taken into account");
+        cli.print(firstThread && autoextend, (l, p) -> log.info(l), "* Autoextend datafiles taken into account");
         int size = exclude.size();
         cli.print(firstThread && size > 0, (l, p) -> log.info(l, p), "* List of tablespaces to exclude:\n  -> {}", String.join(", ", exclude));
-        cli.print(firstThread && size == 0, (l, p) -> log.info(l), "* No tablespaces to exclude");
         cli.print(firstThread, (l, p) -> log.info(l, p), "* Thresholds are: warning ({}), critical ({})", warning, critical);
         cli.print(firstThread && growing, (l, p) -> log.info(l, p), "* Growing check enabled");
 
         cli.print(firstThread, (l, p) -> log.debug(l, p), "> query to execute:\n{}", query.replaceAll("(?m)^", "  "));
+        log.info("");
     }
 
     @Override
@@ -107,18 +107,12 @@ public abstract class DefaultMonTbs extends DatabaseCommandControl {
 
     @Override
     public void runJob(int w) throws Exception {
-//        log.info("Thread name: {}", configuration.getTname());
-//        log.info("Workset: {}", configuration.getWorkset());
-        
-//        String host = databasePoolManager.getHost();
-//        String sid = databasePoolManager.getSid();
-        String filename = String.format("MONTBS-%s-%s-%s.txt", hostname, dbname, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE));
+        String filename = String.format("MONTBS-%s-%s-%s-%d.txt"
+                , hostname, dbname, Sysdate.now(Sysdate.SQUELCHED_TIMEDATE), configuration.getTid());
 
         Filepath filepath = new DefaultFilepath(String.format("%s/%s", directory, filename));
-//        log.info("\n[{}@{}] Output file will be:\n   {}\n", sid, host, filepath.getFilepath());
         jdbc.query(query, (ResultSetExtractor<Void>) rs -> {
             try {
-//                cli.print((l, p) -> log.info(l, p), "\nRunning Montbs on {}@{}..", hostname, dbname);
                 write(rs, filepath);
                 cli.print((l, p) -> log.info(l, p), "  -> Report '{}' generated successfully\n", filepath.getFilepath());
             } catch (IOException | SQLException e) {

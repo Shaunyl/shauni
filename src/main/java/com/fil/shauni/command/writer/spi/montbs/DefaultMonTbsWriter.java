@@ -3,9 +3,7 @@ package com.fil.shauni.command.writer.spi.montbs;
 import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
 import com.fil.shauni.command.writer.WriterConfiguration;
 import com.fil.shauni.command.writer.WriterManager;
-import com.fil.shauni.concurrency.pool.ThreadPoolManager;
 import com.fil.shauni.db.spring.model.MontbsRunView;
-import com.fil.shauni.db.spring.service.MontbsRunService;
 import com.fil.shauni.db.spring.service.MontbsRunViewService;
 import com.fil.shauni.util.*;
 import java.io.IOException;
@@ -17,6 +15,10 @@ import java.text.*;
 import java.util.*;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+import static com.fil.shauni.ShauniCache.*;
+import com.fil.shauni.db.spring.model.MontbsRun;
 
 /**
  *
@@ -34,16 +36,15 @@ public class DefaultMonTbsWriter implements WriterManager {
     private final DecimalFormat formatter = new DecimalFormat("#,###.00");
 
     protected MontbsWriterConfiguration c;
+    
+    private final Cache cache;
 
-//    private List<MontbsRunView> lastRow;
     public DefaultMonTbsWriter(WriterConfiguration configuration) {
         this.c = (MontbsWriterConfiguration) configuration; //FIXME: use interfaces...
         this.rawWriter = configuration.getWriter();
         this.printer = new PrintWriter(rawWriter);
-//        ThreadPoolManager.getInstance().execute(() -> {
-//        SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
-//                .findByHostName(c.getHost());
-//        });
+
+        cache = getInstance().getCache("dbcache");
     }
 
     public void writeHeader() {
@@ -75,11 +76,6 @@ public class DefaultMonTbsWriter implements WriterManager {
         this.writeHeader();
         int rows = 0;
 
-//        long st = System.currentTimeMillis();
-//        log.debug("writeAll(): run query findByHostNameAndDbName");
-//        this.lastRow = SpringContext.getApplicationContext().getBean(MontbsRunViewService.class)
-//                .findLastRun(c.getHost(), c.getInstance());
-//        log.debug("writeAll(): finished in {} ms", () -> System.currentTimeMillis() - st);
         if (!rs.next()) {
         } else {
             ResultSetMetaData metadata = rs.getMetaData();
@@ -129,6 +125,9 @@ public class DefaultMonTbsWriter implements WriterManager {
 //        }
     }
 
+    // TEMPME:
+    volatile int i = 0;
+    
     protected void retrieveTbsInfo(String[] record) {
         String pattern = "  %-10s%-38s%11.2f%%  %15s";
 
@@ -153,18 +152,6 @@ public class DefaultMonTbsWriter implements WriterManager {
 //        log.debug("retrieveTbsInfo(): generate pattern");
         // Pay close attention to performance here.
         if (c.isGrowing()) {
-//            if (lastRow != null) {
-//                MontbsRunView row = lastRow.stream()
-//                        .filter(p -> p.getTablespaceName().equals(tablespace)).findFirst()
-//                        .orElse(null);
-//                if (row != null && row.getTotalUsedPercentage() < pct) {
-//                    pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
-//                            .format(pct - row.getTotalUsedPercentage()))
-//                            + " [" + GeneralUtil.compareTwoTimeStamps(
-//                                    new Timestamp(sampleTime.getTime()),
-//                                    row.getSampleTime()) + "]";
-//                }
-
             MontbsRunView lastRun = getLastRun(c.getHost(), c.getInstance(), tablespace);
             if (lastRun != null && lastRun.getTotalUsedPercentage() < pct) {
                 pattern += "  **" + Double.valueOf(new DecimalFormat("#.##")
@@ -180,11 +167,10 @@ public class DefaultMonTbsWriter implements WriterManager {
         String buffer = String.format(pattern, c.getInstance(), tablespace + "[" + size + "]", pct, "(" + free + ")");
         writeNext(new String[]{ buffer });
 
+        long threadId = Thread.currentThread().getId();
+        
         if (c.isPersist()) {
-            ThreadPoolManager.getInstance().execute(() -> {
-                SpringContext.getApplicationContext().getBean(MontbsRunService.class)
-                        .persist(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()));
-            });
+            cache.put(new Element(threadId + new Random(threadId).nextInt(), new MontbsRun(c.getHost(), c.getInstance(), tablespace, pct, new Timestamp(sampleTime.getTime()))));
         }
         // TRYME: save in a list of MontbsRun objects, than persist in batch for performance..
     }

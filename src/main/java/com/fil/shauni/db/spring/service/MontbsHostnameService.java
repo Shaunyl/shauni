@@ -1,6 +1,7 @@
 package com.fil.shauni.db.spring.service;
 
 import com.fil.shauni.db.spring.dao.MontbsHostnameRepository;
+import com.fil.shauni.db.spring.model.MontbsDatabase;
 import com.fil.shauni.db.spring.model.MontbsHostname;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +32,10 @@ public class MontbsHostnameService implements ShauniService {
     
     @Transactional
     public MontbsHostname persistIfNotExists(MontbsHostname host) {
-        if (findByHostname(host.getHostName()) == null) {
+        MontbsHostname row = findByHostname(host.getHostName());
+        if (row == null) {
             return montbsRepository.saveAndFlush(host);
         }
-        return null;
+        return row;
     }
 }

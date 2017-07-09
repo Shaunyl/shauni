@@ -8,6 +8,7 @@ import com.fil.shauni.db.spring.model.MontbsTablespace;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Filippo
  */
-@Service @Transactional(readOnly = true) @Scope("prototype")
+@Service @Transactional(readOnly = true) @Log4j2
 public class MontbsRunService implements ShauniService {
     
     @Autowired
@@ -54,7 +55,7 @@ public class MontbsRunService implements ShauniService {
     }
     
     @Transactional
-    public synchronized MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
+    public MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
         
         montbsHostnameService.persistIfNotExists(new MontbsHostname(host));
         montbsDatabaseService.persistIfNotExists(new MontbsDatabase(database));
@@ -72,5 +73,17 @@ public class MontbsRunService implements ShauniService {
         run.setSampleTime(time);
         
         return montbsRepository.saveAndFlush(run);
+    }
+    
+    @Transactional
+    public MontbsRun persist(MontbsRun r) {
+        log.debug("Persisting " + r.toString());
+        MontbsHostname h = montbsHostnameService.persistIfNotExists(r.getMontbsHostname());
+        MontbsDatabase d = montbsDatabaseService.persistIfNotExists(r.getMontbsDatabase());
+        MontbsTablespace t = montbsTablespaceService.persistIfNotExists(r.getMontbsTablespace());
+        r.setMontbsDatabase(d);
+        r.setMontbsTablespace(t);
+        r.setMontbsHostname(h);
+        return montbsRepository.saveAndFlush(r);
     }
 }

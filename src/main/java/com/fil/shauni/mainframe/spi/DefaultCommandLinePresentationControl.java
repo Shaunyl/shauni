@@ -5,6 +5,7 @@ import com.fil.shauni.command.parser.spi.SpringExporterParser;
 import com.fil.shauni.command.CommandConfiguration;
 import com.beust.jcommander.*;
 import com.fil.shauni.Main;
+import com.fil.shauni.ShauniCache;
 import com.fil.shauni.command.*;
 import com.fil.shauni.command.export.SpringExporter;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
@@ -29,9 +30,13 @@ import org.springframework.stereotype.Component;
 import static com.fil.shauni.command.Command.CommandAction;
 import static com.fil.shauni.command.CommandLineSupporter.*;
 import com.fil.shauni.command.parser.spi.DefaultMonTbsParser;
+import com.fil.shauni.db.spring.model.MontbsRun;
+import com.fil.shauni.db.spring.service.MontbsRunService;
 import com.fil.shauni.io.spi.ParFileManager;
 import java.io.IOException;
 import java.io.InputStream;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
 
 /**
  *
@@ -44,6 +49,9 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
 
     @Inject
     private PropertiesFileManager propertiesFileManager;
+
+    @Inject
+    private MontbsRunService montbsService;
 
     @Getter
     private static final Map<String, Command> COMMANDS = new HashMap<String, Command>();
@@ -182,6 +190,20 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
                 }
             }
             ThreadPoolManager.shutdownPool();
+
+            /*
+                FLUSH THE CACHE: FIXME.. not here.. temporary place..
+             */
+            Cache cache = ShauniCache.getInstance().getCache("dbcache");
+            if (cache != null) {
+                for (Object key : cache.getKeys()) {
+                    Element element = cache.get(key);
+                    if (element != null) {
+                        montbsService.persist((MontbsRun) element.getObjectValue());
+                    }
+                }
+                ShauniCache.shutdown();
+            }
 //            if (ca != null && ca.getStatus().getState() == CommandStatus.State.COMPLETED) {
             LongSummaryStatistics stats = Arrays.stream(results).collect(summarizingLong(d -> d));
             log.info("\nSummary:\n -> [{}]\tcount: {}\n\t\tmax: {}\tmin: {}\tavg: {}\t(ms)",

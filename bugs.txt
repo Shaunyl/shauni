@@ -33,3 +33,4 @@ montbs -undo -auto -directory=logs -cluster=2
 For input string: "ONLINE"
 
 The bug raises when -auto option is used..
+7) Bug if there are two or more identical keys in the multidb.cfg, all of them are merged into only one.

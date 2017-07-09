@@ -21,9 +21,9 @@ CREATE TABLE MontbsTablespaces (
 
 CREATE TABLE MontbsRuns (
     run_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY,
-    host_id INT NOT NULL,
-    db_id INT NOT NULL,
-    tablespace_id INT NOT NULL,
+    host_id INT,
+    db_id INT,
+    tablespace_id INT,
     total_used_pct DOUBLE NOT NULL,
     sample_time TIMESTAMP NOT NULL,
     CONSTRAINT host_id_fk FOREIGN KEY (host_id) REFERENCES MontbsHostnames (host_id),

@@ -14,7 +14,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Main {
 
     public static final AnnotationConfigApplicationContext beanFactory = new AnnotationConfigApplicationContext();
-
+    
     static {
         beanFactory.getEnvironment().setDefaultProfiles("production");
         beanFactory.register(BeanConfiguration.class);

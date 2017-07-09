@@ -42,6 +42,14 @@ public class MontbsRun implements Serializable {
 
     @Column(name = "sample_time")
     private Timestamp sampleTime;
+    
+    public MontbsRun(String hostname, String sid, String tbs, double pct, Timestamp time) {
+        montbsHostname = new MontbsHostname(hostname);
+        montbsDatabase = new MontbsDatabase(sid);
+        montbsTablespace = new MontbsTablespace(tbs);
+        this.totalUsedPercentage = pct;
+        this.sampleTime = time;
+    }
 
     public MontbsRun(int runId, double totalUsedPercentage, Timestamp sampleTime) {
         this.runId = runId;
