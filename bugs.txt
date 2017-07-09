@@ -26,3 +26,10 @@ Another possible implementation could be to retrieve all the data, then, scan on
 4) AutoMontbs lacks of a growing option implementation but the command would not throw any errors if used.
 
 5) FirstThread to avoid other thread printing the same thing does not work if cluster=1 but multiple connections are given.
+
+6) Bug:
+montbs -undo -auto -directory=logs -cluster=2
+  -> Output file not created due to errors:
+For input string: "ONLINE"
+
+The bug raises when -auto option is used..

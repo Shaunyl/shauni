@@ -34,7 +34,7 @@ public class Main {
             cliControl.executeCommand(Arrays.asList(args));
         } catch (Exception e) {
             log.error(e.getMessage());
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

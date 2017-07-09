@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameters;
 import com.fil.shauni.command.montbs.DefaultMonTbs;
 import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
 import com.fil.shauni.command.writer.WriterConfiguration;
+import com.fil.shauni.command.writer.spi.montbs.AutoMonTbsWriter;
 import com.fil.shauni.command.writer.spi.montbs.DefaultMonTbsWriter;
 import com.fil.shauni.util.file.Filepath;
 import java.io.FileWriter;
@@ -31,7 +32,7 @@ public class AutoMonTbs extends DefaultMonTbs {
                 .auto(autoextend)
                 .build();
 
-        try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
+        try (DefaultMonTbsWriter writer = new AutoMonTbsWriter(config)) {
             rows = writer.writeAll(rs, true);
         }
         
