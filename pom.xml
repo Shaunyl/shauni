@@ -27,6 +27,11 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <includes>
+                    <include>jdbc-derby.properties</include>
+                    <include>log4j2.xml</include>
+                    <include>version.properties</include>
+                </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>
@@ -41,9 +46,11 @@
                         <goals>
                             <goal>create</goal>
                         </goals>
+                        
                     </execution>
                 </executions>
                 <configuration>
+                    <!--<outputDirectory>.</outputDirectory>-->
                     <docheck>true</docheck>
                     <doupdate>false</doupdate>
                     <revisiononscmfailure>unknownbuild</revisiononscmfailure>
@@ -51,10 +58,10 @@
                     <items>
                         <item>buildNumber</item>
                     </items> 
+                    <!--<buildNumberPropertiesFileLocation>${basedir}/build1.properties</buildNumberPropertiesFileLocation>-->
                     <timestampFormat>{0,date,yyyy-MM-dd HH:mm}</timestampFormat>
                 </configuration>
             </plugin>
-       
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -213,15 +220,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.24</version>
-            <!--<scope>provided</scope>-->
         </dependency>
-
-        <!--        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.24</version>
-            <scope>provided</scope>
-        </dependency>-->
+        
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.0.1</version>
+        </dependency>
         
         <!-- Spring Framework -->  
         

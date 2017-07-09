@@ -53,6 +53,9 @@ public class PropertiesFileManager implements FileManager {
         Map<String, String> values = new HashMap<>();
 
         Properties properties = this.r(filename);
+        if (properties == null) {
+            return null;
+        }
         Enumeration<Object> keys = properties.keys();
         while (keys.hasMoreElements()) {
             String key = (String) keys.nextElement();
@@ -70,7 +73,8 @@ public class PropertiesFileManager implements FileManager {
                 prop.load(is);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
+            return null;
+//            throw new RuntimeException(e.getMessage());
         }
         return prop;
     }

@@ -30,6 +30,8 @@ import static com.fil.shauni.command.Command.CommandAction;
 import static com.fil.shauni.command.CommandLineSupporter.*;
 import com.fil.shauni.command.parser.spi.DefaultMonTbsParser;
 import com.fil.shauni.io.spi.ParFileManager;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
@@ -46,13 +48,11 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     @Getter
     private static final Map<String, Command> COMMANDS = new HashMap<String, Command>();
 
-    private Map<String, String> project, buildNumber;
-
     static {
         addCommand(new Command(SpringExporter.class, "exp", SpringExporterParser.class)
-                .withDescription("Export data to dumpfiles"));
+                .withDescription("Export data from tables or result set to dumpfiles in different formats"));
         addCommand(new Command(DefaultMonTbs.class, "montbs", DefaultMonTbsParser.class)
-                .withDescription("Check tablespace status"));
+                .withDescription("Check tablespace usage and create a detailed report"));
     }
 
     private static void addCommand(final Command command) {
@@ -88,7 +88,7 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
             return;
         }
         if (cmd.equals("version")) {
-            printVersion();
+//            printVersion();
             return;
         }
 
@@ -199,11 +199,21 @@ public class DefaultCommandLinePresentationControl implements CommandLinePresent
     }
 
     private void printBanner() {
-        project = propertiesFileManager.readAllWithKeys("target/classes/build.properties", "");
-        StringBuilder buffer = new StringBuilder(project.get("name"));
-        buffer.append(" Version ").append(project.get("version"))
-                .append("-").append(project.get("buildNumber"))
-                .append(", ").append(Sysdate.now(Sysdate.DASH_TIMEDATE));
+
+        String VERSION_FILE = "/version.properties";
+        InputStream resourceAsStream = this.getClass().getResourceAsStream(VERSION_FILE);
+        Properties prop = new Properties();
+        try {
+            prop.load(resourceAsStream);
+        } catch (IOException e) {
+//            log.error(VERSION_FILE + "not found!");
+            throw new ShauniException(VERSION_FILE + "not found!");
+        }
+
+        StringBuilder buffer = new StringBuilder(prop.getProperty("name"));
+        buffer.append(" Version ").append(prop.getProperty("version"))
+                .append("-").append(prop.getProperty("buildNumber"))
+                .append(", ").append(prop.getProperty("buildTimestamp"));
         log.info("{}\n", buffer);
     }
 

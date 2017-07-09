@@ -15,37 +15,13 @@
             <directory>.</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>*.sh</include>
-                <include>*.bat</include>
+                <include>launch.sh</include>
+                <include>shauni.bat</include>
                 <include>LICENSE</include>
                 <include>README.md</include>
                 <include>*.properties</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>.</directory>
-            <outputDirectory>/config</outputDirectory>
-            <includes>
-                <include>shauni.properties</include>
-            </includes>
-        </fileSet>
-<!--        <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>/lib</outputDirectory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-            <excludes>
-                <exclude>shauni*.jar</exclude>
-            </excludes>
-        </fileSet>-->
-<!--        <fileSet>
-            <directory>target</directory>
-            <outputDirectory>/lib</outputDirectory>
-            <includes>
-                <include>shauni*.jar</include>
-            </includes>
-        </fileSet>-->
         <fileSet>
             <directory>/config</directory>
             <outputDirectory>/config</outputDirectory>

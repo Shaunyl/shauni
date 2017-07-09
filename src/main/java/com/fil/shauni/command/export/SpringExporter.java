@@ -90,6 +90,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
             cli.print(firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}", parallel);
         }
         workSet = workSplitter.splitWork(parallel, sqlObjects);
+        log.info("");
     }
 
     @Override
@@ -134,7 +135,7 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
 
         final String sql = entity.convert(obj);
         if (sql == null) {
-            cli.print(firstThread && status.getErrors() == 0, (l, p) -> log.info(l, p), "Bad syntax:\n -> '{}' has been skipped.", obj);
+            cli.print(firstThread, (l, p) -> log.info(l, p), "Bad syntax:\n -> '{}' has been skipped.", obj);
             status.error();
             return;
         }

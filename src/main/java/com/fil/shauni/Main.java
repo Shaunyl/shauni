@@ -25,6 +25,7 @@ public class Main {
         Locale.setDefault(new Locale("en"));
 
         CommandLinePresentationControl cliControl = beanFactory.getBean(CommandLinePresentationControl.class);
+                
         try {
             if (args == null) {
                 log.error("No arguments provided.\nAborting..");
