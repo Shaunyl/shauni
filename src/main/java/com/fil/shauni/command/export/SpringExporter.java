@@ -83,14 +83,13 @@ public abstract class SpringExporter extends DatabaseCommandControl implements P
         super.setup();
         List<? extends Entity> sqlObjects = mode.getSqlObjects();
         int size = sqlObjects.size();
-        log.info("* Found {} object(s) to export", size);
-        log.info("* Format used: {}", format);
+        cli.print(firstThread, (l, p) -> log.info(l, p), "* Found {} object(s) to export", size);
+        cli.print(firstThread, (l, p) -> log.info(l, p), "* Format used: {}", format);
         if (parallel > size) {
             parallel = size;
             cli.print(firstThread, (l, p) -> log.info(l, p), "* Parallelism adjusted to {}", parallel);
         }
         workSet = workSplitter.splitWork(parallel, sqlObjects);
-        log.info("");
     }
 
     @Override

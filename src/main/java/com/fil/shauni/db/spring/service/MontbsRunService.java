@@ -6,11 +6,12 @@ import com.fil.shauni.db.spring.model.MontbsHostname;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import com.fil.shauni.db.spring.model.MontbsTablespace;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service @Transactional(readOnly = true) @Log4j2
 public class MontbsRunService implements ShauniService {
-    
+
     @Autowired
     private MontbsRunRepository montbsRepository;
-    
+
     @Autowired
     private MontbsHostnameService montbsHostnameService;
 
@@ -33,6 +34,10 @@ public class MontbsRunService implements ShauniService {
     @Autowired
     private MontbsTablespaceService montbsTablespaceService;
 
+    public long count() {
+        return montbsRepository.count();
+    }
+    
     public List<MontbsRun> findAll() {
         return montbsRepository.findAll();
     }
@@ -53,37 +58,58 @@ public class MontbsRunService implements ShauniService {
     public List<MontbsRun> findAllByHostDbTbsOrderBySampleTimeDesc(String host, String db, String tbs) {
         return montbsRepository.findAllByHostDbTbsOrderBySampleTimeDesc(host, db, tbs);
     }
-    
+
     @Transactional
     public MontbsRun persist(String host, String database, String tablespace, double pct, Timestamp time) {
-        
+
         montbsHostnameService.persistIfNotExists(new MontbsHostname(host));
         montbsDatabaseService.persistIfNotExists(new MontbsDatabase(database));
         montbsTablespaceService.persistIfNotExists(new MontbsTablespace(tablespace));
-        
+
         MontbsDatabase db = montbsDatabaseService.findByDatabaseName(database);
         MontbsHostname hostname = montbsHostnameService.findByHostname(host);
         MontbsTablespace tbs = montbsTablespaceService.findByTablespaceName(tablespace);
-        
+
         MontbsRun run = new MontbsRun();
         run.setMontbsDatabase(db);
         run.setMontbsHostname(hostname);
         run.setMontbsTablespace(tbs);
         run.setTotalUsedPercentage(pct);
         run.setSampleTime(time);
-        
+
         return montbsRepository.saveAndFlush(run);
     }
-    
+
     @Transactional
     public MontbsRun persist(MontbsRun r) {
-        log.debug("DATABASE (t-{}): persist -> {}", () ->Thread.currentThread().getName(),  () -> r.toString());
+//        log.debug("DATABASE (t-{}): persist -> {}", () -> Thread.currentThread().getName(), () -> r.toString());
+        createRecord(r);
+        return montbsRepository.saveAndFlush(r);
+    }
+
+    @Transactional
+    public List<MontbsRun> bulkPersist(Collection<MontbsRun> entities, int batchSize) { // Create an interface for this..
+        final List<MontbsRun> savedEntities = new ArrayList<>(entities.size());
+        int i = 0;
+        for (MontbsRun t : entities) {
+            createRecord(t);
+            savedEntities.add(montbsRepository.save(t));
+            i++;
+            if (i % batchSize == 0) {
+                montbsRepository.flush();
+            }
+        }
+        return savedEntities;
+    }
+    
+    private void createRecord(MontbsRun r) {
         MontbsHostname h = montbsHostnameService.persistIfNotExists(r.getMontbsHostname());
         MontbsDatabase d = montbsDatabaseService.persistIfNotExists(r.getMontbsDatabase());
         MontbsTablespace t = montbsTablespaceService.persistIfNotExists(r.getMontbsTablespace());
         r.setMontbsDatabase(d);
         r.setMontbsTablespace(t);
         r.setMontbsHostname(h);
-        return montbsRepository.saveAndFlush(r);
     }
 }
+
+// Duplicate code..

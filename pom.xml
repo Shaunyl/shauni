@@ -31,6 +31,9 @@
                     <include>jdbc-derby.properties</include>
                     <include>log4j2.xml</include>
                     <include>version.properties</include>
+                    <include>test/jdbc-derby-test.properties</include>
+                    <include>sql/shaunidb.sql</include>
+                    <include>test/dataset.xml</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
@@ -140,6 +143,12 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derbytools</artifactId>
             <version>10.13.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.carrotsearch</groupId>
+            <artifactId>junit-benchmarks</artifactId>
+            <version>0.7.2</version>
             <scope>test</scope>
         </dependency>
           

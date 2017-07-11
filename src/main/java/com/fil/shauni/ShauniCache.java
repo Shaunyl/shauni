@@ -17,7 +17,7 @@ public class ShauniCache {
 
     public static CacheManager getInstance() {
         if (cacheManager == null) {
-            cacheManager = CacheManager.create("src/main/resources/ehcache.xml");
+            cacheManager = CacheManager.create("/ehcache.xml");
         }
         return cacheManager;
     }

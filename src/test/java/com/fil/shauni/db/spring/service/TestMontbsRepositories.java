@@ -1,15 +1,11 @@
 package com.fil.shauni.db.spring.service;
 
-import com.fil.shauni.command.writer.WriterConfiguration;
-import com.fil.shauni.command.writer.spi.montbs.DefaultMonTbsWriter;
-import com.fil.shauni.command.writer.spi.montbs.config.MontbsWriterConfiguration;
 import com.fil.shauni.db.spring.TestConfig;
 import com.fil.shauni.db.spring.model.MontbsHostname;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import com.fil.shauni.db.spring.model.MontbsRunView;
 import com.fil.shauni.util.SpringContext;
 import com.fil.shauni.util.Sysdate;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -41,7 +37,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -193,7 +188,7 @@ public class TestMontbsRepositories {
         Assert.assertNull(persisted);
     }
 
-    @Test @Ignore
+    @Test //@Ignore
     public void findFirstMontbsRunViewRecordOrderByDesc() {
         MontbsRunView row = montbsRunViewService
                 .findFirstOrderBySampleTimeDesc("FILIPPO-PC", "XE", "SYSTEM");
@@ -214,26 +209,12 @@ public class TestMontbsRepositories {
         service.persist("localhost", "ERMDB", "TEMP", 45.12, new Timestamp(sampleTime.getTime()));
     }
 
-    @Test
+    @Test @Ignore
     public void findLastRun() {
         long st = System.currentTimeMillis();
         SpringContext.getApplicationContext().getBean(MontbsRunViewService.class).findLastRun("FILIPPO-PC", "XE");
         long end = System.currentTimeMillis() - st;
         log.debug("Elapsed Average Time: {} ms", end / 100);
-    }
-    
-//    @Test
-    public void testTbsWriter() throws IOException {
-//        WriterConfiguration config = new MontbsWriterConfiguration.Builder("FILIPPO-PC", "XE")
-//                .writer(new FileWriter("./test.log"))
-//                .critical(60).warning(40).growing(true)
-//                .unit('h').exclude(new ArrayList<>()).undo(true)
-//                .persist(true)
-//                .build();
-//        
-//        try (DefaultMonTbsWriter writer = new DefaultMonTbsWriter(config)) {
-//            writer.writeAll(rs, true);
-//        }
     }
 
     @AfterClass

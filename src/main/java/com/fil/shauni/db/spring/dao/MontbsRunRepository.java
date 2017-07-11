@@ -3,7 +3,6 @@ package com.fil.shauni.db.spring.dao;
 import com.fil.shauni.db.spring.model.MontbsRun;
 import java.util.Date;
 import java.util.List;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Repository;
  *
  * @author Filippo
  */
-@Repository @Scope("prototype")
+@Repository
 public interface MontbsRunRepository extends JpaRepository<MontbsRun, Integer> {
 //    @Query("SELECT r FROM MontbsRun r WHERE r.sampleTime >= :date")
 //    List<MontbsRun> findEarlierOrEqualThanDate(@Param("date") Date date);

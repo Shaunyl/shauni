@@ -33,7 +33,8 @@
             <directory>/src/main/resources</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>project.properties</include>
+                <include>version.properties</include>
+                <include>ehcache.xml</include>
             </includes>
         </fileSet>
     </fileSets>
