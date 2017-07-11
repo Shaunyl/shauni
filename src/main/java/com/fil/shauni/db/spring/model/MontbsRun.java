@@ -10,7 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,18 +24,22 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor @Entity @Table(name = "MontbsRuns")
 public class MontbsRun implements Serializable {
 
-//    @EmbeddedId
-//    private MontbsRunKey montbsRunKey;
-    @Id @Column(name = "run_id") @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @Column(name = "run_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "runs_seq")
+    @SequenceGenerator(
+            name = "runs_seq",
+            sequenceName = "runs_seq",
+            allocationSize = 1
+    )
     private int runId;
-    
-    @JoinColumn(name = "host_id") @OneToOne(cascade = CascadeType.ALL)
+
+    @JoinColumn(name = "host_id") @ManyToOne(cascade = CascadeType.ALL)
     private MontbsHostname montbsHostname;
 
-    @JoinColumn(name = "db_id") @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "db_id") @ManyToOne(cascade = CascadeType.ALL)
     private MontbsDatabase montbsDatabase;
 
-    @JoinColumn(name = "tablespace_id") @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "tablespace_id") @ManyToOne(cascade = CascadeType.ALL)
     private MontbsTablespace montbsTablespace;
 
     @Column(name = "total_used_pct")
@@ -42,7 +47,7 @@ public class MontbsRun implements Serializable {
 
     @Column(name = "sample_time")
     private Timestamp sampleTime;
-    
+
     public MontbsRun(String hostname, String sid, String tbs, double pct, Timestamp time) {
         montbsHostname = new MontbsHostname(hostname);
         montbsDatabase = new MontbsDatabase(sid);
@@ -56,7 +61,7 @@ public class MontbsRun implements Serializable {
         this.totalUsedPercentage = totalUsedPercentage;
         this.sampleTime = sampleTime;
     }
-    
+
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "[", "]");
@@ -78,7 +83,7 @@ public class MontbsRun implements Serializable {
         this.totalUsedPercentage = totalUsedPercentage;
         this.sampleTime = sampleTime;
     }
-    
+
     public MontbsRun(double totalUsedPercentage, Timestamp sampleTime) {
         this.totalUsedPercentage = totalUsedPercentage;
         this.sampleTime = sampleTime;

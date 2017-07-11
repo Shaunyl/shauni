@@ -33,3 +33,14 @@ SELECT sample_time, total_used_pct
 FROM MontbsRunsView
 WHERE sample_time in (SELECT MAX(sample_time) FROM MontbsRunsView GROUP BY tablespace_name)
   AND host_name = 'FILIPPO-PC' AND db_name = 'XE';
+
+# Delete sequences
+
+drop SEQUENCE hostnames_seq restrict;
+
+drop SEQUENCE databases_seq restrict;
+
+drop SEQUENCE tablespaces_seq restrict;
+
+drop SEQUENCE runs_seq restrict;
+

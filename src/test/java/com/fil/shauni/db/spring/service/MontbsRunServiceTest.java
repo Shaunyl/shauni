@@ -48,7 +48,7 @@ public class MontbsRunServiceTest {// extends AbstractTestMontbsRepository {
                 
 //        Assert.assertEquals(0, service.findAll().size());
         
-        final int n = 10;
+        final int n = 1000;
         List<MontbsRun> entities = createEntities(n);
 
         long start = System.currentTimeMillis();
@@ -56,20 +56,20 @@ public class MontbsRunServiceTest {// extends AbstractTestMontbsRepository {
             service.persist(entities.get(i));
         }
         long end = System.currentTimeMillis() - start;
-//        log.info("Persist done in {} ms", end / 1e3);
+        log.info("Persist done in {} ms", end / 1e3);
 
 //        Assert.assertEquals(n, service.count());
     }
 
-    @Test @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 1)
+    @Test @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 1) //@Ignore
     public void bulkPersist() throws ParseException {
-        final int n = 10;
+        final int n = 1000;
         List<MontbsRun> entities = createEntities(n);
 
         long start = System.currentTimeMillis();
-        service.bulkPersist(entities, 10);
+        service.bulkPersist(entities, 201);
         long end = System.currentTimeMillis() - start;
-//        log.info("BulkPersist done in {} ms", end / 1e3);
+        log.info("BulkPersist done in {} ms", end / 1e3);
 
 //        Assert.assertEquals(n, service.count());
     }

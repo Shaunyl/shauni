@@ -5,31 +5,40 @@
 CREATE SCHEMA sha;
 
 CREATE TABLE MontbsHostnames (
-    host_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+    host_id PRIMARY KEY,
     host_name VARCHAR(60) NOT NULL UNIQUE
 );
 
+CREATE SEQUENCE hostnames_seq INCREMENT BY 1 START WITH 1;
+
 CREATE TABLE MontbsDatabases (
-    db_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+    db_id INT PRIMARY KEY,
     db_name VARCHAR(30) NOT NULL UNIQUE
 );
 
+CREATE SEQUENCE databases_seq INCREMENT BY 1 START WITH 1;
+
 CREATE TABLE MontbsTablespaces (
-    tablespace_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+    tablespace_id INT PRIMARY KEY,
     tablespace_name VARCHAR(30) NOT NULL UNIQUE
 );
 
+CREATE SEQUENCE tablespaces_seq INCREMENT BY 1 START WITH 1;
+
 CREATE TABLE MontbsRuns (
-    run_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) PRIMARY KEY,
+    run_id INT PRIMARY KEY,
     host_id INT,
     db_id INT,
     tablespace_id INT,
     total_used_pct DOUBLE NOT NULL,
-    sample_time TIMESTAMP NOT NULL,
-    CONSTRAINT host_id_fk FOREIGN KEY (host_id) REFERENCES MontbsHostnames (host_id),
-    CONSTRAINT db_id_fk FOREIGN KEY (db_id) REFERENCES MontbsDatabases (db_id),
-    CONSTRAINT tablespace_id_fk FOREIGN KEY (tablespace_id) REFERENCES MontbsTablespaces (tablespace_id)
+    sample_time TIMESTAMP NOT NULL
+-- ,
+--     CONSTRAINT host_id_fk FOREIGN KEY (host_id) REFERENCES MontbsHostnames (host_id),
+--     CONSTRAINT db_id_fk FOREIGN KEY (db_id) REFERENCES MontbsDatabases (db_id),
+--     CONSTRAINT tablespace_id_fk FOREIGN KEY (tablespace_id) REFERENCES MontbsTablespaces (tablespace_id)
 );
+
+CREATE SEQUENCE runs_seq INCREMENT BY 1 START WITH 1;
 
 CREATE VIEW MontbsRunsView (run_id, host_name, db_name, tablespace_name, total_used_pct, sample_time)
     AS

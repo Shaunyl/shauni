@@ -10,7 +10,7 @@
         </File>  
     </Appenders>
     <Loggers>
-        <Logger name = "org.hibernate" level = "DEBUG" additivity = "true" />
+        <Logger name = "org.hibernate" level = "OFF" additivity = "false" />
         <Logger name = "com.fil.shauni" level = "INFO" additivity = "true" >
             <AppenderRef ref = "File" />
         </Logger>
@@ -21,7 +21,7 @@
         <Logger name = "org.hibernate.type" level = "OFF" additivity = "false" >
             <AppenderRef ref = "Console" />
         </Logger>
-        <Logger name = "org.hibernate.type.descriptor.sql" level = "TRACE" additivity = "true" /> 
+        <Logger name = "org.hibernate.type.descriptor.sql" level = "OFF" additivity = "false" /> 
     </Loggers>
 </Configuration>
 

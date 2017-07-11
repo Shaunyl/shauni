@@ -52,10 +52,9 @@ public class TestConfig {
 
     @Value("#{ environment['database.driverClassName'] }")
     protected String driverClassName;
-    
+
 ////    @Value("#{ environment['hibernate.jdbc.batch_size'] }")
 //    protected int batchSize = 30;
-
     @Bean(destroyMethod = "close")
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
@@ -86,14 +85,16 @@ public class TestConfig {
         properties.put("hibernate.dialect", "org.hibernate.dialect.DerbyDialect");
         properties.put("hibernate.format_sql", "false");
         properties.put("hibernate.use_sql_comments", "false");
-        properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.jdbc.batch_size", "10");
+        properties.put("hibernate.show_sql", "false");
+        properties.put("hibernate.jdbc.batch_size", "201");
         properties.put("hibernate.order_inserts", "true");
         properties.put("hibernate.order_updates", "true");
         properties.put("hibernate.jdbc.batch_versioned_data", "true");
+        properties.put("hibernate.cache.use_second_level_cache", "false");
+        properties.put("hibernate.connection.autocommit", "false");
         return properties;
     }
-    
+
     @Bean
     public DerbyDatabase derbyDatabase() {
         return new DerbyDatabase();

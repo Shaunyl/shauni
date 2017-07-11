@@ -82,24 +82,23 @@ public class MontbsRunService implements ShauniService {
 
     @Transactional
     public MontbsRun persist(MontbsRun r) {
-//        log.debug("DATABASE (t-{}): persist -> {}", () -> Thread.currentThread().getName(), () -> r.toString());
+        log.debug("DATABASE (t-{}): persist -> {}", () -> Thread.currentThread().getName(), () -> r.toString());
         createRecord(r);
         return montbsRepository.saveAndFlush(r);
     }
 
     @Transactional
-    public List<MontbsRun> bulkPersist(Collection<MontbsRun> entities, int batchSize) { // Create an interface for this..
-        final List<MontbsRun> savedEntities = new ArrayList<>(entities.size());
+    public void bulkPersist(Collection<MontbsRun> entities, int batchSize) { // Create an interface for this..
         int i = 0;
         for (MontbsRun t : entities) {
-            createRecord(t);
-            savedEntities.add(montbsRepository.save(t));
+//            createRecord(t);
+            log.debug("DATABASE (t-{}): persist -> {}", () -> Thread.currentThread().getName(), () -> t.toString());
+            montbsRepository.save(t);
             i++;
             if (i % batchSize == 0) {
                 montbsRepository.flush();
             }
         }
-        return savedEntities;
     }
     
     private void createRecord(MontbsRun r) {
